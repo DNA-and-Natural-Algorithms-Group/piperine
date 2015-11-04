@@ -154,7 +154,7 @@ g41
 I00
 sS'const'
 p62
-S'TC'
+S'WC'
 p63
 sg8
 S'cbm'
@@ -207,7 +207,7 @@ Rp75
 g41
 I00
 sg62
-S'CCACTCTATTTCT'
+S'HHHHHHHHHHHHH'
 p77
 sg8
 S'bm'
@@ -257,7 +257,7 @@ Rp86
 g41
 I00
 sg62
-S'CTCATTT'
+S'HHHHHHH'
 p88
 sg8
 S'toe-sb'
@@ -307,7 +307,7 @@ Rp97
 g41
 I00
 sg62
-S'CA'
+S'CW'
 p99
 sg8
 S'cch'
@@ -357,7 +357,7 @@ Rp108
 g41
 I00
 sg62
-S'CCATCTTCTCACC'
+S'CHHHHHHHHHHHH'
 p110
 sg8
 S'ch'
@@ -491,7 +491,7 @@ Rp139
 g41
 I00
 sg62
-S'ACTTATC'
+S'HHHHHHH'
 p141
 sg8
 S'toe-fc'
@@ -541,7 +541,7 @@ Rp150
 g41
 I00
 sg62
-S'AC'
+S'WC'
 p152
 sg8
 S'ccm'
@@ -591,7 +591,7 @@ Rp161
 g41
 I00
 sg62
-S'CTTAATCTTTTCA'
+S'HHHHHHHHHHHHH'
 p163
 sg8
 S'cm'
@@ -641,7 +641,7 @@ Rp172
 g41
 I00
 sg62
-S'ATATCTA'
+S'HHHHHHH'
 p174
 sg8
 S'toe-sc'
@@ -769,7 +769,7 @@ Rp205
 g41
 I00
 sg62
-S'CCTAATCACCATC'
+S'CHHHHHHHHHHHH'
 p207
 sg8
 S'dh'
@@ -819,7 +819,7 @@ Rp216
 g41
 I00
 sg62
-S'CA'
+S'CW'
 p218
 sg8
 S'cdh'
@@ -998,7 +998,7 @@ Rp257
 g41
 I00
 sg62
-S'AC'
+S'WC'
 p259
 sg8
 S'cdm'
@@ -2000,7 +2000,7 @@ Rp462
 g41
 I00
 sg62
-S'TC'
+S'WC'
 p464
 sg8
 S'cbm'
@@ -2050,7 +2050,7 @@ Rp473
 g41
 I00
 sg62
-S'CCACTCTATTTCT'
+S'HHHHHHHHHHHHH'
 p475
 sg8
 S'bm'
@@ -2100,7 +2100,7 @@ Rp484
 g41
 I00
 sg62
-S'CTCATTT'
+S'HHHHHHH'
 p486
 sg8
 S'toe-sb'
@@ -2150,7 +2150,7 @@ Rp495
 g41
 I00
 sg62
-S'CT'
+S'CW'
 p497
 sg8
 S'cch'
@@ -2200,7 +2200,7 @@ Rp506
 g41
 I00
 sg62
-S'CAATCAATCTCTC'
+S'CHHHHHHHHHHHH'
 p508
 sg8
 S'ch'
@@ -2381,7 +2381,7 @@ Rp545
 g41
 I00
 sg62
-S'AC'
+S'WC'
 p547
 sg8
 S'ccm'
@@ -2431,7 +2431,7 @@ Rp556
 g41
 I00
 sg62
-S'TTACATTTACAAC'
+S'HHHHHHHHHHHHH'
 p558
 sg8
 S'cm'
@@ -2481,7 +2481,7 @@ Rp567
 g41
 I00
 sg62
-S'CACTATC'
+S'CTACATC'
 p569
 sg8
 S'toe-sc'
@@ -2602,7 +2602,7 @@ Rp595
 g41
 I00
 sg62
-S'CTTTCACTCCTAT'
+S'CHHHHHHHHHHHH'
 p597
 sg8
 S'dh'
@@ -2652,7 +2652,7 @@ Rp606
 g41
 I00
 sg62
-S'CA'
+S'CW'
 p608
 sg8
 S'cdh'
@@ -2825,7 +2825,7 @@ Rp642
 g41
 I00
 sg62
-S'TC'
+S'WC'
 p644
 sg8
 S'cdm'
@@ -3816,7 +3816,7 @@ Rp836
 g41
 I00
 sg62
-S'TC'
+S'WC'
 p838
 sg8
 S'cbm'
@@ -3866,7 +3866,7 @@ Rp847
 g41
 I00
 sg62
-S'CTATTCCCTTCCT'
+S'HHHHHHHHHHHHH'
 p849
 sg8
 S'bm'
@@ -3916,7 +3916,7 @@ Rp858
 g41
 I00
 sg62
-S'AACTCTT'
+S'HHHHHHH'
 p860
 sg8
 S'toe-sb'
@@ -3966,7 +3966,7 @@ Rp869
 g41
 I00
 sg62
-S'CA'
+S'CW'
 p871
 sg8
 S'cch'
@@ -4016,7 +4016,7 @@ Rp880
 g41
 I00
 sg62
-S'CTACTCCAACCTT'
+S'CHHHHHHHHHHHH'
 p882
 sg8
 S'ch'
@@ -4147,7 +4147,7 @@ Rp908
 g41
 I00
 sg62
-S'ACAAAAC'
+S'HHHHHHH'
 p910
 sg8
 S'toe-fc'
@@ -4197,7 +4197,7 @@ Rp919
 g41
 I00
 sg62
-S'AC'
+S'WC'
 p921
 sg8
 S'ccm'
@@ -4247,7 +4247,7 @@ Rp930
 g41
 I00
 sg62
-S'TTACATTTACAAC'
+S'HHHHHHHHHHHHH'
 p932
 sg8
 S'cm'
@@ -4297,7 +4297,7 @@ Rp941
 g41
 I00
 sg62
-S'CACTATC'
+S'HHHHHHH'
 p943
 sg8
 S'toe-sc'
@@ -4418,7 +4418,7 @@ Rp969
 g41
 I00
 sg62
-S'CATCACTCACTCA'
+S'CHHHHHHHHHHHH'
 p971
 sg8
 S'dh'
@@ -4468,7 +4468,7 @@ Rp980
 g41
 I00
 sg62
-S'CT'
+S'CW'
 p982
 sg8
 S'cdh'
@@ -4641,7 +4641,7 @@ Rp1016
 g41
 I00
 sg62
-S'TC'
+S'WC'
 p1018
 sg8
 S'cdm'
@@ -5632,7 +5632,7 @@ Rp1210
 g41
 I00
 sg62
-S'AATCCTT'
+S'TCCAATT'
 p1212
 sg8
 S'toe-fb'
@@ -5682,7 +5682,7 @@ Rp1221
 g41
 I00
 sg62
-S'TC'
+S'WC'
 p1223
 sg8
 S'cbm'
@@ -5732,7 +5732,7 @@ Rp1232
 g41
 I00
 sg62
-S'CCACTCTATTTCT'
+S'HHHHHHHHHHHHH'
 p1234
 sg8
 S'bm'
@@ -5782,7 +5782,7 @@ Rp1243
 g41
 I00
 sg62
-S'CTCATTT'
+S'ACTCTTT'
 p1245
 sg8
 S'toe-sb'
@@ -5913,7 +5913,7 @@ Rp1271
 g41
 I00
 sg62
-S'CT'
+S'CW'
 p1273
 sg8
 S'cch'
@@ -5963,7 +5963,7 @@ Rp1282
 g41
 I00
 sg62
-S'CAATCAATCTCTC'
+S'CHHHHHHHHHHHH'
 p1284
 sg8
 S'ch'
@@ -6600,7 +6600,7 @@ Rp1425
 g41
 I00
 sg62
-S'TCAACTT'
+S'CATTCTT'
 p1427
 sg8
 S'toe-fb'
@@ -6650,7 +6650,7 @@ Rp1436
 g41
 I00
 sg62
-S'TC'
+S'WC'
 p1438
 sg8
 S'cbm'
@@ -6700,7 +6700,7 @@ Rp1447
 g41
 I00
 sg62
-S'CTATTCCCTTCCT'
+S'HHHHHHHHHHHHH'
 p1449
 sg8
 S'bm'
@@ -6750,7 +6750,7 @@ Rp1458
 g41
 I00
 sg62
-S'AACTCTT'
+S'TCAACTT'
 p1460
 sg8
 S'toe-sb'
@@ -6881,7 +6881,7 @@ Rp1486
 g41
 I00
 sg62
-S'CA'
+S'CW'
 p1488
 sg8
 S'cch'
@@ -6931,7 +6931,7 @@ Rp1497
 g41
 I00
 sg62
-S'CTACTCCAACCTT'
+S'CHHHHHHHHHHHH'
 p1499
 sg8
 S'ch'
@@ -7567,7 +7567,7 @@ Rp1639
 g41
 I00
 sg62
-S'CATCTTT'
+S'CTCATTT'
 p1641
 sg8
 S'toe-fa'
@@ -7617,7 +7617,7 @@ Rp1650
 g41
 I00
 sg62
-S'AC'
+S'WC'
 p1652
 sg8
 S'cam'
@@ -7667,7 +7667,7 @@ Rp1661
 g41
 I00
 sg62
-S'CACCACTATACCA'
+S'HHHHHHHHHHHHH'
 p1663
 sg8
 S'am'
@@ -7717,7 +7717,7 @@ Rp1672
 g41
 I00
 sg62
-S'TTCCATT'
+S'ATTCCTT'
 p1674
 sg8
 S'toe-sa'
@@ -7831,7 +7831,7 @@ Rp1696
 g41
 I00
 sg62
-S'T'
+S'H'
 p1698
 sg8
 S'toe-fb-prefix'
@@ -7881,7 +7881,7 @@ Rp1707
 g41
 I00
 sg62
-S'AATCCT'
+S'HHHHHH'
 p1709
 sg8
 S'toe-fb-suffix'
@@ -7931,7 +7931,7 @@ Rp1718
 g41
 I00
 sg62
-S'TC'
+S'WC'
 p1720
 sg8
 S'cbm'
@@ -7981,7 +7981,7 @@ Rp1729
 g41
 I00
 sg62
-S'CCACTCTATTTCT'
+S'HHHHHHHHHHHHH'
 p1731
 sg8
 S'bm'
@@ -8031,7 +8031,7 @@ Rp1740
 g41
 I00
 sg62
-S'CTCATTT'
+S'HHHHHHH'
 p1742
 sg8
 S'toe-sb'
@@ -8165,7 +8165,7 @@ Rp1768
 g41
 I00
 sg62
-S'CA'
+S'CW'
 p1770
 sg8
 S'cch'
@@ -8215,7 +8215,7 @@ Rp1779
 g41
 I00
 sg62
-S'CCATCTTCTCACC'
+S'CHHHHHHHHHHHH'
 p1781
 sg8
 S'ch'
@@ -9307,7 +9307,7 @@ Rp2000
 g41
 I00
 sg62
-S'ACAAAAC'
+S'HHHHHHH'
 p2002
 sg8
 S'toe-fa'
@@ -9357,7 +9357,7 @@ Rp2011
 g41
 I00
 sg62
-S'AC'
+S'WC'
 p2013
 sg8
 S'ca'
@@ -9407,7 +9407,7 @@ Rp2022
 g41
 I00
 sg62
-S'TTACATTTACAAC'
+S'HHHHHHHHHHHHH'
 p2024
 sg8
 g1880
@@ -9456,7 +9456,7 @@ Rp2032
 g41
 I00
 sg62
-S'CACTATC'
+S'HHHHHHH'
 p2034
 sg8
 S'toe-sa'
@@ -9583,7 +9583,7 @@ Rp2059
 g41
 I00
 sg62
-S'CA'
+S'CW'
 p2061
 sg8
 S'cbh'
@@ -9633,7 +9633,7 @@ Rp2070
 g41
 I00
 sg62
-S'CTACTCCAACCTT'
+S'CHHHHHHHHHHHH'
 p2072
 sg8
 S'bh'
@@ -10075,7 +10075,7 @@ Rp2169
 g41
 I00
 sg62
-S'ACAAAAC'
+S'HHHHHHH'
 p2171
 sg8
 S'toe-fa'
@@ -10125,7 +10125,7 @@ Rp2180
 g41
 I00
 sg62
-S'AC'
+S'WC'
 p2182
 sg8
 S'ca'
@@ -10175,7 +10175,7 @@ Rp2191
 g41
 I00
 sg62
-S'TTACATTTACAAC'
+S'HHHHHHHHHHHHH'
 p2193
 sg8
 g1880
@@ -10224,7 +10224,7 @@ Rp2201
 g41
 I00
 sg62
-S'CACTATC'
+S'HHHHHHH'
 p2203
 sg8
 S'toe-sa'
@@ -10351,7 +10351,7 @@ Rp2228
 g41
 I00
 sg62
-S'CT'
+S'CW'
 p2230
 sg8
 S'cbh'
@@ -10401,7 +10401,7 @@ Rp2239
 g41
 I00
 sg62
-S'CAATCAATCTCTC'
+S'CHHHHHHHHHHHH'
 p2241
 sg8
 S'bh'

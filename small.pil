@@ -1,14 +1,14 @@
-## Specification for small compiled at: Tue Nov  3 22:34:14 2015
+## Specification for small compiled at: Wed Nov  4 15:35:03 2015
 #
 ## Top System
 #
 ## Component r0
-sequence r0-toe-fb = AATCCTT : 7
-sequence r0-toe-sb = CTCATTT : 7
-sequence r0-bm = CCACTCTATTTCT : 13
-sequence r0-ch = CAATCAATCTCTC : 13
-sequence r0-cbm = TC : 2
-sequence r0-cch = CT : 2
+sequence r0-toe-fb = TCCAATT : 7
+sequence r0-toe-sb = ACTCTTT : 7
+sequence r0-bm = HHHHHHHHHHHHH : 13
+sequence r0-ch = CHHHHHHHHHHHH : 13
+sequence r0-cbm = WC : 2
+sequence r0-cch = CW : 2
 sup-sequence r0-B = r0-toe-sb r0-bm r0-cbm r0-toe-fb : 29
 sup-sequence r0-Out = r0-ch r0-cch r0-toe-sb r0-bm r0-cbm : 37
 strand r0-b = r0-toe-sb r0-bm r0-cbm r0-toe-fb : 29
@@ -21,18 +21,18 @@ structure [1nt] r0-Gate_waste = r0-gate_base + r0-b : ((((((((((((((((((((((((((
 kinetic [0.000000 /M/s < k < inf /M/s] r0-B + r0-Gate -> r0-Gate_waste
 #
 ## Component p0
-sequence p0-toe-sb = CTCATTT : 7
+sequence p0-toe-sb = HHHHHHH : 7
 sequence p0-toe-fc = ACAAAAC : 7
-sequence p0-toe-sc = CACTATC : 7
-sequence p0-bm = CCACTCTATTTCT : 13
-sequence p0-cm = TTACATTTACAAC : 13
-sequence p0-ch = CAATCAATCTCTC : 13
-sequence p0-dh = CTTTCACTCCTAT : 13
-sequence p0-cbm = TC : 2
-sequence p0-ccm = AC : 2
-sequence p0-cch = CT : 2
-sequence p0-cdm = TC : 2
-sequence p0-cdh = CA : 2
+sequence p0-toe-sc = CTACATC : 7
+sequence p0-bm = HHHHHHHHHHHHH : 13
+sequence p0-cm = HHHHHHHHHHHHH : 13
+sequence p0-ch = CHHHHHHHHHHHH : 13
+sequence p0-dh = CHHHHHHHHHHHH : 13
+sequence p0-cbm = WC : 2
+sequence p0-ccm = WC : 2
+sequence p0-cch = CW : 2
+sequence p0-cdm = WC : 2
+sequence p0-cdh = CW : 2
 sup-sequence p0-Out = p0-ch p0-cch p0-toe-sb p0-bm p0-cbm : 37
 sup-sequence p0-C = p0-toe-sc p0-cm p0-ccm p0-toe-fc p0-ch p0-cch : 44
 strand p0-out = p0-ch p0-cch p0-toe-sb p0-bm p0-cbm : 37
@@ -55,12 +55,12 @@ kinetic [0.000000 /M/s < k < inf /M/s] p0-Helper + p0-Trans_int -> p0-Trans_wast
 kinetic [0.000000 /M/s < k < inf /M/s] p0-Cat_Helper + p0-Trans_int -> p0-Trans_cat_waste + p0-D + p0-Out
 #
 ## Component r1
-sequence r1-toe-fb = TCAACTT : 7
-sequence r1-toe-sb = AACTCTT : 7
-sequence r1-bm = CTATTCCCTTCCT : 13
-sequence r1-ch = CTACTCCAACCTT : 13
-sequence r1-cbm = TC : 2
-sequence r1-cch = CA : 2
+sequence r1-toe-fb = CATTCTT : 7
+sequence r1-toe-sb = TCAACTT : 7
+sequence r1-bm = HHHHHHHHHHHHH : 13
+sequence r1-ch = CHHHHHHHHHHHH : 13
+sequence r1-cbm = WC : 2
+sequence r1-cch = CW : 2
 sup-sequence r1-B = r1-toe-sb r1-bm r1-cbm r1-toe-fb : 29
 sup-sequence r1-Out = r1-ch r1-cch r1-toe-sb r1-bm r1-cbm : 37
 strand r1-b = r1-toe-sb r1-bm r1-cbm r1-toe-fb : 29
@@ -73,18 +73,18 @@ structure [1nt] r1-Gate_waste = r1-gate_base + r1-b : ((((((((((((((((((((((((((
 kinetic [0.000000 /M/s < k < inf /M/s] r1-B + r1-Gate -> r1-Gate_waste
 #
 ## Component p1
-sequence p1-toe-sb = AACTCTT : 7
-sequence p1-toe-fc = ACAAAAC : 7
-sequence p1-toe-sc = CACTATC : 7
-sequence p1-bm = CTATTCCCTTCCT : 13
-sequence p1-cm = TTACATTTACAAC : 13
-sequence p1-ch = CTACTCCAACCTT : 13
-sequence p1-dh = CATCACTCACTCA : 13
-sequence p1-cbm = TC : 2
-sequence p1-ccm = AC : 2
-sequence p1-cch = CA : 2
-sequence p1-cdm = TC : 2
-sequence p1-cdh = CT : 2
+sequence p1-toe-sb = HHHHHHH : 7
+sequence p1-toe-fc = HHHHHHH : 7
+sequence p1-toe-sc = HHHHHHH : 7
+sequence p1-bm = HHHHHHHHHHHHH : 13
+sequence p1-cm = HHHHHHHHHHHHH : 13
+sequence p1-ch = CHHHHHHHHHHHH : 13
+sequence p1-dh = CHHHHHHHHHHHH : 13
+sequence p1-cbm = WC : 2
+sequence p1-ccm = WC : 2
+sequence p1-cch = CW : 2
+sequence p1-cdm = WC : 2
+sequence p1-cdh = CW : 2
 sup-sequence p1-Out = p1-ch p1-cch p1-toe-sb p1-bm p1-cbm : 37
 sup-sequence p1-C = p1-toe-sc p1-cm p1-ccm p1-toe-fc p1-ch p1-cch : 44
 strand p1-out = p1-ch p1-cch p1-toe-sb p1-bm p1-cbm : 37
@@ -107,17 +107,17 @@ kinetic [0.000000 /M/s < k < inf /M/s] p1-Helper + p1-Trans_int -> p1-Trans_wast
 kinetic [0.000000 /M/s < k < inf /M/s] p1-Cat_Helper + p1-Trans_int -> p1-Trans_cat_waste + p1-D + p1-Out
 #
 ## Component r2
-sequence r2-toe-fa = CATCTTT : 7
-sequence r2-toe-sa = TTCCATT : 7
-sequence r2-toe-fb-suffix = AATCCT : 6
-sequence r2-toe-fb-prefix = T : 1
-sequence r2-toe-sb = CTCATTT : 7
-sequence r2-am = CACCACTATACCA : 13
-sequence r2-bm = CCACTCTATTTCT : 13
-sequence r2-ch = CCATCTTCTCACC : 13
-sequence r2-cam = AC : 2
-sequence r2-cbm = TC : 2
-sequence r2-cch = CA : 2
+sequence r2-toe-fa = CTCATTT : 7
+sequence r2-toe-sa = ATTCCTT : 7
+sequence r2-toe-fb-suffix = HHHHHH : 6
+sequence r2-toe-fb-prefix = H : 1
+sequence r2-toe-sb = HHHHHHH : 7
+sequence r2-am = HHHHHHHHHHHHH : 13
+sequence r2-bm = HHHHHHHHHHHHH : 13
+sequence r2-ch = CHHHHHHHHHHHH : 13
+sequence r2-cam = WC : 2
+sequence r2-cbm = WC : 2
+sequence r2-cch = CW : 2
 sup-sequence r2-toe-fb = r2-toe-fb-suffix r2-toe-fb-prefix : 7
 sup-sequence r2-A = r2-toe-sa r2-am r2-cam r2-toe-fa : 29
 sup-sequence r2-B = r2-toe-sb r2-bm r2-cbm r2-toe-fb-suffix r2-toe-fb-prefix : 29
@@ -139,18 +139,18 @@ kinetic [0.000000 /M/s < k < inf /M/s] r2-Gate_int + r2-Backward -> r2-A + r2-Ga
 kinetic [0.000000 /M/s < k < inf /M/s] r2-B + r2-Gate_int -> r2-Gate_waste + r2-Out
 #
 ## Component p2
-sequence p2-toe-sb = CTCATTT : 7
-sequence p2-toe-fc = ACTTATC : 7
-sequence p2-toe-sc = ATATCTA : 7
-sequence p2-bm = CCACTCTATTTCT : 13
-sequence p2-cm = CTTAATCTTTTCA : 13
-sequence p2-ch = CCATCTTCTCACC : 13
-sequence p2-dh = CCTAATCACCATC : 13
-sequence p2-cbm = TC : 2
-sequence p2-ccm = AC : 2
-sequence p2-cch = CA : 2
-sequence p2-cdm = AC : 2
-sequence p2-cdh = CA : 2
+sequence p2-toe-sb = HHHHHHH : 7
+sequence p2-toe-fc = HHHHHHH : 7
+sequence p2-toe-sc = HHHHHHH : 7
+sequence p2-bm = HHHHHHHHHHHHH : 13
+sequence p2-cm = HHHHHHHHHHHHH : 13
+sequence p2-ch = CHHHHHHHHHHHH : 13
+sequence p2-dh = CHHHHHHHHHHHH : 13
+sequence p2-cbm = WC : 2
+sequence p2-ccm = WC : 2
+sequence p2-cch = CW : 2
+sequence p2-cdm = WC : 2
+sequence p2-cdh = CW : 2
 sup-sequence p2-Out = p2-ch p2-cch p2-toe-sb p2-bm p2-cbm : 37
 sup-sequence p2-C = p2-toe-sc p2-cm p2-ccm p2-toe-fc p2-ch p2-cch : 44
 strand p2-out = p2-ch p2-cch p2-toe-sb p2-bm p2-cbm : 37
@@ -173,12 +173,12 @@ kinetic [0.000000 /M/s < k < inf /M/s] p2-Helper + p2-Trans_int -> p2-Trans_wast
 kinetic [0.000000 /M/s < k < inf /M/s] p2-Cat_Helper + p2-Trans_int -> p2-Trans_cat_waste + p2-D + p2-Out
 #
 ## Component eq0
-sequence eq0-toe-fa = ACAAAAC : 7
-sequence eq0-toe-sa = CACTATC : 7
-sequence eq0-a = TTACATTTACAAC : 13
-sequence eq0-bh = CAATCAATCTCTC : 13
-sequence eq0-ca = AC : 2
-sequence eq0-cbh = CT : 2
+sequence eq0-toe-fa = HHHHHHH : 7
+sequence eq0-toe-sa = HHHHHHH : 7
+sequence eq0-a = HHHHHHHHHHHHH : 13
+sequence eq0-bh = CHHHHHHHHHHHH : 13
+sequence eq0-ca = WC : 2
+sequence eq0-cbh = CW : 2
 sup-sequence eq0-A = eq0-toe-sa eq0-a eq0-ca eq0-toe-fa : 29
 sup-sequence eq0-B = eq0-toe-sa eq0-a eq0-ca eq0-toe-fa eq0-bh eq0-cbh : 44
 strand eq0-A_strand = eq0-toe-sa eq0-a eq0-ca eq0-toe-fa : 29
@@ -186,12 +186,12 @@ strand eq0-B_strand = eq0-cbh* eq0-bh* eq0-toe-fa* eq0-ca* eq0-a* eq0-toe-sa* : 
 structure [1nt] eq0-constraint = eq0-A_strand + eq0-B_strand : (((((((((((((((((((((((((((((+...............)))))))))))))))))))))))))))))
 #
 ## Component eq1
-sequence eq1-toe-fa = ACAAAAC : 7
-sequence eq1-toe-sa = CACTATC : 7
-sequence eq1-a = TTACATTTACAAC : 13
-sequence eq1-bh = CTACTCCAACCTT : 13
-sequence eq1-ca = AC : 2
-sequence eq1-cbh = CA : 2
+sequence eq1-toe-fa = HHHHHHH : 7
+sequence eq1-toe-sa = HHHHHHH : 7
+sequence eq1-a = HHHHHHHHHHHHH : 13
+sequence eq1-bh = CHHHHHHHHHHHH : 13
+sequence eq1-ca = WC : 2
+sequence eq1-cbh = CW : 2
 sup-sequence eq1-A = eq1-toe-sa eq1-a eq1-ca eq1-toe-fa : 29
 sup-sequence eq1-B = eq1-toe-sa eq1-a eq1-ca eq1-toe-fa eq1-bh eq1-cbh : 44
 strand eq1-A_strand = eq1-toe-sa eq1-a eq1-ca eq1-toe-fa : 29

@@ -1,8 +1,8 @@
-sequence r2-toe-fa = TCACTTT # species A
-sequence r2-toe-sa = CTCATTT # species A
-sequence r1-toe-fb = TTCCATT # species C
-sequence r1-toe-sb = AACTCTT # species C
-sequence r0-toe-fb = AATCCTT # species B
-sequence r0-toe-sb = AAACAAC # species B
-sequence p0-toe-fc = TCTACAC # species D
-sequence p0-toe-sc = ACCTATC # species D
+sequence r2-toe-fa = CTCATTT # species A
+sequence r2-toe-sa = ATTCCTT # species A
+sequence r1-toe-fb = CATTCTT # species C
+sequence r1-toe-sb = TCAACTT # species C
+sequence r0-toe-fb = TCCAATT # species B
+sequence r0-toe-sb = ACTCTTT # species B
+sequence p0-toe-fc = ACAAAAC # species D
+sequence p0-toe-sc = CTACATC # species D
