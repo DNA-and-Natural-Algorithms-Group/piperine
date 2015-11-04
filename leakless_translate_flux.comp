@@ -1,0 +1,49 @@
+declare component leakless_translate_flux(l): F -> XY 
+
+### Domains
+# Subdomains:
+sequence a2 = "<l>H"
+sequence a3 = "<l>H"
+sequence b1 = "<l>H"
+sequence b2 = "<l>H"
+sequence b3 = "<l>H"
+sequence c1 = "<l>H"
+sequence c2 = "<l>H"
+sequence c3 = "<l>H"
+sequence d1 = "<l>H"
+sequence d2 = "<l>H"
+sequence x1 = "<l>H"
+sequence x2 = "<l>H"
+sequence x3 = "<l>H"
+sequence y1 = "<l>H"
+sequence y2 = "<l>H"
+sequence y3 = "<l>H"
+
+### I/O connectors
+sequence F = d2 d1 c3 c2 c1 b3 b2 b1 a3 a2
+sequence XY = y3 y2 y1 x3 x2 x1 c3 c2
+
+### Strands
+strand f = d2 d1 c3 c2 c1 b3 b2 b1 a3 a2
+strand xy = y3 y2 y1 x3 x2 x1 c3 c2
+strand t1_top = x3 x2 x1 c3 c2 c1 b3 b2
+strand t1_base = b1* b2* b3* c1* c2* c3*
+strand t2_base = c1* c2* c3* x1* x2* x3*
+
+### Structures
+# Single-stranded:
+structure F = f : domain ..........
+structure XY = xy : domain ........
+structure T1_Top = t1_top : domain ........
+
+# Gates:
+structure T1 = t1_base + t1_top : domain .(((((+...)))))
+structure T2 = t2_base + xy : domain .(((((+...)))))
+
+# Waste products:
+structure T1_Waste = t1_base + f : domain ((((((+..))))))..
+structure T2_Waste = t2_base + t1_top : domain ((((((+))))))..
+
+### Reactions
+kinetic F + T1 -> T1_Top + T1_Waste
+kinetic T1_Top + T2 -> XY + T2_Waste

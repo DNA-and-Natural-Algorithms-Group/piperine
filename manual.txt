@@ -1,0 +1,22 @@
+Just try to accumulate thoughts and descriptions of code snippets, modules, functions
+
++ SLOTH
+ This module contains functions that interpret the users' text-file specifying 
+ an abstract CRN with rate constants and generates the files and sequences 
+ necessary to run spurious_design as well as  downstream compilation steps. 
++- import_crn
+    This function reads
++- list_to_str
++- write_equals
++- write_hist_equals
++- write_signal_equals
++- write_toehold_file
++- set_signal_instances_constraints
++- write_sys_header
++- toehold_wrapper
++- process_rxns
++- write_compiler_files
++- toehold_wrapper
++- toehold_wrapper
+
+

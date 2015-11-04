@@ -1,0 +1,37 @@
+declare component set_signals_equal(t, bm, c): A -> B
+
+### Domains
+# Toeholds:
+sequence toe-fa = "<t>H"
+sequence toe-sa = "<t>H"
+# sequence toe-fb = "<t>H"
+# sequence toe-sb = "<t>H"
+
+# Branch migration domains:
+sequence a  = "<bm - c>H"
+# sequence b  = "<bm - c>H"
+sequence bh = "C<bm - c - 1>H"
+
+# Clamps:
+sequence ca  = "W<c-1>C"
+# sequence cb  = "W<c-1>C"
+sequence cbh = "C<c-1>W"
+
+### I/O connectors
+# Signal Strands
+sequence A = toe-sa a ca toe-fa
+sequence B = toe-sa a ca toe-fa bh cbh # This has everything except history domains equal
+
+# Set all domains equal, except history domains
+# equals not implemented yet. So set constraints above?
+# equal toe-sa toe-sb
+# equal a b
+# equal ca cb
+# equal toe-fa toe-fb
+
+# Declare as strands to avoid warnings
+strand A_strand = toe-sa a ca toe-fa 
+strand B_strand = cbh* bh* toe-fa* ca* a* toe-sa*
+
+# Declare a structure where the identical components are complement-compatible
+structure constraint = A_strand + B_strand : domain ((((+..))))

@@ -1,0 +1,17 @@
+declare system small(t, bm, c):  -> 
+
+import gate_nul_produ
+import gate_uni_produ
+import gate_bim_produ
+import gate_uni_react
+import gate_bim_react
+import set_signals_equal
+
+component  r0 = gate_uni_react(<t>, <bm>, <c>): B -> Flux0
+component  p0 = gate_uni_produ(<t>, <bm>, <c>): Flux0 -> D0a
+component  r1 = gate_uni_react(<t>, <bm>, <c>): C -> Flux1
+component  p1 = gate_uni_produ(<t>, <bm>, <c>): Flux1 -> D1a
+component  r2 = gate_bim_react(<t>, <bm>, <c>): A + B -> Flux2
+component  p2 = gate_uni_produ(<t>, <bm>, <c>): Flux2 -> C2a
+component eq0 = set_signals_equal(<t>, <bm>, <c>): D -> D0a
+component eq1 = set_signals_equal(<t>, <bm>, <c>): D -> D1a
