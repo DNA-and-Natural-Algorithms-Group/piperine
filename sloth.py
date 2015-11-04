@@ -567,7 +567,6 @@ def run_designer(basename='small',
     exec('import {} as mod'.format(mod_str))
     import tdm
     import numpy as np
-    import pandas as pd
     fixedfile = basename + ".fixed"
     systemfile = basename + ".sys"
     pilfile = basename + ".pil"
@@ -625,7 +624,6 @@ def run_secretary_problem(basename='small',
     exec('import {} as mod'.format(mod_str))
     import tdm
     import numpy as np
-    import pandas as pd
     fixedfile = basename + ".fixed"
     systemfile = basename + ".sys"
     pilfile = basename + ".pil"
