@@ -1,209 +1,209 @@
 0:r0-B
-ATCTCTCACTATCCACTAATACAATCCTT 0.000000 0.000000 0
+CATCTTTCAAACCACCATCAACATTCCTT 0.000000 0.000000 0
 .............................
 .............................
 1:r0-Out
-CACTTTACCTTCTCTATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+CACCCTCTAATCACACATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 .....................................
 .....................................
 2:r0-Gate
-AAGGATTGTATTAGTGGATAGTGAGAGATAG+CACTTTACCTTCTCTATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+AAGGAATGTTGATGGTGGTTTGAAAGATGTG+CACCCTCTAATCACACATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 .......((((((((((((((((((((((((+.............))))))))))))))))))))))))
 .......((((((((((((((((((((((((+.............))))))))))))))))))))))))
 3:r0-Gate_waste
-AAGGATTGTATTAGTGGATAGTGAGAGATAG+ATCTCTCACTATCCACTAATACAATCCTT 0.000000 0.000000 0
+AAGGAATGTTGATGGTGGTTTGAAAGATGTG+CATCTTTCAAACCACCATCAACATTCCTT 0.000000 0.000000 0
 (((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))
 (((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))
 4:p0-Out
-CACTTTACCTTCTCTATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+CACCCTCTAATCACACATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 .....................................
 .....................................
 5:p0-C
-CTACATCACTCTACTACCATACAAACAACCACTTTACCTTCTCT 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTCCACCCTCTAATCACA 0.000000 0.000000 0
 ............................................
 ............................................
 6:p0-D
-ACAAACAACCCTATACTTCCATCT 0.000000 0.000000 0
+TCATCTCTCCTATTTACAAACTCA 0.000000 0.000000 0
 ........................
 ........................
 7:p0-Helper
-AAACAACCCTATACTTCCATCTAAACAAC 0.000000 0.000000 0
+ATCTCTCCTATTTACAAACTCAATCTCTC 0.000000 0.000000 0
 .............................
 .............................
 8:p0-Cat_Helper
-AAACAACCCTATACTTCCATCTAAACAACCACTTTACCTTCTCT 0.000000 0.000000 0
+ATCTCTCCTATTTACAAACTCAATCTCTCCACCCTCTAATCACA 0.000000 0.000000 0
 ............................................
 ............................................
 9:p0-Trans
-GAGAGATAGAGAAGGTAAAGTGGTTGTTTAGATGGAAGTATAGGGTTGTTTGT+ACAAACAACCCTATACTTCCATCT+CTACATCACTCTACTACCATACAAACAACCACTTTACCTTCTCT 0.000000 0.000000 0
+AAAGATGTGTGATTAGAGGGTGGAGAGATTGAGTTTGTAAATAGGAGAGATGA+TCATCTCTCCTATTTACAAACTCA+AAACAACACCAACAAACCTAACATCTCTCCACCCTCTAATCACA 0.000000 0.000000 0
 .......((((((((((((((((((((((((((((((((((((((((((((((+))))))))))))))))))))))))+......................))))))))))))))))))))))
-.......((((((((((((((((((((((.((((((((((((((((((((((.+.)))))))))))))))))))))).+......................))))))))))))))))))))))
+........(((((((((((((((((((((.((((((((((((((((((((((.+.)))))))))))))))))))))).+......................))))))))))))))))))))).
 10:p0-Trans_int
-GAGAGATAGAGAAGGTAAAGTGGTTGTTTAGATGGAAGTATAGGGTTGTTTGT+ACAAACAACCCTATACTTCCATCT+CACTTTACCTTCTCTATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+AAAGATGTGTGATTAGAGGGTGGAGAGATTGAGTTTGTAAATAGGAGAGATGA+TCATCTCTCCTATTTACAAACTCA+CACCCTCTAATCACACATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 ((((((((((((((((((((((.......((((((((((((((((((((((((+))))))))))))))))))))))))+))))))))))))))))))))))...............
-((((((((((((((((((((((.......(((((((((((((((((((((((.+.)))))))))))))))))))))))+))))))))))))))))))))))...............
+((((((((((((((((((((((........((((((((((((((((((((((.+.)))))))))))))))))))))).+))))))))))))))))))))))...............
 11:p0-Trans_waste
-GAGAGATAGAGAAGGTAAAGTGGTTGTTTAGATGGAAGTATAGGGTTGTTTGT+AAACAACCCTATACTTCCATCTAAACAAC+CACTTTACCTTCTCTATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+AAAGATGTGTGATTAGAGGGTGGAGAGATTGAGTTTGTAAATAGGAGAGATGA+ATCTCTCCTATTTACAAACTCAATCTCTC+CACCCTCTAATCACACATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 (((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))+))))))))))))))))))))))...............
 (((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))+))))))))))))))))))))))...............
 12:p0-Trans_cat_waste
-GAGAGATAGAGAAGGTAAAGTGGTTGTTTAGATGGAAGTATAGGGTTGTTTGT+AAACAACCCTATACTTCCATCTAAACAACCACTTTACCTTCTCT 0.000000 0.000000 0
+AAAGATGTGTGATTAGAGGGTGGAGAGATTGAGTTTGTAAATAGGAGAGATGA+ATCTCTCCTATTTACAAACTCAATCTCTCCACCCTCTAATCACA 0.000000 0.000000 0
 .......((((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))))
-.......((((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))))
+........(((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))).
 13:r1-B
-TTCCATTCACCAACTACTCCACCTCAATT 0.000000 0.000000 0
+TTCACTTCTAACTTCCACCTACCTCATTT 0.000000 0.000000 0
 .............................
 .............................
 14:r1-Out
-CTCACCTACACCTCTTTCCATTCACCAACTACTCCAC 0.000000 0.000000 0
+CCACTTACTACTCCATTCACTTCTAACTTCCACCTAC 0.000000 0.000000 0
 .....................................
 .....................................
 15:r1-Gate
-AATTGAGGTGGAGTAGTTGGTGAATGGAAAG+CTCACCTACACCTCTTTCCATTCACCAACTACTCCAC 0.000000 0.000000 0
+AAATGAGGTAGGTGGAAGTTAGAAGTGAATG+CCACTTACTACTCCATTCACTTCTAACTTCCACCTAC 0.000000 0.000000 0
 .......((((((((((((((((((((((((+.............))))))))))))))))))))))))
 .......((((((((((((((((((((((((+.............))))))))))))))))))))))))
 16:r1-Gate_waste
-AATTGAGGTGGAGTAGTTGGTGAATGGAAAG+TTCCATTCACCAACTACTCCACCTCAATT 0.000000 0.000000 0
+AAATGAGGTAGGTGGAAGTTAGAAGTGAATG+TTCACTTCTAACTTCCACCTACCTCATTT 0.000000 0.000000 0
 (((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))
 (((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))
 17:p1-Out
-CTCACCTACACCTCTTTCCATTCACCAACTACTCCAC 0.000000 0.000000 0
+CCACTTACTACTCCATTCACTTCTAACTTCCACCTAC 0.000000 0.000000 0
 .....................................
 .....................................
 18:p1-C
-CTACATCACTCTACTACCATACAAACAACCTCACCTACACCTCT 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTCCCACTTACTACTCCA 0.000000 0.000000 0
 ............................................
 ............................................
 19:p1-D
-TCAAACAACCAACATTCAACACCA 0.000000 0.000000 0
+TCATCTCTCCTTCCATCCAATTCT 0.000000 0.000000 0
 ........................
 ........................
 20:p1-Helper
-AAACAACCAACATTCAACACCAAAACAAC 0.000000 0.000000 0
+ATCTCTCCTTCCATCCAATTCTATCTCTC 0.000000 0.000000 0
 .............................
 .............................
 21:p1-Cat_Helper
-AAACAACCAACATTCAACACCAAAACAACCTCACCTACACCTCT 0.000000 0.000000 0
+ATCTCTCCTTCCATCCAATTCTATCTCTCCCACTTACTACTCCA 0.000000 0.000000 0
 ............................................
 ............................................
 22:p1-Trans
-AATGGAAAGAGGTGTAGGTGAGGTTGTTTTGGTGTTGAATGTTGGTTGTTTGA+TCAAACAACCAACATTCAACACCA+CTACATCACTCTACTACCATACAAACAACCTCACCTACACCTCT 0.000000 0.000000 0
+AAGTGAATGGAGTAGTAAGTGGGAGAGATAGAATTGGATGGAAGGAGAGATGA+TCATCTCTCCTTCCATCCAATTCT+AAACAACACCAACAAACCTAACATCTCTCCCACTTACTACTCCA 0.000000 0.000000 0
 .......((((((((((((((((((((((((((((((((((((((((((((((+))))))))))))))))))))))))+......................))))))))))))))))))))))
-.......((((((((((((((((((((((.((((((((((((((((((((((.+.)))))))))))))))))))))).+......................))))))))))))))))))))))
+.......(((((((((((((((((((((.(((((((((((((((((((((((.+.)))))))))))))))))))))))+.......................)))))))))))))))))))))
 23:p1-Trans_int
-AATGGAAAGAGGTGTAGGTGAGGTTGTTTTGGTGTTGAATGTTGGTTGTTTGA+TCAAACAACCAACATTCAACACCA+CTCACCTACACCTCTTTCCATTCACCAACTACTCCAC 0.000000 0.000000 0
+AAGTGAATGGAGTAGTAAGTGGGAGAGATAGAATTGGATGGAAGGAGAGATGA+TCATCTCTCCTTCCATCCAATTCT+CCACTTACTACTCCATTCACTTCTAACTTCCACCTAC 0.000000 0.000000 0
 ((((((((((((((((((((((.......((((((((((((((((((((((((+))))))))))))))))))))))))+))))))))))))))))))))))...............
-((((((((((((((((((((((........((((((((((((((((((((((.+.)))))))))))))))))))))).+))))))))))))))))))))))...............
+((((((((((((((((((((((.......(((((((((((((((((((((((.+.)))))))))))))))))))))))+))))))))))))))))))))))...............
 24:p1-Trans_waste
-AATGGAAAGAGGTGTAGGTGAGGTTGTTTTGGTGTTGAATGTTGGTTGTTTGA+AAACAACCAACATTCAACACCAAAACAAC+CTCACCTACACCTCTTTCCATTCACCAACTACTCCAC 0.000000 0.000000 0
+AAGTGAATGGAGTAGTAAGTGGGAGAGATAGAATTGGATGGAAGGAGAGATGA+ATCTCTCCTTCCATCCAATTCTATCTCTC+CCACTTACTACTCCATTCACTTCTAACTTCCACCTAC 0.000000 0.000000 0
 (((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))+))))))))))))))))))))))...............
 (((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))+))))))))))))))))))))))...............
 25:p1-Trans_cat_waste
-AATGGAAAGAGGTGTAGGTGAGGTTGTTTTGGTGTTGAATGTTGGTTGTTTGA+AAACAACCAACATTCAACACCAAAACAACCTCACCTACACCTCT 0.000000 0.000000 0
+AAGTGAATGGAGTAGTAAGTGGGAGAGATAGAATTGGATGGAAGGAGAGATGA+ATCTCTCCTTCCATCCAATTCTATCTCTCCCACTTACTACTCCA 0.000000 0.000000 0
 .......((((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))))
 .......((((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))))
 26:r2-A
-CATTCTTCCTACTCACACCCACTCACTTT 0.000000 0.000000 0
+ACTTCTTACATAATCCATCCTCTCCAATT 0.000000 0.000000 0
 .............................
 .............................
 27:r2-B
-ATCTCTCACTATCCACTAATACAATCCTT 0.000000 0.000000 0
+CATCTTTCAAACCACCATCAACATTCCTT 0.000000 0.000000 0
 .............................
 .............................
 28:r2-Backward
-AATCCTCATTCTTCCTACTCACACCCAC 0.000000 0.000000 0
+ATTCCTACTTCTTACATAATCCATCCTC 0.000000 0.000000 0
 ............................
 ............................
 29:r2-Out
-CAATTACCTCCCTCAATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+CACCACTTTCACTCTCATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 .....................................
 .....................................
 30:r2-Gate
-AAAGTGAGTGGGTGTGAGTAGGAAGAATGAGGATTGTATTAGTGGATAGTGAGAGATTG+CAATTACCTCCCTCAATCTCTCACTATCCACTAATAC+AATCCTCATTCTTCCTACTCACACCCAC 0.000000 0.000000 0
+AATTGGAGAGGATGGATTATGTAAGAAGTAGGAATGTTGATGGTGGTTTGAAAGATGAG+CACCACTTTCACTCTCATCTTTCAAACCACCATCAAC+ATTCCTACTTCTTACATAATCCATCCTC 0.000000 0.000000 0
 .......((((((((((((((((((((((((((((((((((((((((((((((((((((+.............))))))))))))))))))))))))+))))))))))))))))))))))))))))
-.......((((((((((((((((((((((((((((((((((((((((((((((((((((+.............))))))))))))))))))))))))+))))))))))))))))))))))))))))
+.......(((((((((((((((((((((((((((.((((((((((((((((((((((((+.............))))))))))))))))))))))))+.)))))))))))))))))))))))))))
 31:r2-Gate_int
-AAAGTGAGTGGGTGTGAGTAGGAAGAATGAGGATTGTATTAGTGGATAGTGAGAGATTG+CAATTACCTCCCTCAATCTCTCACTATCCACTAATAC+CATTCTTCCTACTCACACCCACTCACTTT 0.000000 0.000000 0
+AATTGGAGAGGATGGATTATGTAAGAAGTAGGAATGTTGATGGTGGTTTGAAAGATGAG+CACCACTTTCACTCTCATCTTTCAAACCACCATCAAC+ACTTCTTACATAATCCATCCTCTCCAATT 0.000000 0.000000 0
 (((((((((((((((((((((((((((((......((((((((((((((((((((((((+.............))))))))))))))))))))))))+)))))))))))))))))))))))))))))
 (((((((((((((((((((((((((((((......((((((((((((((((((((((((+.............))))))))))))))))))))))))+)))))))))))))))))))))))))))))
 32:r2-Gate_waste
-AAAGTGAGTGGGTGTGAGTAGGAAGAATGAGGATTGTATTAGTGGATAGTGAGAGATTG+ATCTCTCACTATCCACTAATACAATCCTT+CATTCTTCCTACTCACACCCACTCACTTT 0.000000 0.000000 0
+AATTGGAGAGGATGGATTATGTAAGAAGTAGGAATGTTGATGGTGGTTTGAAAGATGAG+CATCTTTCAAACCACCATCAACATTCCTT+ACTTCTTACATAATCCATCCTCTCCAATT 0.000000 0.000000 0
 (((((((((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))).+)))))))))))))))))))))))))))))
-(((((((((((((((((((((((((((((.(((((((((((((((((((((((((((..+)))))))))))))))))))))))))))..+)))))))))))))))))))))))))))))
+((((((((((((((((((((((((((((.((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))).+.))))))))))))))))))))))))))))
 33:p2-Out
-CAATTACCTCCCTCAATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+CACCACTTTCACTCTCATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 .....................................
 .....................................
 34:p2-C
-CCCATCTCCTAAATACATTTTCCACCTTCCAATTACCTCCCTCA 0.000000 0.000000 0
+CCCTACTCACCTAAACTCTTACCACTATTCACCACTTTCACTCT 0.000000 0.000000 0
 ............................................
-..........(((....)))........................
+............................................
 35:p2-D
-ACCACCTTCCACTCTAAATCCTCT 0.000000 0.000000 0
+TCCACTATTCCTCATCCACTCACA 0.000000 0.000000 0
 ........................
 ........................
 36:p2-Helper
-CACCTTCCACTCTAAATCCTCTCACCTTC 0.000000 0.000000 0
+CACTATTCCTCATCCACTCACACACTATT 0.000000 0.000000 0
 .............................
 .............................
 37:p2-Cat_Helper
-CACCTTCCACTCTAAATCCTCTCACCTTCCAATTACCTCCCTCA 0.000000 0.000000 0
+CACTATTCCTCATCCACTCACACACTATTCACCACTTTCACTCT 0.000000 0.000000 0
 ............................................
 ............................................
 38:p2-Trans
-GAGAGATTGAGGGAGGTAATTGGAAGGTGAGAGGATTTAGAGTGGAAGGTGGT+ACCACCTTCCACTCTAAATCCTCT+CCCATCTCCTAAATACATTTTCCACCTTCCAATTACCTCCCTCA 0.000000 0.000000 0
+AAAGATGAGAGTGAAAGTGGTGAATAGTGTGTGAGTGGATGAGGAATAGTGGA+TCCACTATTCCTCATCCACTCACA+CCCTACTCACCTAAACTCTTACCACTATTCACCACTTTCACTCT 0.000000 0.000000 0
 .......((((((((((((((((((((((((((((((((((((((((((((((+))))))))))))))))))))))))+......................))))))))))))))))))))))
-........(((((((((((((((((((((.((((((((((((((((((((((.+.)))))))))))))))))))))).+..........(((....)))..))))))))))))))))))))).
+.......((((((((((((((((((((((.((((((((((((((((((((((.+.)))))))))))))))))))))).+......................))))))))))))))))))))))
 39:p2-Trans_int
-GAGAGATTGAGGGAGGTAATTGGAAGGTGAGAGGATTTAGAGTGGAAGGTGGT+ACCACCTTCCACTCTAAATCCTCT+CAATTACCTCCCTCAATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+AAAGATGAGAGTGAAAGTGGTGAATAGTGTGTGAGTGGATGAGGAATAGTGGA+TCCACTATTCCTCATCCACTCACA+CACCACTTTCACTCTCATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 ((((((((((((((((((((((.......((((((((((((((((((((((((+))))))))))))))))))))))))+))))))))))))))))))))))...............
-((((((((((((((((((((((.......(((((((((((((((((((((((.+.)))))))))))))))))))))))+))))))))))))))))))))))...............
+((((((((((((((((((((((........((((((((((((((((((((((.+.)))))))))))))))))))))).+))))))))))))))))))))))...............
 40:p2-Trans_waste
-GAGAGATTGAGGGAGGTAATTGGAAGGTGAGAGGATTTAGAGTGGAAGGTGGT+CACCTTCCACTCTAAATCCTCTCACCTTC+CAATTACCTCCCTCAATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+AAAGATGAGAGTGAAAGTGGTGAATAGTGTGTGAGTGGATGAGGAATAGTGGA+CACTATTCCTCATCCACTCACACACTATT+CACCACTTTCACTCTCATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 (((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))+))))))))))))))))))))))...............
 (((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))+))))))))))))))))))))))...............
 41:p2-Trans_cat_waste
-GAGAGATTGAGGGAGGTAATTGGAAGGTGAGAGGATTTAGAGTGGAAGGTGGT+CACCTTCCACTCTAAATCCTCTCACCTTCCAATTACCTCCCTCA 0.000000 0.000000 0
+AAAGATGAGAGTGAAAGTGGTGAATAGTGTGTGAGTGGATGAGGAATAGTGGA+CACTATTCCTCATCCACTCACACACTATTCACCACTTTCACTCT 0.000000 0.000000 0
 .......((((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))))
-........(((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))).
+.......((((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))))
 42:eq0-constraint
-CTACATCACTCTACTACCATACAAACAAC+AGAGAAGGTAAAGTGGTTGTTTGTATGGTAGTAGAGTGATGTAG 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTC+TGTGATTAGAGGGTGGAGAGATGTTAGGTTTGTTGGTGTTGTTT 0.000000 0.000000 0
 (((((((((((((((((((((((((((((+...............)))))))))))))))))))))))))))))
 (((((((((((((((((((((((((((((+...............)))))))))))))))))))))))))))))
 43:eq1-constraint
-CTACATCACTCTACTACCATACAAACAAC+AGAGGTGTAGGTGAGGTTGTTTGTATGGTAGTAGAGTGATGTAG 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTC+TGGAGTAGTAAGTGGGAGAGATGTTAGGTTTGTTGGTGTTGTTT 0.000000 0.000000 0
 (((((((((((((((((((((((((((((+...............)))))))))))))))))))))))))))))
 (((((((((((((((((((((((((((((+...............)))))))))))))))))))))))))))))
 44:r0-toe-fb
-AATCCTT 0.000000 0.000000 0
+ATTCCTT 0.000000 0.000000 0
 .......
 .......
 0:r0-toe-fb*
-AAGGATT 0.000000 0.000000 0
+AAGGAAT 0.000000 0.000000 0
 .......
 .......
 45:r0-toe-sb
-ATCTCTC 0.000000 0.000000 0
+CATCTTT 0.000000 0.000000 0
 .......
 .......
 0:r0-toe-sb*
-GAGAGAT 0.000000 0.000000 0
+AAAGATG 0.000000 0.000000 0
 .......
 .......
 46:r0-bm
-ACTATCCACTAAT 0.000000 0.000000 0
+CAAACCACCATCA 0.000000 0.000000 0
 .............
 .............
 0:r0-bm*
-ATTAGTGGATAGT 0.000000 0.000000 0
+TGATGGTGGTTTG 0.000000 0.000000 0
 .............
 .............
 47:r0-ch
-CACTTTACCTTCT 0.000000 0.000000 0
+CACCCTCTAATCA 0.000000 0.000000 0
 .............
 .............
 0:r0-ch*
-AGAAGGTAAAGTG 0.000000 0.000000 0
+TGATTAGAGGGTG 0.000000 0.000000 0
 .............
 .............
 48:r0-cbm
@@ -215,83 +215,83 @@ GT 0.000000 0.000000 0
 ..
 ..
 49:r0-cch
-CT 0.000000 0.000000 0
+CA 0.000000 0.000000 0
 ..
 ..
 0:r0-cch*
-AG 0.000000 0.000000 0
+TG 0.000000 0.000000 0
 ..
 ..
 50:r0-B
-ATCTCTCACTATCCACTAATACAATCCTT 0.000000 0.000000 0
+CATCTTTCAAACCACCATCAACATTCCTT 0.000000 0.000000 0
 .............................
 .............................
 0:r0-B*
-AAGGATTGTATTAGTGGATAGTGAGAGAT 0.000000 0.000000 0
+AAGGAATGTTGATGGTGGTTTGAAAGATG 0.000000 0.000000 0
 .............................
 .............................
 51:r0-Out
-CACTTTACCTTCTCTATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+CACCCTCTAATCACACATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 .....................................
 .....................................
 0:r0-Out*
-GTATTAGTGGATAGTGAGAGATAGAGAAGGTAAAGTG 0.000000 0.000000 0
+GTTGATGGTGGTTTGAAAGATGTGTGATTAGAGGGTG 0.000000 0.000000 0
 .....................................
 .....................................
 52:p0-toe-sb
-ATCTCTC 0.000000 0.000000 0
+CATCTTT 0.000000 0.000000 0
 .......
 .......
 0:p0-toe-sb*
-GAGAGAT 0.000000 0.000000 0
+AAAGATG 0.000000 0.000000 0
 .......
 .......
 53:p0-toe-fc
-AAACAAC 0.000000 0.000000 0
+ATCTCTC 0.000000 0.000000 0
 .......
 .......
 0:p0-toe-fc*
-GTTGTTT 0.000000 0.000000 0
+GAGAGAT 0.000000 0.000000 0
 .......
 .......
 54:p0-toe-sc
-CTACATC 0.000000 0.000000 0
+AAACAAC 0.000000 0.000000 0
 .......
 .......
 0:p0-toe-sc*
-GATGTAG 0.000000 0.000000 0
+GTTGTTT 0.000000 0.000000 0
 .......
 .......
 55:p0-bm
-ACTATCCACTAAT 0.000000 0.000000 0
+CAAACCACCATCA 0.000000 0.000000 0
 .............
 .............
 0:p0-bm*
-ATTAGTGGATAGT 0.000000 0.000000 0
+TGATGGTGGTTTG 0.000000 0.000000 0
 .............
 .............
 56:p0-cm
-ACTCTACTACCAT 0.000000 0.000000 0
+ACCAACAAACCTA 0.000000 0.000000 0
 .............
 .............
 0:p0-cm*
-ATGGTAGTAGAGT 0.000000 0.000000 0
+TAGGTTTGTTGGT 0.000000 0.000000 0
 .............
 .............
 57:p0-ch
-CACTTTACCTTCT 0.000000 0.000000 0
+CACCCTCTAATCA 0.000000 0.000000 0
 .............
 .............
 0:p0-ch*
-AGAAGGTAAAGTG 0.000000 0.000000 0
+TGATTAGAGGGTG 0.000000 0.000000 0
 .............
 .............
 58:p0-dh
-CCTATACTTCCAT 0.000000 0.000000 0
+CTATTTACAAACT 0.000000 0.000000 0
 .............
 .............
 0:p0-dh*
-ATGGAAGTATAGG 0.000000 0.000000 0
+AGTTTGTAAATAG 0.000000 0.000000 0
 .............
 .............
 59:p0-cbm
@@ -311,75 +311,75 @@ GT 0.000000 0.000000 0
 ..
 ..
 61:p0-cch
-CT 0.000000 0.000000 0
+CA 0.000000 0.000000 0
 ..
 ..
 0:p0-cch*
-AG 0.000000 0.000000 0
+TG 0.000000 0.000000 0
 ..
 ..
 62:p0-cdm
-AC 0.000000 0.000000 0
+TC 0.000000 0.000000 0
 ..
 ..
 0:p0-cdm*
-GT 0.000000 0.000000 0
+GA 0.000000 0.000000 0
 ..
 ..
 63:p0-cdh
-CT 0.000000 0.000000 0
+CA 0.000000 0.000000 0
 ..
 ..
 0:p0-cdh*
-AG 0.000000 0.000000 0
+TG 0.000000 0.000000 0
 ..
 ..
 64:p0-Out
-CACTTTACCTTCTCTATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+CACCCTCTAATCACACATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 .....................................
 .....................................
 0:p0-Out*
-GTATTAGTGGATAGTGAGAGATAGAGAAGGTAAAGTG 0.000000 0.000000 0
+GTTGATGGTGGTTTGAAAGATGTGTGATTAGAGGGTG 0.000000 0.000000 0
 .....................................
 .....................................
 65:p0-C
-CTACATCACTCTACTACCATACAAACAACCACTTTACCTTCTCT 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTCCACCCTCTAATCACA 0.000000 0.000000 0
 ............................................
 ............................................
 0:p0-C*
-AGAGAAGGTAAAGTGGTTGTTTGTATGGTAGTAGAGTGATGTAG 0.000000 0.000000 0
+TGTGATTAGAGGGTGGAGAGATGTTAGGTTTGTTGGTGTTGTTT 0.000000 0.000000 0
 ............................................
 ............................................
 66:r1-toe-fb
-CTCAATT 0.000000 0.000000 0
+CTCATTT 0.000000 0.000000 0
 .......
 .......
 0:r1-toe-fb*
-AATTGAG 0.000000 0.000000 0
+AAATGAG 0.000000 0.000000 0
 .......
 .......
 67:r1-toe-sb
-TTCCATT 0.000000 0.000000 0
+TTCACTT 0.000000 0.000000 0
 .......
 .......
 0:r1-toe-sb*
-AATGGAA 0.000000 0.000000 0
+AAGTGAA 0.000000 0.000000 0
 .......
 .......
 68:r1-bm
-CACCAACTACTCC 0.000000 0.000000 0
+CTAACTTCCACCT 0.000000 0.000000 0
 .............
 .............
 0:r1-bm*
-GGAGTAGTTGGTG 0.000000 0.000000 0
+AGGTGGAAGTTAG 0.000000 0.000000 0
 .............
 .............
 69:r1-ch
-CTCACCTACACCT 0.000000 0.000000 0
+CCACTTACTACTC 0.000000 0.000000 0
 .............
 .............
 0:r1-ch*
-AGGTGTAGGTGAG 0.000000 0.000000 0
+GAGTAGTAAGTGG 0.000000 0.000000 0
 .............
 .............
 70:r1-cbm
@@ -391,83 +391,83 @@ GT 0.000000 0.000000 0
 ..
 ..
 71:r1-cch
-CT 0.000000 0.000000 0
+CA 0.000000 0.000000 0
 ..
 ..
 0:r1-cch*
-AG 0.000000 0.000000 0
+TG 0.000000 0.000000 0
 ..
 ..
 72:r1-B
-TTCCATTCACCAACTACTCCACCTCAATT 0.000000 0.000000 0
+TTCACTTCTAACTTCCACCTACCTCATTT 0.000000 0.000000 0
 .............................
 .............................
 0:r1-B*
-AATTGAGGTGGAGTAGTTGGTGAATGGAA 0.000000 0.000000 0
+AAATGAGGTAGGTGGAAGTTAGAAGTGAA 0.000000 0.000000 0
 .............................
 .............................
 73:r1-Out
-CTCACCTACACCTCTTTCCATTCACCAACTACTCCAC 0.000000 0.000000 0
+CCACTTACTACTCCATTCACTTCTAACTTCCACCTAC 0.000000 0.000000 0
 .....................................
 .....................................
 0:r1-Out*
-GTGGAGTAGTTGGTGAATGGAAAGAGGTGTAGGTGAG 0.000000 0.000000 0
+GTAGGTGGAAGTTAGAAGTGAATGGAGTAGTAAGTGG 0.000000 0.000000 0
 .....................................
 .....................................
 74:p1-toe-sb
-TTCCATT 0.000000 0.000000 0
+TTCACTT 0.000000 0.000000 0
 .......
 .......
 0:p1-toe-sb*
-AATGGAA 0.000000 0.000000 0
+AAGTGAA 0.000000 0.000000 0
 .......
 .......
 75:p1-toe-fc
-AAACAAC 0.000000 0.000000 0
+ATCTCTC 0.000000 0.000000 0
 .......
 .......
 0:p1-toe-fc*
-GTTGTTT 0.000000 0.000000 0
+GAGAGAT 0.000000 0.000000 0
 .......
 .......
 76:p1-toe-sc
-CTACATC 0.000000 0.000000 0
+AAACAAC 0.000000 0.000000 0
 .......
 .......
 0:p1-toe-sc*
-GATGTAG 0.000000 0.000000 0
+GTTGTTT 0.000000 0.000000 0
 .......
 .......
 77:p1-bm
-CACCAACTACTCC 0.000000 0.000000 0
+CTAACTTCCACCT 0.000000 0.000000 0
 .............
 .............
 0:p1-bm*
-GGAGTAGTTGGTG 0.000000 0.000000 0
+AGGTGGAAGTTAG 0.000000 0.000000 0
 .............
 .............
 78:p1-cm
-ACTCTACTACCAT 0.000000 0.000000 0
+ACCAACAAACCTA 0.000000 0.000000 0
 .............
 .............
 0:p1-cm*
-ATGGTAGTAGAGT 0.000000 0.000000 0
+TAGGTTTGTTGGT 0.000000 0.000000 0
 .............
 .............
 79:p1-ch
-CTCACCTACACCT 0.000000 0.000000 0
+CCACTTACTACTC 0.000000 0.000000 0
 .............
 .............
 0:p1-ch*
-AGGTGTAGGTGAG 0.000000 0.000000 0
+GAGTAGTAAGTGG 0.000000 0.000000 0
 .............
 .............
 80:p1-dh
-CAACATTCAACAC 0.000000 0.000000 0
+CTTCCATCCAATT 0.000000 0.000000 0
 .............
 .............
 0:p1-dh*
-GTGTTGAATGTTG 0.000000 0.000000 0
+AATTGGATGGAAG 0.000000 0.000000 0
 .............
 .............
 81:p1-cbm
@@ -487,11 +487,11 @@ GT 0.000000 0.000000 0
 ..
 ..
 83:p1-cch
-CT 0.000000 0.000000 0
+CA 0.000000 0.000000 0
 ..
 ..
 0:p1-cch*
-AG 0.000000 0.000000 0
+TG 0.000000 0.000000 0
 ..
 ..
 84:p1-cdm
@@ -503,51 +503,51 @@ GA 0.000000 0.000000 0
 ..
 ..
 85:p1-cdh
-CA 0.000000 0.000000 0
+CT 0.000000 0.000000 0
 ..
 ..
 0:p1-cdh*
-TG 0.000000 0.000000 0
+AG 0.000000 0.000000 0
 ..
 ..
 86:p1-Out
-CTCACCTACACCTCTTTCCATTCACCAACTACTCCAC 0.000000 0.000000 0
+CCACTTACTACTCCATTCACTTCTAACTTCCACCTAC 0.000000 0.000000 0
 .....................................
 .....................................
 0:p1-Out*
-GTGGAGTAGTTGGTGAATGGAAAGAGGTGTAGGTGAG 0.000000 0.000000 0
+GTAGGTGGAAGTTAGAAGTGAATGGAGTAGTAAGTGG 0.000000 0.000000 0
 .....................................
 .....................................
 87:p1-C
-CTACATCACTCTACTACCATACAAACAACCTCACCTACACCTCT 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTCCCACTTACTACTCCA 0.000000 0.000000 0
 ............................................
 ............................................
 0:p1-C*
-AGAGGTGTAGGTGAGGTTGTTTGTATGGTAGTAGAGTGATGTAG 0.000000 0.000000 0
+TGGAGTAGTAAGTGGGAGAGATGTTAGGTTTGTTGGTGTTGTTT 0.000000 0.000000 0
 ............................................
 ............................................
 88:r2-toe-fa
-TCACTTT 0.000000 0.000000 0
+TCCAATT 0.000000 0.000000 0
 .......
 .......
 0:r2-toe-fa*
-AAAGTGA 0.000000 0.000000 0
+AATTGGA 0.000000 0.000000 0
 .......
 .......
 89:r2-toe-sa
-CATTCTT 0.000000 0.000000 0
+ACTTCTT 0.000000 0.000000 0
 .......
 .......
 0:r2-toe-sa*
-AAGAATG 0.000000 0.000000 0
+AAGAAGT 0.000000 0.000000 0
 .......
 .......
 90:r2-toe-fb-suffix
-AATCCT 0.000000 0.000000 0
+ATTCCT 0.000000 0.000000 0
 ......
 ......
 0:r2-toe-fb-suffix*
-AGGATT 0.000000 0.000000 0
+AGGAAT 0.000000 0.000000 0
 ......
 ......
 91:r2-toe-fb-prefix
@@ -559,43 +559,43 @@ A 0.000000 0.000000 0
 .
 .
 92:r2-toe-sb
-ATCTCTC 0.000000 0.000000 0
+CATCTTT 0.000000 0.000000 0
 .......
 .......
 0:r2-toe-sb*
-GAGAGAT 0.000000 0.000000 0
+AAAGATG 0.000000 0.000000 0
 .......
 .......
 93:r2-am
-CCTACTCACACCC 0.000000 0.000000 0
+ACATAATCCATCC 0.000000 0.000000 0
 .............
 .............
 0:r2-am*
-GGGTGTGAGTAGG 0.000000 0.000000 0
+GGATGGATTATGT 0.000000 0.000000 0
 .............
 .............
 94:r2-bm
-ACTATCCACTAAT 0.000000 0.000000 0
+CAAACCACCATCA 0.000000 0.000000 0
 .............
 .............
 0:r2-bm*
-ATTAGTGGATAGT 0.000000 0.000000 0
+TGATGGTGGTTTG 0.000000 0.000000 0
 .............
 .............
 95:r2-ch
-CAATTACCTCCCT 0.000000 0.000000 0
+CACCACTTTCACT 0.000000 0.000000 0
 .............
 .............
 0:r2-ch*
-AGGGAGGTAATTG 0.000000 0.000000 0
+AGTGAAAGTGGTG 0.000000 0.000000 0
 .............
 .............
 96:r2-cam
-AC 0.000000 0.000000 0
+TC 0.000000 0.000000 0
 ..
 ..
 0:r2-cam*
-GT 0.000000 0.000000 0
+GA 0.000000 0.000000 0
 ..
 ..
 97:r2-cbm
@@ -607,99 +607,99 @@ GT 0.000000 0.000000 0
 ..
 ..
 98:r2-cch
-CA 0.000000 0.000000 0
+CT 0.000000 0.000000 0
 ..
 ..
 0:r2-cch*
-TG 0.000000 0.000000 0
+AG 0.000000 0.000000 0
 ..
 ..
 99:r2-toe-fb
-AATCCTT 0.000000 0.000000 0
+ATTCCTT 0.000000 0.000000 0
 .......
 .......
 0:r2-toe-fb*
-AAGGATT 0.000000 0.000000 0
+AAGGAAT 0.000000 0.000000 0
 .......
 .......
 100:r2-A
-CATTCTTCCTACTCACACCCACTCACTTT 0.000000 0.000000 0
+ACTTCTTACATAATCCATCCTCTCCAATT 0.000000 0.000000 0
 .............................
 .............................
 0:r2-A*
-AAAGTGAGTGGGTGTGAGTAGGAAGAATG 0.000000 0.000000 0
+AATTGGAGAGGATGGATTATGTAAGAAGT 0.000000 0.000000 0
 .............................
 .............................
 101:r2-B
-ATCTCTCACTATCCACTAATACAATCCTT 0.000000 0.000000 0
+CATCTTTCAAACCACCATCAACATTCCTT 0.000000 0.000000 0
 .............................
 .............................
 0:r2-B*
-AAGGATTGTATTAGTGGATAGTGAGAGAT 0.000000 0.000000 0
+AAGGAATGTTGATGGTGGTTTGAAAGATG 0.000000 0.000000 0
 .............................
 .............................
 102:r2-Out
-CAATTACCTCCCTCAATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+CACCACTTTCACTCTCATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 .....................................
 .....................................
 0:r2-Out*
-GTATTAGTGGATAGTGAGAGATTGAGGGAGGTAATTG 0.000000 0.000000 0
+GTTGATGGTGGTTTGAAAGATGAGAGTGAAAGTGGTG 0.000000 0.000000 0
 .....................................
 .....................................
 103:p2-toe-sb
-ATCTCTC 0.000000 0.000000 0
+CATCTTT 0.000000 0.000000 0
 .......
 .......
 0:p2-toe-sb*
-GAGAGAT 0.000000 0.000000 0
+AAAGATG 0.000000 0.000000 0
 .......
 .......
 104:p2-toe-fc
-CACCTTC 0.000000 0.000000 0
+CACTATT 0.000000 0.000000 0
 .......
 .......
 0:p2-toe-fc*
-GAAGGTG 0.000000 0.000000 0
+AATAGTG 0.000000 0.000000 0
 .......
 .......
 105:p2-toe-sc
-CCCATCT 0.000000 0.000000 0
+CCCTACT 0.000000 0.000000 0
 .......
 .......
 0:p2-toe-sc*
-AGATGGG 0.000000 0.000000 0
+AGTAGGG 0.000000 0.000000 0
 .......
 .......
 106:p2-bm
-ACTATCCACTAAT 0.000000 0.000000 0
+CAAACCACCATCA 0.000000 0.000000 0
 .............
 .............
 0:p2-bm*
-ATTAGTGGATAGT 0.000000 0.000000 0
+TGATGGTGGTTTG 0.000000 0.000000 0
 .............
 .............
 107:p2-cm
-CCTAAATACATTT 0.000000 0.000000 0
+CACCTAAACTCTT 0.000000 0.000000 0
 .............
 .............
 0:p2-cm*
-AAATGTATTTAGG 0.000000 0.000000 0
+AAGAGTTTAGGTG 0.000000 0.000000 0
 .............
 .............
 108:p2-ch
-CAATTACCTCCCT 0.000000 0.000000 0
+CACCACTTTCACT 0.000000 0.000000 0
 .............
 .............
 0:p2-ch*
-AGGGAGGTAATTG 0.000000 0.000000 0
+AGTGAAAGTGGTG 0.000000 0.000000 0
 .............
 .............
 109:p2-dh
-CACTCTAAATCCT 0.000000 0.000000 0
+CCTCATCCACTCA 0.000000 0.000000 0
 .............
 .............
 0:p2-dh*
-AGGATTTAGAGTG 0.000000 0.000000 0
+TGAGTGGATGAGG 0.000000 0.000000 0
 .............
 .............
 110:p2-cbm
@@ -711,83 +711,83 @@ GT 0.000000 0.000000 0
 ..
 ..
 111:p2-ccm
-TC 0.000000 0.000000 0
-..
-..
-0:p2-ccm*
-GA 0.000000 0.000000 0
-..
-..
-112:p2-cch
-CA 0.000000 0.000000 0
-..
-..
-0:p2-cch*
-TG 0.000000 0.000000 0
-..
-..
-113:p2-cdm
 AC 0.000000 0.000000 0
 ..
 ..
-0:p2-cdm*
+0:p2-ccm*
 GT 0.000000 0.000000 0
 ..
 ..
-114:p2-cdh
+112:p2-cch
 CT 0.000000 0.000000 0
 ..
 ..
-0:p2-cdh*
+0:p2-cch*
 AG 0.000000 0.000000 0
 ..
 ..
+113:p2-cdm
+TC 0.000000 0.000000 0
+..
+..
+0:p2-cdm*
+GA 0.000000 0.000000 0
+..
+..
+114:p2-cdh
+CA 0.000000 0.000000 0
+..
+..
+0:p2-cdh*
+TG 0.000000 0.000000 0
+..
+..
 115:p2-Out
-CAATTACCTCCCTCAATCTCTCACTATCCACTAATAC 0.000000 0.000000 0
+CACCACTTTCACTCTCATCTTTCAAACCACCATCAAC 0.000000 0.000000 0
 .....................................
 .....................................
 0:p2-Out*
-GTATTAGTGGATAGTGAGAGATTGAGGGAGGTAATTG 0.000000 0.000000 0
+GTTGATGGTGGTTTGAAAGATGAGAGTGAAAGTGGTG 0.000000 0.000000 0
 .....................................
 .....................................
 116:p2-C
-CCCATCTCCTAAATACATTTTCCACCTTCCAATTACCTCCCTCA 0.000000 0.000000 0
+CCCTACTCACCTAAACTCTTACCACTATTCACCACTTTCACTCT 0.000000 0.000000 0
 ............................................
 ............................................
 0:p2-C*
-TGAGGGAGGTAATTGGAAGGTGGAAAATGTATTTAGGAGATGGG 0.000000 0.000000 0
+AGAGTGAAAGTGGTGAATAGTGGTAAGAGTTTAGGTGAGTAGGG 0.000000 0.000000 0
 ............................................
 ............................................
 117:eq0-toe-fa
-AAACAAC 0.000000 0.000000 0
+ATCTCTC 0.000000 0.000000 0
 .......
 .......
 0:eq0-toe-fa*
-GTTGTTT 0.000000 0.000000 0
+GAGAGAT 0.000000 0.000000 0
 .......
 .......
 118:eq0-toe-sa
-CTACATC 0.000000 0.000000 0
+AAACAAC 0.000000 0.000000 0
 .......
 .......
 0:eq0-toe-sa*
-GATGTAG 0.000000 0.000000 0
+GTTGTTT 0.000000 0.000000 0
 .......
 .......
 119:eq0-a
-ACTCTACTACCAT 0.000000 0.000000 0
+ACCAACAAACCTA 0.000000 0.000000 0
 .............
 .............
 0:eq0-a*
-ATGGTAGTAGAGT 0.000000 0.000000 0
+TAGGTTTGTTGGT 0.000000 0.000000 0
 .............
 .............
 120:eq0-bh
-CACTTTACCTTCT 0.000000 0.000000 0
+CACCCTCTAATCA 0.000000 0.000000 0
 .............
 .............
 0:eq0-bh*
-AGAAGGTAAAGTG 0.000000 0.000000 0
+TGATTAGAGGGTG 0.000000 0.000000 0
 .............
 .............
 121:eq0-ca
@@ -799,59 +799,59 @@ GT 0.000000 0.000000 0
 ..
 ..
 122:eq0-cbh
-CT 0.000000 0.000000 0
+CA 0.000000 0.000000 0
 ..
 ..
 0:eq0-cbh*
-AG 0.000000 0.000000 0
+TG 0.000000 0.000000 0
 ..
 ..
 123:eq0-A
-CTACATCACTCTACTACCATACAAACAAC 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTC 0.000000 0.000000 0
 .............................
 .............................
 0:eq0-A*
-GTTGTTTGTATGGTAGTAGAGTGATGTAG 0.000000 0.000000 0
+GAGAGATGTTAGGTTTGTTGGTGTTGTTT 0.000000 0.000000 0
 .............................
 .............................
 124:eq0-B
-CTACATCACTCTACTACCATACAAACAACCACTTTACCTTCTCT 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTCCACCCTCTAATCACA 0.000000 0.000000 0
 ............................................
 ............................................
 0:eq0-B*
-AGAGAAGGTAAAGTGGTTGTTTGTATGGTAGTAGAGTGATGTAG 0.000000 0.000000 0
+TGTGATTAGAGGGTGGAGAGATGTTAGGTTTGTTGGTGTTGTTT 0.000000 0.000000 0
 ............................................
 ............................................
 125:eq1-toe-fa
-AAACAAC 0.000000 0.000000 0
+ATCTCTC 0.000000 0.000000 0
 .......
 .......
 0:eq1-toe-fa*
-GTTGTTT 0.000000 0.000000 0
+GAGAGAT 0.000000 0.000000 0
 .......
 .......
 126:eq1-toe-sa
-CTACATC 0.000000 0.000000 0
+AAACAAC 0.000000 0.000000 0
 .......
 .......
 0:eq1-toe-sa*
-GATGTAG 0.000000 0.000000 0
+GTTGTTT 0.000000 0.000000 0
 .......
 .......
 127:eq1-a
-ACTCTACTACCAT 0.000000 0.000000 0
+ACCAACAAACCTA 0.000000 0.000000 0
 .............
 .............
 0:eq1-a*
-ATGGTAGTAGAGT 0.000000 0.000000 0
+TAGGTTTGTTGGT 0.000000 0.000000 0
 .............
 .............
 128:eq1-bh
-CTCACCTACACCT 0.000000 0.000000 0
+CCACTTACTACTC 0.000000 0.000000 0
 .............
 .............
 0:eq1-bh*
-AGGTGTAGGTGAG 0.000000 0.000000 0
+GAGTAGTAAGTGG 0.000000 0.000000 0
 .............
 .............
 129:eq1-ca
@@ -863,27 +863,27 @@ GT 0.000000 0.000000 0
 ..
 ..
 130:eq1-cbh
-CT 0.000000 0.000000 0
+CA 0.000000 0.000000 0
 ..
 ..
 0:eq1-cbh*
-AG 0.000000 0.000000 0
+TG 0.000000 0.000000 0
 ..
 ..
 131:eq1-A
-CTACATCACTCTACTACCATACAAACAAC 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTC 0.000000 0.000000 0
 .............................
 .............................
 0:eq1-A*
-GTTGTTTGTATGGTAGTAGAGTGATGTAG 0.000000 0.000000 0
+GAGAGATGTTAGGTTTGTTGGTGTTGTTT 0.000000 0.000000 0
 .............................
 .............................
 132:eq1-B
-CTACATCACTCTACTACCATACAAACAACCTCACCTACACCTCT 0.000000 0.000000 0
+AAACAACACCAACAAACCTAACATCTCTCCCACTTACTACTCCA 0.000000 0.000000 0
 ............................................
 ............................................
 0:eq1-B*
-AGAGGTGTAGGTGAGGTTGTTTGTATGGTAGTAGAGTGATGTAG 0.000000 0.000000 0
+TGGAGTAGTAAGTGGGAGAGATGTTAGGTTTGTTGGTGTTGTTT 0.000000 0.000000 0
 ............................................
 ............................................
 133:B
