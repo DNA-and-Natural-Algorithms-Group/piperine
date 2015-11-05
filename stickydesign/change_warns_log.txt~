@@ -1,7 +1,0 @@
-2015.11.03 - upon making a build of stickydesign
-In file included from /home/jmp/anaconda2/lib/python2.7/site-packages/numpy/core/include/numpy/ndarraytypes.h:1781:0,
-                 from /home/jmp/anaconda2/lib/python2.7/site-packages/numpy/core/include/numpy/ndarrayobject.h:18,
-                 from /home/jmp/anaconda2/lib/python2.7/site-packages/numpy/core/include/numpy/arrayobject.h:4,
-                 from stickydesign/_stickyext.c:2:
-/home/jmp/anaconda2/lib/python2.7/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:15:2: warning: #warning "Using deprecated NumPy API, disable it by " "#defining NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
- #warning "Using deprecated NumPy API, disable it by " \

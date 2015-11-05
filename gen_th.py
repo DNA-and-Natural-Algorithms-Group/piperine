@@ -1,7 +1,7 @@
 from __future__ import division
 
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import re
 import logging
 
@@ -12,51 +12,6 @@ def flatten(x):
         return [ z for y in x for z in flatten(y)]
     else:
         return [x]
-
-def e_barplot(ends, ef, labels=None, barname='barplot'):
-    """ Plot the toehold binding energies in both contexts
-    
-    Args:
-        ends: stickydesign ends object
-        ef: energetics object with target energy attribute
-        labels: Species names that are the x-tick names
-    Returns:
-        Nothing, but shows a plot
-    """
-    if labels is None:
-        labels = [ 'Species'+str(x) for x in range(len(ends)) ]
-    # Grab energy values
-    e_vec = ef.matching_uniform(ends)
-    e_vec_ext = ef.th_external_dG(ends)
-    e_vec_int = ef.th_internal_dG(ends)
-    e_vec_avg = (e_vec_ext + e_vec_int) / 2
-    
-    # Plot parameters
-    n_seq = np.size(ends, 0)
-    inds = np.arange(n_seq) + 1
-    wid = 0.35
-    
-    # Plot
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    bars_ext = ax.bar(inds, e_vec_ext, wid, color='b')
-    bars_int = ax.bar(inds+wid, e_vec_int, wid, color='g')
-    line_targetdG = ax.plot([0, inds[-1] + 2.5 * wid], \
-                          2*[ef.targetdG], \
-                          color='k')
-    # Plot labels
-    ax.set_ylabel(r'$\delta G_{25}$')
-    ax.set_title('Binding energies of generated toeholds')
-    ax.legend( (bars_ext[0], bars_int[0], line_targetdG[0]), \
-             ('Internal Context', 'External Context', 'Target dG'),
-             loc='lower right')
-    ax.set_xticks(inds)
-    plt.ylim(0, 9)
-    plt.xlim(1 - wid/2, n_seq + 2.5*wid)
-    x_ticks = ax.set_xticklabels(labels)
-    plt.setp(x_ticks, rotation=45, fontsize=10)
-    plt.savefig('{}.png'.format(barname))
-    plt.close()
 
 def new_toeholds(ef, n_spec=3, thold_l=int(7), thold_e=7.7, e_dev=0.5, m_spurious=0.4, 
                  labels=None):
@@ -349,12 +304,5 @@ if __name__ == "__main__":
         
     # Plot energy array
     e_array = sd.energy_array_uniform(ends_all, ef)
-    e_barplot(ends_all, ef)
-    plt.savefig(bplotfile)
-    plt.close()
-    plt.imshow(e_array, interpolation='none')
-    plt.title("Matching Toehold Energies")
-    plt.colorbar()
-    plt.savefig('spurious.png')
     
     print 'Done!'
