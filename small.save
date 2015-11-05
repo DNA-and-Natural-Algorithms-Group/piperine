@@ -2331,7 +2331,7 @@ Rp534
 g41
 I00
 sg62
-S'ACAAAAC'
+S'AAACAAC'
 p536
 sg8
 S'toe-fc'
@@ -5632,7 +5632,7 @@ Rp1210
 g41
 I00
 sg62
-S'TCCAATT'
+S'AATCCTT'
 p1212
 sg8
 S'toe-fb'
@@ -5782,7 +5782,7 @@ Rp1243
 g41
 I00
 sg62
-S'ACTCTTT'
+S'ATCTCTC'
 p1245
 sg8
 S'toe-sb'
@@ -6600,7 +6600,7 @@ Rp1425
 g41
 I00
 sg62
-S'CATTCTT'
+S'CTCAATT'
 p1427
 sg8
 S'toe-fb'
@@ -6750,7 +6750,7 @@ Rp1458
 g41
 I00
 sg62
-S'TCAACTT'
+S'TTCCATT'
 p1460
 sg8
 S'toe-sb'
@@ -7567,7 +7567,7 @@ Rp1639
 g41
 I00
 sg62
-S'CTCATTT'
+S'TCACTTT'
 p1641
 sg8
 S'toe-fa'
@@ -7717,7 +7717,7 @@ Rp1672
 g41
 I00
 sg62
-S'ATTCCTT'
+S'CATTCTT'
 p1674
 sg8
 S'toe-sa'

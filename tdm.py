@@ -3,7 +3,7 @@ from __future__ import division
 import os
 import sys
 
-nupackpath = os.environ['NUPACKHOME']+'bin/'
+nupackpath = os.environ['NUPACKHOME']+'/bin/'
 
 from numpy import array, hstack
 import numpy as np

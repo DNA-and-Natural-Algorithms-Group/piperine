@@ -1,10 +1,10 @@
-## Specification for small compiled at: Wed Nov  4 15:35:03 2015
+## Specification for small compiled at: Wed Nov  4 16:09:16 2015
 #
 ## Top System
 #
 ## Component r0
-sequence r0-toe-fb = TCCAATT : 7
-sequence r0-toe-sb = ACTCTTT : 7
+sequence r0-toe-fb = AATCCTT : 7
+sequence r0-toe-sb = ATCTCTC : 7
 sequence r0-bm = HHHHHHHHHHHHH : 13
 sequence r0-ch = CHHHHHHHHHHHH : 13
 sequence r0-cbm = WC : 2
@@ -22,7 +22,7 @@ kinetic [0.000000 /M/s < k < inf /M/s] r0-B + r0-Gate -> r0-Gate_waste
 #
 ## Component p0
 sequence p0-toe-sb = HHHHHHH : 7
-sequence p0-toe-fc = ACAAAAC : 7
+sequence p0-toe-fc = AAACAAC : 7
 sequence p0-toe-sc = CTACATC : 7
 sequence p0-bm = HHHHHHHHHHHHH : 13
 sequence p0-cm = HHHHHHHHHHHHH : 13
@@ -55,8 +55,8 @@ kinetic [0.000000 /M/s < k < inf /M/s] p0-Helper + p0-Trans_int -> p0-Trans_wast
 kinetic [0.000000 /M/s < k < inf /M/s] p0-Cat_Helper + p0-Trans_int -> p0-Trans_cat_waste + p0-D + p0-Out
 #
 ## Component r1
-sequence r1-toe-fb = CATTCTT : 7
-sequence r1-toe-sb = TCAACTT : 7
+sequence r1-toe-fb = CTCAATT : 7
+sequence r1-toe-sb = TTCCATT : 7
 sequence r1-bm = HHHHHHHHHHHHH : 13
 sequence r1-ch = CHHHHHHHHHHHH : 13
 sequence r1-cbm = WC : 2
@@ -107,8 +107,8 @@ kinetic [0.000000 /M/s < k < inf /M/s] p1-Helper + p1-Trans_int -> p1-Trans_wast
 kinetic [0.000000 /M/s < k < inf /M/s] p1-Cat_Helper + p1-Trans_int -> p1-Trans_cat_waste + p1-D + p1-Out
 #
 ## Component r2
-sequence r2-toe-fa = CTCATTT : 7
-sequence r2-toe-sa = ATTCCTT : 7
+sequence r2-toe-fa = TCACTTT : 7
+sequence r2-toe-sa = CATTCTT : 7
 sequence r2-toe-fb-suffix = HHHHHH : 6
 sequence r2-toe-fb-prefix = H : 1
 sequence r2-toe-sb = HHHHHHH : 7
