@@ -574,7 +574,7 @@ def run_designer(basename='small',
     (gates, strands, toeholds, th_scores) = \
         generate_scheme(basename, th_params, design_params, mod=mod)
     
-    if reps => 1:
+    if reps >= 1:
         trialnames = [ basename + str(i) for i in range(reps) ]
         for testname in trialnames:
             try:
@@ -755,7 +755,7 @@ if __name__ == "__main__":
     mod_str = 'DSDClasses'
     #mod_str = 'LeaklessClasses'
     basename = 'oscillator'
-    reps = 1
+    reps = 4
     th_params = {"thold_l":7, "thold_e":7.7, "e_dev":1, \
                  "m_spurious":0.5, "e_module":'energyfuncs_james'}
     t = 7
