@@ -761,7 +761,7 @@ if __name__ == "__main__":
     t = 7
     bm = 15
     c = 2
-    design_params = (t,bm,c)
-    #design_params = (7,)
+    design_params = (t,bm,c)  # for DSDClasses
+    #design_params = (7,)     # for LeaklessClasses
     gates, strands = run_designer(basename, reps, th_params, design_params, mod_str, 
                                     extra_pars="bored=10")
