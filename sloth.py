@@ -752,8 +752,8 @@ def score_fixed(fixedfile,
     return (scores, score_names)
 
 if __name__ == "__main__":
-    #mod_str = 'DSDClasses'
-    mod_str = 'LeaklessClasses'
+    mod_str = 'DSDClasses'
+    #mod_str = 'LeaklessClasses'
     basename = 'small'
     reps = 4
     th_params = {"thold_l":7, "thold_e":7.7, "e_dev":1, \
@@ -761,7 +761,7 @@ if __name__ == "__main__":
     t = 7
     bm = 15
     c = 2
-    #design_params = (t,bm,c)
-    design_params = (7,)
+    design_params = (t,bm,c)
+    #design_params = (7,)
     gates, strands = run_designer(basename, reps, th_params, design_params, mod_str, 
                                     extra_pars="bored=10")
