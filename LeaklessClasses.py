@@ -1,3 +1,5 @@
+# Default parameters
+default_params = (7,)
 # The .comp files to be imported in the .sys file
 comps = ['leakless_and', 'leakless_translate', 'leakless_translate_flux', 'set_leakless_signals_equal']
 # A component that sets "signal domains" equal in the form "A->B" for equality

@@ -1,3 +1,5 @@
+# Default params
+default_params = (7, 15, 2)
 # The .comp files to be imported in the .sys file
 comps = ['gate_nul_produ', 'gate_uni_produ', 'gate_bim_produ', 
          'gate_uni_react', 'gate_bim_react', 'set_signals_equal']

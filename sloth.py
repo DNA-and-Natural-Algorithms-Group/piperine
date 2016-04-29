@@ -3,9 +3,6 @@ import sys
 import numpy as np
 import os.path
 
-# from DSDClasses import *
-# from LeaklessClasses import *
-
 def call_compiler(basename, 
                     args = (7, 15, 2), 
                     outputname=None, 
@@ -287,7 +284,7 @@ def write_signal_equals(sysfile, species, i, mod):
     f.close()
     return i
 
-def write_toehold_file(toehold_file, strands, toeholds):
+def write_toehold_file(toehold_file, strands, toeholds, n_th):
     """ Writes the fixed file for the given strands and toeholds
     
     Args:
@@ -298,20 +295,16 @@ def write_toehold_file(toehold_file, strands, toeholds):
     Returns:
         Nothing
     """
+    from numpy import mod as modulo
+    from numpy import floor 
     line = 'sequence {} = {} # species {}\n'
     f = open(toehold_file, 'w')
-    i = 0
     if type(toeholds[0]) is str:
-        i = 0
-        for strand in strands:
-            constraint = line.format(strand.th(0), toeholds[i].upper(), 
+        for i, th in zip(range(len(toeholds)), toeholds):
+            strand = strands[ int(floor((i - modulo(i, n_th)) / n_th)) ]
+            constraint = line.format(strand.th(modulo(i, n_th)), toeholds[i].upper(), 
                                      strand.get_names()[-1])
             f.write(constraint)
-            i = i + 1
-            constraint = line.format(strand.th(1), toeholds[i].upper(), 
-                                     strand.get_names()[-1])
-            f.write(constraint)
-            i = i + 1
     else:
         for strand, ths in zip(strands, toeholds):
             for i in range(len(ths)):
@@ -562,9 +555,9 @@ def generate_seqs(basename,
     labs = [' first', ' second']
     labels = [ spec + lab for spec in signal_names for lab in labs ]
     toeholds, th_scores = toehold_wrapper(n_species*n_th, th_params, labels)
-    toehold_sets = [ toeholds[i:i+n_th] for i in range(0,n_th*n_species,n_th)]
+    toehold_sets = [ toeholds[i:(i+n_th)] for i in range(0,n_th*n_species,n_th)]
     # Write the fixed file for the toehold sequences and compile the sys file to PIL
-    write_toehold_file(fixedfile, strands, toeholds)
+    write_toehold_file(fixedfile, strands, toeholds, n_th)
     try:
         call_compiler(basename, args=design_params, fixed_file=fixedfile, 
                       outputname=pilfile, savename=savefile)
@@ -585,7 +578,7 @@ def run_designer(basename='small',
                  th_params={"thold_l":7, "thold_e":7.7, "e_dev":1, \
                             "m_spurious":0.5, "e_module":'energyfuncs_james'},
                  design_params=(7, 15, 2),
-                 mod_str=None,
+                 mod=None,
                  extra_pars=""):
     """ Generate and score sequences
     
@@ -615,10 +608,9 @@ def run_designer(basename='small',
             sequences (.seqs)
             scores (_scores.csv)
     """
-    if mod_str is None:
-        mod_str = 'DSDClasses'
+    if mod is None:
+        import DSDClasses as mod
     
-    exec('import {} as mod'.format(mod_str))
     import tdm
     fixedfile = basename + ".fixed"
     systemfile = basename + ".sys"
@@ -630,7 +622,7 @@ def run_designer(basename='small',
     if reps >= 1:
         scoreslist = []
         for i in range(reps):
-            trialname = basename + str(i) + '.txt'
+            testname = basename + str(i) + '.txt'
             try:
                 toeholds, th_scores = generate_seqs(basename, gates, strands, design_params, \
                               mod.n_th, th_params, strandsfile=testname, extra_pars=extra_pars)
@@ -721,16 +713,94 @@ def score_fixed(fixed_file,
     return (scores, score_names)
 
 if __name__ == "__main__":
-    mod_str = 'DSDClasses'
-    #mod_str = 'LeaklessClasses'
-    basename = 'small'
-    reps = 4
-    th_params = {"thold_l":7, "thold_e":7.7, "e_dev":1, \
-                 "m_spurious":0.5, "e_module":'energyfuncs_james'}
-    t = 7
-    bm = 15
-    c = 2
-    design_params = (t,bm,c)  # for DSDClasses
-    #design_params = (7,)     # for LeaklessClasses
-    gates, strands = run_designer(basename, reps, th_params, design_params, mod_str, 
-                                    extra_pars="bored=10")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-b", "--basename", help='Basename.[small]', type=int)
+    parser.add_argument("-l", "--length", help='Toehold length.[7]', type=int)
+    parser.add_argument("-e", "--energy", help='Target toehold binding energy'+
+                        'in kcal/mol.[7.7]', type=float)
+    parser.add_argument("-d", "--deviation", help='Toehold binding energy st'+\
+                        'andard deviation limit in kcal/mol.[0.5]', type=float)
+    parser.add_argument("-M", "--maxspurious", help='Maximum spurious interac'+
+                        'tion energy as a multiple of target binding energy.['+
+                        '0.4]', type=float)
+    parser.add_argument("-g", '--energetics', help='The name of the energetics'+
+                        ' module to be used for toehold generation.[energyfunc'+
+                        's_james]', type=str)
+    parser.add_argument("-p", '--systemparams', help='A string of integers that'+
+                        ' are parameters to the sys file compilation[Finds in module]', type=str)
+    parser.add_argument("-n", '--candidates', help='Number of candidate sequences'+
+                        ' to generate[1]', type=int)
+    parser.add_argument("-m", '--module', help='Module describing the strand'+
+                        ' displacement architecture[DSDClasses]', type=str)
+    parser.add_argument("-x", '--extrapars', help='Parameters sent to SpuriousSSM[]', type=str)
+    args = parser.parse_args()
+    ############## Interpret arguments
+    if args.basename:
+        basename = args.basename
+    else:
+        basename = 'small'
+    # Set toehold length in base pairs
+    if args.length:
+        thold_l = int(args.length)
+    else:
+        thold_l = int(7)
+    
+    # Set target toehold binding energy, kcal/mol
+    if args.energy:
+        thold_e = args.energy
+    else:
+        thold_e = 7.7
+    
+    # Set allowable toehold binding energy deviation, kcal/mol
+    if args.deviation:
+        e_dev = args.deviation
+    else:
+        e_dev = 0.5
+    
+    # Set allowable spurious interactions, fraction of target energy.
+    # The spurious interactions are calculated with standard SantaLucia parameters
+    # and sticky-end contexts, not toehold contexts
+    if args.maxspurious:
+        m_spurious = args.maxspurious
+    else:
+        m_spurious = 0.4
+    
+    # Import desired energetics module as ef
+    if args.energetics:
+        energetics = args.energetics
+    else:
+        energetics = 'energyfuncs_james'
+    
+    # Set user-specified spurious interaction heatmap image file name
+    if args.candidates:
+        reps = args.candidates
+    else:
+        reps = 1
+    
+    if args.module:
+        exec('import {} as mod'.format(args.module))
+    else:
+        import DSDClasses as mod
+    
+    # Set user-specified spurious interaction heatmap image file name
+    if args.systemparams:
+        design_params = [ int(i) for i in args.systemparams.split(' ')]
+    else:
+        try:
+            design_params = mod.default_params
+        except Exception, e:
+            print e
+            print 'Cannot guess default .sys parameters without a module'
+            raise
+    
+    if args.extrapars:
+        extra_pars = args.extrapars
+    else:
+        extra_pars = None
+    
+    th_params={"thold_l":thold_l, "thold_e":thold_e, "e_dev":e_dev, \
+               "m_spurious":m_spurious, "e_module":energetics},
+    
+    gates, strands = run_designer(basename, reps, th_params, design_params, mod, 
+                                    extra_pars=extra_pars)

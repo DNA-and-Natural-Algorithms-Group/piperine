@@ -1,12 +1,15 @@
 from __future__ import division
 import unittest
 import sys
+from tempfile import mkstemp
+import os
 
 from .. import sloth
 
 class TestCRNImport(unittest.TestCase):
     # Some 
-    testfile = 'test.crn'
+    fid, testfile = mkstemp(suffix='crn')
+    os.close(fid)
     def setUp(self):
         
         f = open(self.testfile, 'w')
@@ -14,7 +17,7 @@ class TestCRNImport(unittest.TestCase):
         f.write(test_crn)
         f.close()
         
-        output = sloth.read_crn(self.testfile)
+        output = sloth.read_crn(self.testfile[0:-4])
         self.reactions_in = output[0]
         self.species_in = output[1]
         self.reactions_T = [{'reactants':['A', 'B'],
@@ -41,7 +44,6 @@ class TestCRNImport(unittest.TestCase):
         self.species_T = ['A', 'B', 'C', 'D']
     
     def tearDown(self):
-        import os
         os.remove(self.testfile)
         
     def test_integer_coefficients(self):
