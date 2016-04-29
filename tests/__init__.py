@@ -1,2 +1,2 @@
-import import_test
+import run_unittests
 import SPWTests

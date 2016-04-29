@@ -2,15 +2,14 @@ from __future__ import division
 import os
 import unittest
 import sys
+from tempfile import mkstemp
 import os
+from test_data import fixed_file
 
 from .. import sloth, tdm
 
 class TestTDM(unittest.TestCase):
-    cwd = os.getcwd()
-    basename = 'crn_for_tdm_test'
-    fixedfile = '{0}/constrained.fixed'.format(cwd)
-    crn_file = 'A -> B + A\n'
+    crn = 'A -> B + A\n'
     
     true_val = [0.01,
                 0.01,
@@ -40,20 +39,33 @@ class TestTDM(unittest.TestCase):
     score_val = []
     
     def setUp(self):
+        fid, self.crn_file = mkstemp(suffix='.crn')
+        os.close(fid)
+        fid, self.sys_file = mkstemp(suffix='.sys')
+        os.close(fid)
+        self.fixed_file = fixed_file
+        fid, self.pil_file = mkstemp(suffix='.pil')
+        os.close(fid)
+        fid, self.save_file = mkstemp(suffix='.save')
+        os.close(fid)
+        fid, self.mfe_file = mkstemp(suffix='.mfe')
+        os.close(fid)
+        fid, self.seq_file = mkstemp(suffix='.seqs')
+        os.close(fid)
+        self.filelist = [self.crn_file, 
+                         self.sys_file, 
+                         self.fixed_file, 
+                         self.pil_file, 
+                         self.save_file, 
+                         self.mfe_file, 
+                         self.seq_file]
+        
+        self.basename = self.sys_file[0:-4]
         # Generate crn file
-        crn_filename = '{0}/{1}.crn'.format(self.cwd, self.basename)
-        f = open(crn_filename, 'w')
-        f.write(self.crn_file)
+        f = open(self.crn_file, 'w')
+        f.write(self.crn)
         f.close()
         
-        #outlist = sloth.generate_scheme(self.basename, fixedfile=self.fixedfile)
-        #sloth.generate_seqs(self.basename)
-        #
-        #(gates, strands, toeholds, th_scores) = outlist
-        #self.outlist = outlist
-        #
-        #self.namespace = tdm.get_seq_lists(self.basename, gates, strands)
-    
     def tearDown(self):
         filelist = os.listdir(os.getcwd())
         for f in filelist:
@@ -65,12 +77,16 @@ class TestTDM(unittest.TestCase):
     
     def test_tdm(self):
         # Score test sequences
-        self.scores, names = sloth.score_fixed(self.fixedfile, 
-                                                        basename=self.basename, 
-                                                        mod_str="DSDClasses")
-        #(gates, strands, toeholds, th_scores) = self.outlist
-        #self.scores, names = tdm.EvalCurrent(self.basename, gates, strands,\
-        #                                     th_scores)
+        self.scores, names = sloth.score_fixed(self.fixed_file, 
+                 basename=self.basename, 
+                 crn_file=self.crn_file, 
+                 sys_file=self.sys_file, 
+                 pil_file=self.pil_file, 
+                 save_file=self.save_file, 
+                 mfe_file=self.mfe_file, 
+                 seq_file=self.seq_file,
+                 design_params=(7, 15, 2),
+                 mod_str='DSDClasses')
         iterate_list = zip(self.scores, self.true_val, self.fmts, names)
         for score, tru, fmt, name in iterate_list:
             score_str = fmt.format(score)

@@ -1,6 +1,7 @@
 from __future__ import division
 import sys
 import numpy as np
+import os.path
 
 # from DSDClasses import *
 # from LeaklessClasses import *
@@ -12,7 +13,7 @@ def call_compiler(basename,
                     fixed_file=None, 
                     synth=True, 
                     includes=
-                      ['/home/jmp/Dropbox/CRNtoDNASoftware/crn_compiler']):
+                      [os.path.dirname(__file__)]):
     """ Generates a PIL file from a .sys and fixed files.
     
     Args:
@@ -31,6 +32,9 @@ def call_compiler(basename,
         outputname = '{}.pil'.format(basename)
     if savename is None:
         savename = '{}.save'.format(basename)
+    if os.path.dirname(basename) is not '':
+        includes = includes + [os.path.dirname(basename)]
+        basename = os.path.basename(basename)
     compiler(basename, args, outputname, savename, fixed_file, synth, includes)
 
 def call_design(basename, 
@@ -296,14 +300,27 @@ def write_toehold_file(toehold_file, strands, toeholds):
     """
     line = 'sequence {} = {} # species {}\n'
     f = open(toehold_file, 'w')
-    for strand, ths in zip(strands, toeholds):
-        for i in range(len(ths)):
-            constraint = line.format(strand.th(i), ths[i].upper(), 
+    i = 0
+    if type(toeholds[0]) is str:
+        i = 0
+        for strand in strands:
+            constraint = line.format(strand.th(0), toeholds[i].upper(), 
                                      strand.get_names()[-1])
             f.write(constraint)
+            i = i + 1
+            constraint = line.format(strand.th(1), toeholds[i].upper(), 
+                                     strand.get_names()[-1])
+            f.write(constraint)
+            i = i + 1
+    else:
+        for strand, ths in zip(strands, toeholds):
+            for i in range(len(ths)):
+                constraint = line.format(strand.th(i), ths[i].upper(), 
+                                         strand.get_names()[-1])
+                f.write(constraint)
     f.close()
 
-def set_signal_instances_constraints(basename, strands, mod):
+def set_signal_instances_constraints(sysfile, strands, mod):
     """ Wrapper for writing instance equivalence 'reactions' to the sys file
     
     Args:
@@ -315,7 +332,6 @@ def set_signal_instances_constraints(basename, strands, mod):
         i : reaction index
     """
     i = 0
-    sysfile = basename + '.sys'
     species = []
     for strand in strands:
         instances = strand.get_names()
@@ -337,7 +353,7 @@ def write_sys_header(sysfile, mod):
     Returns:
         Nothing
     """
-    basename = sysfile[:-4]
+    basename = os.path.basename(sysfile[:-4])
     f = open(sysfile, 'w')
     f.write("declare system " + basename + mod.param_string + " -> \n")
     f.write("\n")
@@ -394,7 +410,12 @@ def toehold_wrapper(n_ths, paramdict=dict(), labels=None):
         get_toeholds(n_ths, thold_l, thold_e, e_dev, m_spurious, e_module)
     return (ths, th_score)
 
-def write_compiler_files(basename, gates, strands, toeholds, mod):
+def write_compiler_files(basename, 
+                         gates, 
+                         strands,
+                         mod,
+                         sysfile=None,
+                         inst_constraints=True):
     """ Write input files to the Pepper compiler
 
     This function iterates through each reaction recording the gates and
@@ -415,8 +436,8 @@ def write_compiler_files(basename, gates, strands, toeholds, mod):
     """
     
     # Write header immediately
-    sysfile = basename + '.sys'
-    fixedfile = basename + '.fixed'
+    if sysfile is None:
+        sysfile = basename + '.sys'
     write_sys_header(sysfile, mod)
     
     # Write sys file
@@ -427,104 +448,137 @@ def write_compiler_files(basename, gates, strands, toeholds, mod):
     
     # append signal strand constraints to the sys file and write toehold fixed
     # file
-    set_signal_instances_constraints(basename, strands, mod)
-    write_toehold_file(fixedfile, strands, toeholds)
+    if inst_constraints:
+        set_signal_instances_constraints(sysfile, strands, mod)
 
-def generate_scheme(basename, th_params=dict(), design_params=(7, 15, 2), \
-                    fixedfile=None, mod=None):
-    """ Produce PIL file for a CRN system
+def generate_scheme(basename,  
+                    design_params=(7, 15, 2), 
+                    mod=None,
+                    crn_file=None,
+                    systemfile=None,
+                    inst_constraints=True):
+    """ Produce SYS file describing a CRN
     
-    A scheme consists toeholds and a PIL file. In the standard workflow, a
-    single scheme will produce a set of sequences conforming to the parameters
-    and constraints of the scheme. Generating a scheme requires producing the
-    constraints and system file describing a DSD implementation of a CRN. This
-    function, making use of other methods, reads in a text file describing an 
-    abstract CRN, determines the strands and gates necessary to implement the
-    CRN, assigns toeholds to signal strands, and produces input files for
-    downstream sequence design processes.
+    A scheme consists a .sys file and lists of gate and strand objects. Gate 
+    and strand objects tell the scoring modules, write_compiler_files, and 
+    write_toehold_files which names in the .PIL file refer to the DNA sequence 
+    domains these functions need to access.  This function, making use of 
+    other methods, reads in a text file describing an abstract CRN, determines 
+    the strands and gates necessary to implement the CRN, and writes a .sys 
+    for a DNA approximation of that reaction network.
         
     Args:
         basename: Default name for files accessed and written
-        th_params: Dictionary of toehold design parameters ( dict() )
-            thold_l: Nt in a toehold (7)
-            thold_e: Target deltaG in kCal/Mol (7.7)
-            e_dev: Allowable standard deviation in kCal/mole (0.5)
-            m_spurious: Maximum spurious dG as fraction of thold_e (0.4)
-            e_module: Thermodynamics used by stickydesign (energyfuncs_james)
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        fixedfile: Filename for the sequence constraints (None)
         mod: module containing scheme variables and classes (DSDClasses)
     Returns:
         gates: A list of gate objects
         strands: A list of strand objects
-        toeholds: A list of two-tuples containing paired toeholds
-        th_scores: Average and range of toehold binding energies
     """
     if mod is None:
         import DSDClasses as mod
     
-    crn_file = basename + ".crn"
-    systemfile = basename + ".sys"
-    pilfile = basename + ".pil"
-    
-    if fixedfile==None:
-        fixedfile = basename + ".fixed"
-    else:
-        # Expect user to have produced an appropriate fixed file
-        pass
+    if crn_file is None:
+        crn_file = basename + ".crn"
+    if systemfile is None:
+        systemfile = basename + ".sys"
     
     reactions, species = read_crn(crn_file)
     
     output = mod.process_rxns(reactions, species, design_params)
     (gates, strands) = output
     
-    n_species = len(strands)
-    signal_names = [ s.get_names()[-1] for s in strands ]
-    labs = [' first', ' second']
-    labels = [ spec + lab for spec in signal_names for lab in labs ]
-    toeholds, th_scores = toehold_wrapper(n_species*mod.n_th, th_params, labels)
-    toehold_sets = [ toeholds[i:i+mod.n_th] for i in range(0,mod.n_th*n_species,mod.n_th)]
-    write_compiler_files(basename, gates, strands, toehold_sets, mod) 
-    try:
-        call_compiler(basename, args=design_params, fixed_file=fixedfile)
-    except Exception, e:
-        print e
-    
-    return (gates, strands, toeholds, th_scores)
+    write_compiler_files(basename, gates, strands, mod, systemfile, inst_constraints) 
+    return (gates, strands)
 
 def generate_seqs(basename, 
+                  gates, 
+                  strands, 
                   design_params=(7, 15, 2), 
+                  n_th=2, 
+                  th_params={"thold_l":7, "thold_e":7.7, "e_dev":1, \
+                             "m_spurious":0.5, "e_module":'energyfuncs_james'},
                   outname=None,
-                  extra_pars=""):
-    """ Produce sequences file for scheme
+                  extra_pars="",
+                  systemfile=None,
+                  pilfile=None,
+                  mfefile=None,
+                  seqfile=None,
+                  fixedfile=None,
+                  savefile=None,
+                  strandsfile=None):
+    """ Produce sequences for a scheme
     
-    This function finds a file -basename.pil- and produces sequences using
-    spuriousSSM negative design.
+    This function accepts a base file name, a list of gate objects, a list of 
+    strand objects, and toehold parameters and calls StickyDesign, the 
+    PepperCompiler, and SpuriousSSM to generate a DNA sequence.     
     
     Args:
         basename: Default name for files accessed and written
+        gates: A list of Gate objects
+        strands: A list of SignalStrand objects
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
+        n_th: How many toeholds to generate per signal strand
+        th_params: Dictionary of toehold design parameters 
+            thold_l: Nt in a toehold (7)
+            thold_e: Target deltaG in kCal/Mol (7.7)
+            e_dev: Allowable standard deviation in kCal/mole (0.5)
+            m_spurious: Maximum spurious dG as fraction of thold_e (0.4)
+            e_module: Thermodynamics used by stickydesign (energyfuncs_james)
         outname: Optional name for files produced as a result of this call
         extra_pars: Options sent to spurious designer. ('')
     Returns:
         Nothing
     """
-    pilfile = basename + ".pil"
-    mfefile = basename + ".mfe"
-    seqfile = basename + ".seqs"
-    strandsfile = basename + "_strands.txt"
     
-    if outname:
-        mfefile = outname + '.mfe'
-        seqfile = outname + ".seqs"
-        strandsfile = outname + "_strands.txt"
+    # Prepare filenames
+    if systemfile is None:
+        systemfile = basename + ".sys"
+    if pilfile is None:
+        pilfile = basename + ".pil"
+    if savefile is None:
+        savefile = basename + ".save"
+    if mfefile is None:
+        if outname:
+            mfefile = outname + '.mfe'
+        else:
+            mfefile = basename + ".mfe"
+    if seqfile is None:
+        if outname:
+            seqfile = outname + ".seqs"
+        else:
+            seqfile = basename + ".seqs"
+    if strandsfile is None:
+        if outname:
+            strandsfile = outname + "_strands.txt"
+        else:
+            strandsfile = basename + "_strands.txt"
+    if fixedfile is None:
+        fixedfile = basename + ".fixed"
+    
+    # Make toeholds
+    n_species = len(strands)
+    signal_names = [ s.get_names()[-1] for s in strands ]
+    labs = [' first', ' second']
+    labels = [ spec + lab for spec in signal_names for lab in labs ]
+    toeholds, th_scores = toehold_wrapper(n_species*n_th, th_params, labels)
+    toehold_sets = [ toeholds[i:i+n_th] for i in range(0,n_th*n_species,n_th)]
+    # Write the fixed file for the toehold sequences and compile the sys file to PIL
+    write_toehold_file(fixedfile, strands, toeholds)
+    try:
+        call_compiler(basename, args=design_params, fixed_file=fixedfile, 
+                      outputname=pilfile, savename=savefile)
+    except Exception, e:
+        print e
     
     # Now do the sequence makin' 
     call_design(basename, pilfile, mfefile, verbose=True, 
-                extra_pars=extra_pars)
+                extra_pars=extra_pars, cleanup=False)
     
     # "Finish" the sequence generation
-    call_finish(basename, designname=mfefile, seqsname=seqfile, run_kin=False)
+    call_finish(basename, savename=savefile, designname=mfefile, \
+                seqsname=seqfile, strandsname=strandsfile, run_kin=False)
+    return (toeholds, th_scores)
 
 def run_designer(basename='small', 
                  reps=1, 
@@ -566,40 +620,31 @@ def run_designer(basename='small',
     
     exec('import {} as mod'.format(mod_str))
     import tdm
-    import numpy as np
     fixedfile = basename + ".fixed"
     systemfile = basename + ".sys"
     pilfile = basename + ".pil"
     
-    (gates, strands, toeholds, th_scores) = \
-        generate_scheme(basename, th_params, design_params, mod=mod)
+    (gates, strands) = \
+        generate_scheme(basename, design_params, mod)
     
     if reps >= 1:
-        trialnames = [ basename + str(i) for i in range(reps) ]
-        for testname in trialnames:
-            try:
-                generate_seqs(basename, design_params, testname, extra_pars=extra_pars)
-            except Exception as e:
-                print 'Error!'
-                print e
-                return (gates, strands)
-        
         scoreslist = []
-        for testname in trialnames:
+        for i in range(reps):
+            trialname = basename + str(i) + '.txt'
             try:
+                toeholds, th_scores = generate_seqs(basename, gates, strands, design_params, \
+                              mod.n_th, th_params, strandsfile=testname, extra_pars=extra_pars)
                 scores, score_names = tdm.EvalCurrent(basename, gates, strands, 
                                                   testname=testname, 
                                                   compile_params=design_params)
+                scores = [str(i)] + [s for s in th_scores] + [s for s in scores]
+                scoreslist.append(scores)
             except Exception as e:
                 print 'Error!'
                 print e
                 return (gates, strands)
-            scoreslist.append(scores)
         
-        score_names = ['Set Index', 'Toehold Avg dG', 'Range of toehold dG\'s'] + score_names
-        for i in range(len(scoreslist)):
-            l = scoreslist[i]
-            scoreslist[i] = [i, th_scores[0], th_scores[1]] + l
+        score_names = ['Set Index', 'Toehold Avg dG', 'Range of toehold dG\'s'] + [s for s in score_names]
         
         f = open(basename+'_scores.csv', 'w')
         f.write(','.join(score_names))
@@ -610,94 +655,14 @@ def run_designer(basename='small',
         print outstring
     return (gates, strands)
 
-def run_secretary_problem(basename='small', 
-                         reps=2, 
-                         th_params={"thold_l":7, "thold_e":7.7, "e_dev":1, \
-                                    "m_spurious":0.5, "e_module":'energyfuncs_james'},
-                         design_params=(7, 15, 2),
-                         mod_str=None,
-                         extra_pars="bored=10"):
-    # Setup
-    if mod_str is None:
-        mod_str = 'DSDClasses'
-    
-    exec('import {} as mod'.format(mod_str))
-    import tdm
-    import numpy as np
-    fixedfile = basename + ".fixed"
-    systemfile = basename + ".sys"
-    pilfile = basename + ".pil"
-    
-    (gates, strands, toeholds, th_scores) = \
-        generate_scheme(basename, th_params, design_params, mod=mod)
-    
-    # Begin
-    if reps > 1:
-        # Generate burn-through candidates
-        trialnames = [ basename + str(i) for i in range(reps) ]
-        for testname in trialnames:
-            try:
-                generate_seqs(basename, design_params, testname, extra_pars=extra_pars)
-            except Exception as e:
-                print 'Error!'
-                print e
-                return (gates, strands)
-        
-        # Score burn-through candidates
-        scoreslist = []
-        score_comp = np.array([1,1,1,1,1,1,-1,-1,-1,-1,1,1,1,1,1,1,1,1])
-        for testname in trialnames:
-            try:
-                scores, score_names = tdm.EvalCurrent(basename, gates, strands, 
-                                                  testname=testname, 
-                                                  compile_params=design_params)
-                score_vec = np.array(scores)
-                score_vec = score_vec[np.concatenate((np.arange(11), np.arange(12, len(score_vec))))]
-                scores = scores * score_comp
-            except Exception as e:
-                print 'Error!'
-                print e
-                return (gates, strands)
-            scoreslist.append(scores)
-        
-        # Determine benchmark
-        score_arr = np.array(scoreslist)
-        score_arr.sort(0)
-        score_best = np.mean(score_arr, 0)
-        print "best score"
-        print score_best
-        
-        # Generate candidates until benchmark is met
-        while np.any(score - score_best < 0):
-            print "testing new talent"
-            testname = "selection"
-            generate_seqs(basename, design_params, testname, extra_pars=extra_pars)
-            score, score_names = tdm.EvalCurrent(basename, gates, strands, 
-                                              testname=testname, 
-                                              compile_params=design_params)
-            score = np.array(score)
-            score = score[np.concatenate((np.arange(11), np.arange(12, len(score))))]
-            scores = score * score_comp
-            
-        print "winning score"
-        print score
-        scoreslist.append(score)
-        score_names = ['Set Index', 'Toehold Avg dG', 'Range of toehold dG\'s'] + score_names
-        for i in range(len(scoreslist)):
-            l = scoreslist[i]
-            scoreslist[i] = [i, th_scores[0], th_scores[1]] + l
-        
-        f = open(basename+'_scores.csv', 'w')
-        f.write(','.join(score_names))
-        f.write('\n')
-        f.writelines( [ ','.join(map(str, l)) + '\n' for l in scoreslist ])
-        f.close()
-        outstring = [ score_names[i+1] + ':{}  '.format(scoreslist[i]) for i in range(len(scoreslist))]
-        print outstring
-    return 
-
-def score_fixed(fixedfile, 
+def score_fixed(fixed_file, 
                  basename='small', 
+                 crn_file=None, 
+                 sys_file=None, 
+                 pil_file=None, 
+                 save_file=None, 
+                 mfe_file=None, 
+                 seq_file=None,
                  design_params=(7, 15, 2),
                  mod_str=None):
     """ Score a sequence set
@@ -720,35 +685,39 @@ def score_fixed(fixedfile,
     
     exec('import {} as mod'.format(mod_str))
     import tdm
-    crn_file = basename + ".crn"
-    sysfile = basename + ".sys"
-    pilfile = basename + ".pil"
+    if crn_file is None:
+        crn_file = basename + '.crn'
+    if sys_file is None:
+        sys_file  = basename + '.sys'
+    if pil_file is None:
+        pil_file = basename + '.pil'
+    if save_file is None:
+        save_file = basename + '.save'
+    if mfe_file is None:
+        mfe_file = basename + '.mfe'
+    if seq_file is None:
+        seq_file = basename + '.seq'
     extra_pars = ""
     
-    reactions, species = read_crn(crn_file)
-    output = mod.process_rxns(reactions, species, design_params)
-    (gates, strands) = output
-    
-    # Write header immediately
-    write_sys_header(sysfile, mod)
-    
-    # Write sys file
-    f = open(sysfile, 'a')
-    for gate in gates:
-        f.write(gate.get_reaction_line())
-    f.close()
-    
-    # append signal strand constraints to the sys file and write toehold fixed
-    # file
-    set_signal_instances_constraints(basename, strands, mod)
+    gates, strands = generate_scheme(basename,  
+                                   design_params, 
+                                   crn_file=crn_file, 
+                                   systemfile=sys_file)
     try:
-        call_compiler(basename, args=design_params, fixed_file=fixedfile)
+        call_compiler(basename, args=design_params, fixed_file=fixed_file, 
+                      outputname=pil_file, savename=save_file)
     except Exception, e:
         print e
     
-    generate_seqs(basename, design_params, extra_pars=extra_pars)
+    # Now do the sequence makin' 
+    call_design(basename, pil_file, mfe_file, verbose=True, 
+                extra_pars=extra_pars, cleanup=False)
+    # "Finish" the sequence generation
+    call_finish(basename, savename=save_file, designname=mfe_file, \
+                seqsname=seq_file, run_kin=False)
     scores, score_names = tdm.EvalCurrent(basename, gates, strands, 
-                                      compile_params=design_params)
+                                      compile_params=design_params, 
+                                      seqs_file=seq_file, mfe_file=mfe_file)
     return (scores, score_names)
 
 if __name__ == "__main__":

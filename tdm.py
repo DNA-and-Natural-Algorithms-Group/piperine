@@ -342,10 +342,8 @@ def HP_Write_Design(Log_file_name, designcounter, Sub, Top, MaxTop, Toe, MaxToe,
 # \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 ################################################################################
 
-def get_seq_lists(basename, gates, strands):
+def get_seq_lists(seqsfile, mfefile, gates, strands):
     # Read in sequences
-    seqsfile = basename + '.seqs'
-    mfefile = basename + '.mfe'
     pep_sequences, pep_strands = Read_Finished(seqsfile)
     domains_list = pep_sequences.keys()
     mfe_dict, cmplx_dict = read_design(mfefile)
@@ -404,7 +402,7 @@ def get_seq_lists(basename, gates, strands):
 ################################################################################
 
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
-                header=True, testname=None):
+                header=True, testname=None, seqs_file=None, mfe_file=None):
     #import tolds_utils as tu
     # basename
     # Plan:
@@ -415,10 +413,14 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     
     if not testname:
         testname = basename
+    if not seqs_file:
+        seqs_file = basename + '.seqs'
+    if not mfe_file:
+        mfe_file = basename + '.mfe'
     
     (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
      NotToInteract, seq_dict, cmplx_dict, domains_list) = \
-        get_seq_lists(testname, gates, strands)
+        get_seq_lists(seqs_file, mfe_file, gates, strands)
     
     print 'Start WSI computation'
     ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict, 
