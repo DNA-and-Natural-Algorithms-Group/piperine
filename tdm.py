@@ -402,7 +402,8 @@ def get_seq_lists(seqsfile, mfefile, gates, strands):
 ################################################################################
 
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
-                header=True, testname=None, seqs_file=None, mfe_file=None):
+                header=True, testname=None, seqs_file=None, mfe_file=None,
+                quick=False):
     #import tolds_utils as tu
     # basename
     # Plan:
@@ -423,8 +424,11 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
         get_seq_lists(seqs_file, mfe_file, gates, strands)
     
     print 'Start WSI computation'
-    ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict, 
-                                         compile_params=compile_params)
+    if quick:
+        ssm_scores = np.random.rand(6)
+    else:
+        ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict, 
+                                             compile_params=compile_params)
     ssm_names = ['WSI-Intra', 'WSI-Inter', \
                  'WSI-Intra-1', 'WSI-Inter-1', \
                  'Verboten', 'WSI']
@@ -432,16 +436,22 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     
     # Score cross-strand spurious interactions
     print 'Start Cross-Strand spurious interactions computation'
-    css_scores  = NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, \
-        NotToInteract, ComplexSize = 2, T = 25.0, material = 'dna',\
-         shouldclean=1, quiet=1)
+    if quick:
+        css_scores = np.random.rand(4)
+    else:
+        css_scores  = NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, \
+            NotToInteract, ComplexSize = 2, T = 25.0, material = 'dna',\
+             shouldclean=1, quiet=1)
     css_names = ['TSI avg', 'TSI max', \
                  'TO avg', 'TO max']
     print ''
     
     print 'Start tube ensemble defect computation'
-    ted_scores = NUPACK_Eval_tube_defect(seq_dict, cmplx_dict, complex_names,\
-        prefix='tube_ensemble')
+    if quick:
+        ted_scores = [np.random.rand(), 'BAD', np.random.rand()]
+    else:
+        ted_scores = NUPACK_Eval_tube_defect(seq_dict, cmplx_dict, complex_names,\
+            prefix='tube_ensemble')
     ted_names = ['Max Bad Nucleotide %', 'Max Defect Component', 
                  'Mean Bad Nucleotide %']
     print ''
@@ -453,13 +463,19 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     
     # Score weighted spurious interactions
     print 'Start BM score computation'
-    bm_scores = BM_Eval(seq_dict, BMlist, toeholds)
+    if quick:
+        bm_scores = np.random.rand(2)
+    else:
+        bm_scores = BM_Eval(seq_dict, BMlist, toeholds)
     bm_names = ['BM Score', 'Largest Match']
     print ''
     
     # Score intra-strand spurious interactions and toehold availability
     print 'Start Single-Strand spurious score computation'
-    ss_scores = SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna')
+    if quick:
+        ss_scores = np.random.rand(4)
+    else:
+        ss_scores = SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna')
     ss_names = ['SSU Min', 'SSU Avg', 'SSTU Min', 'SSTU Avg']
     print ''
     

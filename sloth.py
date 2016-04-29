@@ -573,13 +573,141 @@ def generate_seqs(basename,
                 seqsname=seqfile, strandsname=strandsfile, run_kin=False)
     return (toeholds, th_scores)
 
+def selection(scores):
+    columns = zip(*scores)
+    ranks = []
+    fractions = []
+    percents = []
+    for col in columns:
+        # print col
+        if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
+            continue
+        if 'SSU' in col[0] or 'SSTU' in col[0]:    # for these scores, higher is better
+            col = [-float(x) for x in col[1:]]
+        else:
+            col = [float(x) for x in col[1:]]
+        array = np.array(col)
+        temp = array.argsort()
+        colranks = np.empty(len(array), int)
+        colranks[temp] = np.arange(len(array))
+        ranks.append(colranks)                     # low rank is better
+        fractions.append((array - array.min())/abs(array.min() + (array.min()==0) ))
+        percents.append((array - array.min())/(array.max() - array.min()))
+    temp=ranks
+    ranks=zip(*temp)
+    temp=fractions
+    fractions=zip(*temp)
+    temp=percents
+    percents=zip(*temp)
+    
+    print "\nRank array:"
+    print "                         ",
+    for title in scores[0]:
+        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+            continue
+        print "{:>6s}".format(title[0:6]),
+    print
+    i=0
+    for r in ranks:
+        print "design {:2d}: {:6d} = sum [".format(i,sum(r)),
+        for v in r:
+            print "{:6d}".format(v),
+        print "]"
+        i=i+1
+    
+    print "\nFractional excess array:"
+    print "                         ",
+    for title in scores[0]:
+        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+            continue
+        print "{:>6s}".format(title[0:6]),
+    print
+    i=0
+    for f in fractions:
+        print "design {:2d}: {:6.2f} = sum [".format(i,sum(f)),
+        for v in f:
+            print "{:6.2f}".format(v),
+        print "]"
+        i=i+1
+    
+    print "\nPercent badness (best to worst) array:"
+    print "                         ",
+    for title in scores[0]:
+        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+            continue
+        print "{:>6s}".format(title[0:6]),
+    print
+    i=0
+    for p in percents:
+        print "design {:2d}: {:6.2f} = sum [".format(i,100*sum(p)),
+        for v in p:
+            print "{:6.2f}".format(100*v),
+        print "]"
+        i=i+1
+    
+    print " "
+    worst_rank = 0
+    while 1:
+        ok_seqs = [i for i in range(len(ranks)) if max(ranks[i])<=worst_rank]
+        if len(ok_seqs)==0:
+            worst_rank=worst_rank+1
+            continue
+        else:
+            break
+    
+    # scores used:
+    # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI
+    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8] 
+        
+    print "Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)
+    print "  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])
+    print "  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs])
+    print "  Sum of fractional excess over best score:   " + str([sum(fractions[i]) for i in ok_seqs])
+    print "  Sum of weighted fractional excess:          " + str([sum(np.array(fractions[i])*weights/100.0) for i in ok_seqs])
+    print "  Sum of percent badness scores:              " + str([100*sum(percents[i]) for i in ok_seqs])
+    print "  Sum of weighted percent badness scores:     " + str([sum(np.array(percents[i])*weights) for i in ok_seqs])
+    temp = [sum(r) for r in ranks]
+    print "Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    winner = np.argmin(temp)
+    temp = [sum(np.array(r)*weights/100.0) for r in ranks]
+    print "Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    temp = [sum(f) for f in fractions]
+    print "Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    temp = [sum(np.array(f)*weights/100.0) for f in fractions]
+    print "Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    temp = [100*sum(p) for p in percents]
+    print "Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    temp = [sum(np.array(p)*weights) for p in percents]
+    print "Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    print
+    return winner
+
+def selection_wrapper(scores, reportfile = 'score_report.txt'):
+    import sys
+    stdout = sys.stdout
+    try:
+        sys.stdout = open(reportfile, 'w')
+        winner = selection(scores)
+    except Exception, e:
+        sys.stdout.close()
+        sys.stdout = stdout
+        print e
+        print sys.exc_info()[0]
+        raise
+        return 'bad'
+    else:
+        sys.stdout.close()
+        sys.stdout = stdout
+    return winner
+
 def run_designer(basename='small', 
                  reps=1, 
                  th_params={"thold_l":7, "thold_e":7.7, "e_dev":1, \
                             "m_spurious":0.5, "e_module":'energyfuncs_james'},
                  design_params=(7, 15, 2),
                  mod=None,
-                 extra_pars=""):
+                 extra_pars="",
+                 quick=False):
     """ Generate and score sequences
     
     This function links together all component of the compiler pipeline. It 
@@ -602,6 +730,8 @@ def run_designer(basename='small',
         mod_str: A string of the name of the .py file containing the scheme 
                  definitions
         extra_pars: Options sent to spurious designer. ('')
+        quick: Make random scores instead of computing heursitics. Skips time
+               consuming computations for debugging purposes. (False)
     Returns:
         Nothing, but writes many basename + extension files, such as:
             system file (.sys)
@@ -628,24 +758,24 @@ def run_designer(basename='small',
                               mod.n_th, th_params, strandsfile=testname, extra_pars=extra_pars)
                 scores, score_names = tdm.EvalCurrent(basename, gates, strands, 
                                                   testname=testname, 
-                                                  compile_params=design_params)
-                scores = [str(i)] + [s for s in th_scores] + [s for s in scores]
+                                                  compile_params=design_params,
+                                                  quick=quick)
+                scores = [i] + [s for s in th_scores] + [s for s in scores]
                 scoreslist.append(scores)
             except Exception as e:
                 print 'Error!'
                 print e
                 return (gates, strands)
-        
-        score_names = ['Set Index', 'Toehold Avg dG', 'Range of toehold dG\'s'] + [s for s in score_names]
+        score_names = ['Set Index', 'Toehold Avg dG', 'Range of toehold dG\'s'] + score_names
+        scores = [score_names] + scoreslist
+        winner = selection_wrapper(scores)
         
         f = open(basename+'_scores.csv', 'w')
         f.write(','.join(score_names))
         f.write('\n')
         f.writelines( [ ','.join(map(str, l)) + '\n' for l in scoreslist ])
         f.close()
-        outstring = [ score_names[i+1] + ':{}  '.format(scoreslist[i]) for i in range(len(scoreslist))]
-        print outstring
-    return (gates, strands)
+    return (gates, strands, winner)
 
 def score_fixed(fixed_file, 
                  basename='small', 
@@ -715,7 +845,7 @@ def score_fixed(fixed_file,
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--basename", help='Basename.[small]', type=int)
+    parser.add_argument("-b", "--basename", help='Basename.[small]', type=str)
     parser.add_argument("-l", "--length", help='Toehold length.[7]', type=int)
     parser.add_argument("-e", "--energy", help='Target toehold binding energy'+
                         'in kcal/mol.[7.7]', type=float)
@@ -734,6 +864,8 @@ if __name__ == "__main__":
     parser.add_argument("-m", '--module', help='Module describing the strand'+
                         ' displacement architecture[DSDClasses]', type=str)
     parser.add_argument("-x", '--extrapars', help='Parameters sent to SpuriousSSM[]', type=str)
+    parser.add_argument("-q", '--quick', action='store_True', 
+                        help='Make random numbers instead of computing heuristics to save time[False]')
     args = parser.parse_args()
     ############## Interpret arguments
     if args.basename:
@@ -802,5 +934,6 @@ if __name__ == "__main__":
     th_params={"thold_l":thold_l, "thold_e":thold_e, "e_dev":e_dev, \
                "m_spurious":m_spurious, "e_module":energetics},
     
-    gates, strands = run_designer(basename, reps, th_params, design_params, mod, 
-                                    extra_pars=extra_pars)
+    gates, strands, winner = run_designer(basename, reps, th_params, design_params, mod, 
+                                    extra_pars=extra_pars, quick=args.quick)
+    print 'Winning sequence set is index {}'.format(winner)
