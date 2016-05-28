@@ -359,7 +359,7 @@ def process_rxns(rxns, species, d_params):
                     strand = species_instances[product]
                 for q in range(stoich):
                     instance = product + suffixes[q]
-                    strand.add_instance(instance, j, produce_name)
+                    strand.add_instance(instance, np, produce_name)
                     products.append(strand.make_strand_instance(instance))
                     np = np + 1
         else:
