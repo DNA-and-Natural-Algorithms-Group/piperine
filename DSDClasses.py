@@ -61,6 +61,7 @@ pepper_values = {'r': [['{0}-a',
 # is supplied to allow Flux strands to inherit SignalStrand method attributes.
 flux_sequence = '{}-Out'
 flux_toehold = '{}-toe-sb'
+flux_bms = ['{}-ch{}-cch','{}-bm{}-cbm']
 # Number of toeholds per signal strand
 n_th = 2
 
@@ -124,9 +125,9 @@ class SignalStrand(object):
         outlist = []
         for i, hd in enumerate(hds):
             if th == toeholds[0]:
-                outlist.extend([hd, toeholds[1] + bm[0]])
-            if th == toeholds[1]:
-                outlist.extend([bm[0] + toeholds[0] + hd])
+                outlist.extend([hd, toeholds[1] + bms[0]])
+            elif th == toeholds[1]:
+                outlist.extend(bms[0] + toeholds[0] + hd)
             else:
                 outlist.append(self.sequences[i])
         return outlist
@@ -149,7 +150,17 @@ class FluxStrand(SignalStrand):
         self.name = name
         self.species = 'Flux'
         self.pepper_names = {'sequence':flux_sequence.format(rxn_name),
+                             'bm domains':[bm.format(rxn_name) for bm in flux_bms],
                              'toeholds':[ref_strand.th(1)]}
+    
+    def get_noninteracting_peppernames(self, th):
+        toeholds = self.pepper_names['toeholds']
+        bms = self.pepper_names['bm domains']
+        seq = self.pepper_names['sequence']
+        if th in toeholds:
+            return bms
+        else:
+            return seq
 
 class Gate(object):
     '''
