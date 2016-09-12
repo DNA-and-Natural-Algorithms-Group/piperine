@@ -61,7 +61,7 @@ pepper_values = {'r': [['{0}-a',
 # is supplied to allow Flux strands to inherit SignalStrand method attributes.
 flux_sequence = '{}-Out'
 flux_toehold = '{}-toe-sb'
-flux_bms = ['{}-ch{}-cch','{}-bm{}-cbm']
+flux_bms = ['{0}-ch{0}-cch','{0}-bm{0}-cbm']
 # Number of toeholds per signal strand
 n_th = 2
 

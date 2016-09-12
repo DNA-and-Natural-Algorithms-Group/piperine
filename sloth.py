@@ -864,7 +864,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", '--module', help='Module describing the strand'+
                         ' displacement architecture[DSDClasses]', type=str)
     parser.add_argument("-x", '--extrapars', help='Parameters sent to SpuriousSSM[]', type=str)
-    parser.add_argument("-q", '--quick', action='store_True', 
+    parser.add_argument("-q", '--quick', action='store_true', 
                         help='Make random numbers instead of computing heuristics to save time[False]')
     args = parser.parse_args()
     ############## Interpret arguments
