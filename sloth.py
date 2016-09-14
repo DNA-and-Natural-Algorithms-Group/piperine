@@ -25,23 +25,27 @@ def call_compiler(basename,
         Nothing
     """
     from PepperCompiler.compiler import compiler
+    print '''pil={pil}
+             fixed={fixed}
+             basename={basename}
+    '''.format(pil=outputname, fixed=fixed_file, basename=basename)
     if outputname is None:
         outputname = '{}.pil'.format(basename)
     if savename is None:
         savename = '{}.save'.format(basename)
-    if os.path.dirname(basename) is not '':
-        includes = includes + [os.path.dirname(basename)]
-        basename = os.path.basename(basename)
+    #if os.path.dirname(basename) is not '':
+    #    includes = includes + [os.path.dirname(basename)]
+    #    basename = os.path.basename(basename)
     compiler(basename, args, outputname, savename, fixed_file, synth, includes)
 
 def call_design(basename, 
                 infilename=None, 
                 outfilename=None, 
                 cleanup=True, 
-                verbose=False, 
+                verbose=True, 
                 reuse=False, 
                 just_files=False, 
-                struct_orient=False, 
+                struct_orient=True, 
                 old_output=False, 
                 tempname=None, 
                 extra_pars="", 
@@ -74,6 +78,9 @@ def call_design(basename,
     spd.design(basename, infilename, outfilename, cleanup, verbose, reuse, 
               just_files, struct_orient, old_output, tempname, extra_pars, 
               findmfe, spuriousbinary)
+    if not os.path.isfile(outfilename):
+        print 'BADD'
+        raise RuntimeError('Expected MFE not created, expect SSM failure')
 
 def call_finish(basename,
                 savename=None,
@@ -114,6 +121,7 @@ def call_finish(basename,
         designname = '{}.mfe'.format(basename)
     if not seqsname:
         seqsname = '{}.seqs'.format(basename)
+    
     finish.finish(savename, designname, seqsname, strandsname, run_kin, 
                   cleanup, trials, time, temp, conc, spurious, spurious_time)
 
@@ -532,7 +540,7 @@ def generate_seqs(basename,
     if savefile is None:
         savefile = basename + ".save"
     if mfefile is None:
-        if outname:
+        if outname is not None:
             mfefile = outname + '.mfe'
         else:
             mfefile = basename + ".mfe"
@@ -561,13 +569,12 @@ def generate_seqs(basename,
     try:
         call_compiler(basename, args=design_params, fixed_file=fixedfile, 
                       outputname=pilfile, savename=savefile)
-    except Exception, e:
+    except KeyError, e:
         print e
     
     # Now do the sequence makin' 
     call_design(basename, pilfile, mfefile, verbose=True, 
                 extra_pars=extra_pars, cleanup=False)
-    
     # "Finish" the sequence generation
     call_finish(basename, savename=savefile, designname=mfefile, \
                 seqsname=seqfile, strandsname=strandsfile, run_kin=False)
@@ -762,10 +769,10 @@ def run_designer(basename='small',
                                                   quick=quick)
                 scores = [i] + [s for s in th_scores] + [s for s in scores]
                 scoreslist.append(scores)
-            except Exception as e:
+            except KeyError as e:
                 print 'Error!'
                 print e
-                return (gates, strands)
+                return (gates, strands, e)
         score_names = ['Set Index', 'Toehold Avg dG', 'Range of toehold dG\'s'] + score_names
         scores = [score_names] + scoreslist
         winner = selection_wrapper(scores)
@@ -872,6 +879,10 @@ if __name__ == "__main__":
         basename = args.basename
     else:
         basename = 'small'
+    # Find absolute path to basename
+    basedir = os.path.dirname(basename)
+    if basedir == '':
+        basename = os.getcwd() + os.path.sep + basename
     # Set toehold length in base pairs
     if args.length:
         thold_l = int(args.length)
@@ -929,10 +940,10 @@ if __name__ == "__main__":
     if args.extrapars:
         extra_pars = args.extrapars
     else:
-        extra_pars = None
+        extra_pars = ""
     
     th_params={"thold_l":thold_l, "thold_e":thold_e, "e_dev":e_dev, \
-               "m_spurious":m_spurious, "e_module":energetics},
+               "m_spurious":m_spurious, "e_module":energetics}
     
     gates, strands, winner = run_designer(basename, reps, th_params, design_params, mod, 
                                     extra_pars=extra_pars, quick=args.quick)

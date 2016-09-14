@@ -645,7 +645,7 @@ def Spurious_Weighted_Score(basename,
                             tmax=15,
                             spurious_range=10,
                             beta=5,
-                            clean=True):
+                            clean=False):
     # This function calculates Niranjan's weighted spurious interaction score, for i
     # nteractions between k and km nucleotides long. It takes the following steps:
     #   * Read in sequences from mfe file
@@ -662,7 +662,7 @@ def Spurious_Weighted_Score(basename,
     from tempfile import mkstemp
     import numpy as np
     
-    from sloth import call_compiler, call_design
+    from Piperine.sloth.sloth import call_compiler, call_design
     
     # Command parameters
     ssm_params = "bored=%s tmax=%s spurious_range=%s" % (bored, tmax, spurious_range)
@@ -678,11 +678,15 @@ def Spurious_Weighted_Score(basename,
     fid, spurious_output = mkstemp(suffix='.txt')
     os.close(fid)
     
+    print '''pil={pil}
+             fixed={fixed}
+             mfe={mfe}
+             basename={basename}
+    '''.format(pil=compiled_file, fixed=fixed_file, mfe=out_file, basename=basename)
     # Write sequences to fixed file
     f = open(fixed_file, 'w')
     for dom in domains_list:
         f.write('sequence ' + dom + ' = ' + seq_dict[dom] + ' \n')
-    
     f.close()
     
     # Compile to a pil file
