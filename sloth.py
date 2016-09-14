@@ -79,7 +79,6 @@ def call_design(basename,
               just_files, struct_orient, old_output, tempname, extra_pars, 
               findmfe, spuriousbinary)
     if not os.path.isfile(outfilename):
-        print 'BADD'
         raise RuntimeError('Expected MFE not created, expect SSM failure')
 
 def call_finish(basename,
@@ -570,7 +569,7 @@ def generate_seqs(basename,
         call_compiler(basename, args=design_params, fixed_file=fixedfile, 
                       outputname=pilfile, savename=savefile)
     except KeyError, e:
-        print e
+        raise(e)
     
     # Now do the sequence makin' 
     call_design(basename, pilfile, mfefile, verbose=True, 

@@ -23,7 +23,7 @@ def new_toeholds(ef, n_spec=3, thold_l=int(7), thold_e=7.7, e_dev=0.5, m_spuriou
     strand back-to-back toeholds. 
     
     Args:
-        ef: Stickydesign easyends object
+        ef: Stickydesign energyfuncs
         n_spec: Number of signal strand species to generate toeholds for
         thold_l: Nucleotides in the toeholds
         thold_e: Target binding energy for the toeholds in kcal/mol
