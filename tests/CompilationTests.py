@@ -6,6 +6,17 @@ import os
 from tempfile import mkstemp
 
 #from .. import sloth, tdm
+# From a stackoverflow, 16571150
+from cStringIO import StringIO
+
+class Capturing(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        sys.stdout = self._stdout
 
 class TestCompilation(unittest.TestCase):
     crn = 'A -> B + B\nB + B -> A\nD -> A\n'
@@ -60,26 +71,29 @@ class TestCompilation(unittest.TestCase):
         self.test_compilation()
     
     def test_compilation(self):
+        import logging
         from sloth import sloth as slothcomp
         from sloth import DSDClasses as mod
-        gates, strands = slothcomp.generate_scheme(self.basename, 
-                                           self.design_params, 
-                                           crn_file=self.crn_file, 
-                                           systemfile=self.sys_file)
-        
-        toeholds, th_scores = slothcomp.generate_seqs(self.basename, 
-                                            gates, 
-                                            strands, 
-                                            self.design_params, 
-                                            mod.n_th, 
-                                            self.th_params, 
-                                            systemfile=self.sys_file,
-                                            pilfile=self.pil_file,
-                                            mfefile=self.mfe_file,
-                                            seqfile=self.seq_file,
-                                            savefile=self.save_file,
-                                            fixedfile=self.fixed_file,
-                                            extra_pars='bored=10')
+        logging.captureWarnings(False)
+        with Capturing() as output:
+            gates, strands = slothcomp.generate_scheme(self.basename, 
+                                               self.design_params, 
+                                               crn_file=self.crn_file, 
+                                               systemfile=self.sys_file)
+            
+            toeholds, th_scores = slothcomp.generate_seqs(self.basename, 
+                                                gates, 
+                                                strands, 
+                                                self.design_params, 
+                                                mod.n_th, 
+                                                self.th_params, 
+                                                systemfile=self.sys_file,
+                                                pilfile=self.pil_file,
+                                                mfefile=self.mfe_file,
+                                                seqfile=self.seq_file,
+                                                savefile=self.save_file,
+                                                fixedfile=self.fixed_file,
+                                                extra_pars='bored=10')
         
 
 def suite():

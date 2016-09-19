@@ -2,6 +2,9 @@ from __future__ import division
 import sys
 import numpy as np
 import os.path
+import importlib
+import energyfuncs_james
+import DSDClasses
 
 def call_compiler(basename, 
                     args = (7, 15, 2), 
@@ -25,10 +28,6 @@ def call_compiler(basename,
         Nothing
     """
     from PepperCompiler.compiler import compiler
-    print '''pil={pil}
-             fixed={fixed}
-             basename={basename}
-    '''.format(pil=outputname, fixed=fixed_file, basename=basename)
     if outputname is None:
         outputname = '{}.pil'.format(basename)
     if savename is None:
@@ -249,7 +248,10 @@ def list_to_str(in_specs):
             spec_str = spec_str + " + " + spec
     return spec_str
 
-def write_signal_equals(sysfile, species, i, mod):
+def import_from_string(strs):
+    return [import_module(x) for x in strs]
+
+def write_signal_equals(sysfile, species, i, trans_module):
     """ Writes a line to sysfile setting two signal identities equal
     
     The set_signal_equals component takes two species (writen as A -> B) and
@@ -261,27 +263,27 @@ def write_signal_equals(sysfile, species, i, mod):
         sysfile: The system file to write the reaction line to
         species: Species instances to be set equal
         i: reaction index
-        mod: module containing scheme variables and classes
+        trans_module: module containing scheme variables and classes
     
     Returns:
         i: increased reaction index
     """
-    comp = mod.set_equals
+    comp = trans_module.set_equals
     f = open(sysfile, 'a')
     lines = []
     base_line = '{}eq{} = {}{}: {} -> {}\n'
     if len(species) > 2:
         spec_a = species.pop()
         for spec_b in species:
-            line = base_line.format(mod.rxn_strings[0], str(i), comp, 
-                                    mod.rxn_strings[1], spec_a, spec_b)
+            line = base_line.format(trans_module.rxn_strings[0], str(i), comp, 
+                                    trans_module.rxn_strings[1], spec_a, spec_b)
             lines.append(line)
             i = i + 1
     elif len(species) == 2:
         spec_a = species[0]
         spec_b = species[1]
-        line = base_line.format(mod.rxn_strings[0], str(i), comp, 
-                                mod.rxn_strings[1], spec_a, spec_b)
+        line = base_line.format(trans_module.rxn_strings[0], str(i), comp, 
+                                trans_module.rxn_strings[1], spec_a, spec_b)
         lines.append(line)
         i = i + 1
     else:
@@ -320,13 +322,13 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
                 f.write(constraint)
     f.close()
 
-def set_signal_instances_constraints(sysfile, strands, mod):
+def set_signal_instances_constraints(sysfile, strands, trans_module):
     """ Wrapper for writing instance equivalence 'reactions' to the sys file
     
     Args:
         basename: The default name of filetypes to be produced and accessed.
         strands: List of SignalStrand objects
-        mod: module containing scheme variables and classes
+        trans_module: module containing scheme variables and classes
     
     Returns:
         i : reaction index
@@ -336,10 +338,10 @@ def set_signal_instances_constraints(sysfile, strands, mod):
     for strand in strands:
         instances = strand.get_names()
         if len(instances) > 2: # species is a product more than once
-            i = write_signal_equals(sysfile, instances, i, mod)
+            i = write_signal_equals(sysfile, instances, i, trans_module)
     return i
 
-def write_sys_header(sysfile, mod):
+def write_sys_header(sysfile, trans_module):
     """ Writes header for the CRN system file
     
     Writes the system declaration line and import statements. No need to be
@@ -348,22 +350,28 @@ def write_sys_header(sysfile, mod):
     
     Args:
         sysfile: System file passed to PepperCompiler
-        mod: module containing scheme variables and classes
+        trans_module: module containing scheme variables and classes
     
     Returns:
         Nothing
     """
     basename = os.path.basename(sysfile[:-4])
     f = open(sysfile, 'w')
-    f.write("declare system " + basename + mod.param_string + " -> \n")
+    f.write("declare system " + basename + trans_module.param_string + " -> \n")
     f.write("\n")
     # Comps is defined in Classes file
-    for comp in mod.comps:
+    for comp in trans_module.comps:
         f.write("import {0}\n".format(comp))
     f.write("\n")
     f.close()
 
-def toehold_wrapper(n_ths, paramdict=dict(), labels=None):
+def toehold_wrapper(n_ths, 
+                    thold_l=7,
+                    thold_e=7.7,
+                    e_dev=1,
+                    m_spurious=0.5,
+                    e_module=energyfuncs_james,
+                    labels=None):
     """ Wrapper generating toeholds, calls gen_th
     
     Args:
@@ -381,30 +389,6 @@ def toehold_wrapper(n_ths, paramdict=dict(), labels=None):
     from gen_th import get_toeholds
     # Grab parameters from the dictionary or set defaults
     # Toehold length (basepairs)
-    if 'thold_l' in paramdict:
-        thold_l = paramdict['thold_l']
-    else:
-        thold_l = int(7)
-    # Target toehold energy
-    if 'thold_e' in paramdict:
-        thold_e = paramdict['thold_e']
-    else:
-        thold_e = 7.7
-    # Allowable energy deviation in kcal/mol
-    if 'e_dev' in paramdict:
-        e_dev = paramdict['e_dev']
-    else:
-        e_dev = 0.5
-    # max spurious interaction as a fraction of target energy
-    if 'm_spurious' in paramdict:
-        m_spurious = paramdict['m_spurious']
-    else:
-        m_spurious = 0.4
-    # Energetics class to use in thermodynamics calculations
-    if 'e_module' in paramdict:
-        e_module = paramdict['e_module']
-    else:
-        e_module = 'energyfuncs_james'
     thold_l = int(thold_l)
     ths, th_score =  \
         get_toeholds(n_ths, thold_l, thold_e, e_dev, m_spurious, e_module)
@@ -413,7 +397,7 @@ def toehold_wrapper(n_ths, paramdict=dict(), labels=None):
 def write_compiler_files(basename, 
                          gates, 
                          strands,
-                         mod,
+                         trans_module,
                          sysfile=None,
                          inst_constraints=True):
     """ Write input files to the Pepper compiler
@@ -430,7 +414,7 @@ def write_compiler_files(basename,
         gates: A list of gate objects
         strands: A list of strand objects
         toeholds: A list of two-big tuples holding toehold strings
-        mod: module containing scheme variables and classes
+        trans_module: module containing scheme variables and classes
     Returns:
         Nothing
     """
@@ -438,7 +422,7 @@ def write_compiler_files(basename,
     # Write header immediately
     if sysfile is None:
         sysfile = basename + '.sys'
-    write_sys_header(sysfile, mod)
+    write_sys_header(sysfile, trans_module)
     
     # Write sys file
     f = open(sysfile, 'a')
@@ -449,11 +433,11 @@ def write_compiler_files(basename,
     # append signal strand constraints to the sys file and write toehold fixed
     # file
     if inst_constraints:
-        set_signal_instances_constraints(sysfile, strands, mod)
+        set_signal_instances_constraints(sysfile, strands, trans_module)
 
 def generate_scheme(basename,  
                     design_params=(7, 15, 2), 
-                    mod=None,
+                    trans_module=None,
                     crn_file=None,
                     systemfile=None,
                     inst_constraints=True):
@@ -470,13 +454,13 @@ def generate_scheme(basename,
     Args:
         basename: Default name for files accessed and written
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        mod: module containing scheme variables and classes (DSDClasses)
+        trans_module: module containing scheme variables and classes (DSDClasses)
     Returns:
         gates: A list of gate objects
         strands: A list of strand objects
     """
-    if mod is None:
-        import DSDClasses as mod
+    if trans_module is None:
+        import DSDClasses as trans_module
     
     if crn_file is None:
         crn_file = basename + ".crn"
@@ -485,10 +469,10 @@ def generate_scheme(basename,
     
     reactions, species = read_crn(crn_file)
     
-    output = mod.process_rxns(reactions, species, design_params)
+    output = trans_module.process_rxns(reactions, species, design_params)
     (gates, strands) = output
     
-    write_compiler_files(basename, gates, strands, mod, systemfile, inst_constraints) 
+    write_compiler_files(basename, gates, strands, trans_module, systemfile, inst_constraints) 
     return (gates, strands)
 
 def generate_seqs(basename, 
@@ -496,8 +480,11 @@ def generate_seqs(basename,
                   strands, 
                   design_params=(7, 15, 2), 
                   n_th=2, 
-                  th_params={"thold_l":7, "thold_e":7.7, "e_dev":1, \
-                             "m_spurious":0.5, "e_module":'energyfuncs_james'},
+                  thold_l=7,
+                  thold_e=7.7,
+                  e_dev=1,
+                  m_spurious=0.5,
+                  e_module=energyfuncs_james,
                   outname=None,
                   extra_pars="",
                   systemfile=None,
@@ -561,7 +548,15 @@ def generate_seqs(basename,
     signal_names = [ s.get_names()[-1] for s in strands ]
     labs = [' first', ' second']
     labels = [ spec + lab for spec in signal_names for lab in labs ]
-    toeholds, th_scores = toehold_wrapper(n_species*n_th, th_params, labels)
+    
+    toeholds, th_scores = toehold_wrapper(n_species*n_th, 
+                                          thold_l=thold_l,
+                                          thold_e=thold_e,
+                                          e_dev=e_dev,
+                                          m_spurious=m_spurious,
+                                          e_module=e_module,
+                                          labels=labels)
+    
     toehold_sets = [ toeholds[i:(i+n_th)] for i in range(0,n_th*n_species,n_th)]
     # Write the fixed file for the toehold sequences and compile the sys file to PIL
     write_toehold_file(fixedfile, strands, toeholds, n_th)
@@ -706,14 +701,18 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
         sys.stdout = stdout
     return winner
 
-def run_designer(basename='small', 
+def run_designer(basename=os.path.dirname(__file__)+'/small', 
                  reps=1, 
-                 th_params={"thold_l":7, "thold_e":7.7, "e_dev":1, \
-                            "m_spurious":0.5, "e_module":'energyfuncs_james'},
                  design_params=(7, 15, 2),
-                 mod=None,
+                 thold_l=7,
+                 thold_e=7.7,
+                 e_dev=1,
+                 m_spurious=0.5,
+                 e_module=energyfuncs_james,
+                 trans_module=DSDClasses,
                  extra_pars="",
-                 quick=False):
+                 quick=False
+                ):
     """ Generate and score sequences
     
     This function links together all component of the compiler pipeline. It 
@@ -744,8 +743,14 @@ def run_designer(basename='small',
             sequences (.seqs)
             scores (_scores.csv)
     """
-    if mod is None:
-        import DSDClasses as mod
+    # If module inputs are strings, import them
+    if type(trans_module) is str:
+        trans_module = importlib.import_module('.' + trans_module, 'Piperine.sloth')
+    if type(e_module) is str:
+        e_module = importlib.import_module('.' + e_module, 'Piperine.sloth')
+    # 
+    if quick:
+        extra_pars = "imax=-1 quiet=TRUE"
     
     import tdm
     fixedfile = basename + ".fixed"
@@ -753,19 +758,32 @@ def run_designer(basename='small',
     pilfile = basename + ".pil"
     
     (gates, strands) = \
-        generate_scheme(basename, design_params, mod)
+        generate_scheme(basename, design_params, trans_module)
     
     if reps >= 1:
         scoreslist = []
         for i in range(reps):
             testname = basename + str(i) + '.txt'
             try:
-                toeholds, th_scores = generate_seqs(basename, gates, strands, design_params, \
-                              mod.n_th, th_params, strandsfile=testname, extra_pars=extra_pars)
-                scores, score_names = tdm.EvalCurrent(basename, gates, strands, 
-                                                  testname=testname, 
-                                                  compile_params=design_params,
-                                                  quick=quick)
+                toeholds, th_scores = generate_seqs(basename, 
+                                                    gates, 
+                                                    strands, 
+                                                    design_params,
+                                                    n_th=trans_module.n_th, 
+                                                    thold_l=7,
+                                                    thold_e=7.7,
+                                                    e_dev=1,
+                                                    m_spurious=0.5,
+                                                    e_module=energyfuncs_james,
+                                                    strandsfile=testname, 
+                                                    extra_pars=extra_pars)
+                
+                scores, score_names = tdm.EvalCurrent(basename, 
+                                                      gates,
+                                                      strands, 
+                                                      testname=testname, 
+                                                      compile_params=design_params,
+                                                      quick=quick)
                 scores = [i] + [s for s in th_scores] + [s for s in scores]
                 scoreslist.append(scores)
             except KeyError as e:
@@ -774,17 +792,19 @@ def run_designer(basename='small',
                 return (gates, strands, e)
         score_names = ['Set Index', 'Toehold Avg dG', 'Range of toehold dG\'s'] + score_names
         scores = [score_names] + scoreslist
-        winner = selection_wrapper(scores)
-        
-        f = open(basename+'_scores.csv', 'w')
-        f.write(','.join(score_names))
-        f.write('\n')
-        f.writelines( [ ','.join(map(str, l)) + '\n' for l in scoreslist ])
-        f.close()
+        if reps > 2:
+            winner = selection_wrapper(scores)
+            f = open(basename+'_scores.csv', 'w')
+            f.write(','.join(score_names))
+            f.write('\n')
+            f.writelines( [ ','.join(map(str, l)) + '\n' for l in scoreslist ])
+            f.close()
+        else:
+            winner = None
     return (gates, strands, winner)
 
 def score_fixed(fixed_file, 
-                 basename='small', 
+                 basename=os.path.dirname(__file__)+'/small', 
                  crn_file=None, 
                  sys_file=None, 
                  pil_file=None, 
@@ -792,7 +812,7 @@ def score_fixed(fixed_file,
                  mfe_file=None, 
                  seq_file=None,
                  design_params=(7, 15, 2),
-                 mod_str=None):
+                 trans_module=DSDClasses):
     """ Score a sequence set
     
     This function takes in a fixed file, crn file, and reaction scheme specification
@@ -811,7 +831,7 @@ def score_fixed(fixed_file,
     if mod_str is None:
         mod_str = 'DSDClasses'
     
-    exec('import {} as mod'.format(mod_str))
+    exec('import {} as trans_module'.format(mod_str))
     import tdm
     if crn_file is None:
         crn_file = basename + '.crn'
@@ -877,7 +897,7 @@ if __name__ == "__main__":
     if args.basename:
         basename = args.basename
     else:
-        basename = 'small'
+        basename = os.path.dirname(__file__)+'/small'
     # Find absolute path to basename
     basedir = os.path.dirname(basename)
     if basedir == '':
@@ -921,16 +941,16 @@ if __name__ == "__main__":
         reps = 1
     
     if args.module:
-        exec('import {} as mod'.format(args.module))
+        exec('import {} as trans_module'.format(args.module))
     else:
-        import DSDClasses as mod
+        import DSDClasses as trans_module
     
     # Set user-specified spurious interaction heatmap image file name
     if args.systemparams:
         design_params = [ int(i) for i in args.systemparams.split(' ')]
     else:
         try:
-            design_params = mod.default_params
+            design_params = trans_module.default_params
         except Exception, e:
             print e
             print 'Cannot guess default .sys parameters without a module'
@@ -944,6 +964,6 @@ if __name__ == "__main__":
     th_params={"thold_l":thold_l, "thold_e":thold_e, "e_dev":e_dev, \
                "m_spurious":m_spurious, "e_module":energetics}
     
-    gates, strands, winner = run_designer(basename, reps, th_params, design_params, mod, 
+    gates, strands, winner = run_designer(basename, reps, th_params, design_params, trans_module, 
                                     extra_pars=extra_pars, quick=args.quick)
     print 'Winning sequence set is index {}'.format(winner)

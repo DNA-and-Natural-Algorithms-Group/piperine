@@ -1,3 +1,5 @@
+import sys
+
 # Default parameters
 default_params = (7,)
 # The .comp files to be imported in the .sys file
