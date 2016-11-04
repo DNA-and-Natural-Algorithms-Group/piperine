@@ -419,9 +419,10 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     if not mfe_file:
         mfe_file = basename + '.mfe'
     
-    (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
-     NotToInteract, seq_dict, cmplx_dict, domains_list) = \
-        get_seq_lists(seqs_file, mfe_file, gates, strands)
+    if not quick:
+        (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
+         NotToInteract, seq_dict, cmplx_dict, domains_list) = \
+            get_seq_lists(seqs_file, mfe_file, gates, strands)
     
     print 'Start WSI computation'
     if quick:
@@ -457,8 +458,9 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     print ''
     
     # Retrieve toeholds for BM score calculation
-    th_strs = [ th[:-1] for th in BaseStrandlist ]
-    toeholds = [seq_dict[i] for i in th_strs]
+    if not quick:
+        th_strs = [ th[:-1] for th in BaseStrandlist ]
+        toeholds = [seq_dict[i] for i in th_strs]
     th_names = ['TH energy avg', 'TH energy range']
     
     # Score weighted spurious interactions

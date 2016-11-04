@@ -4,6 +4,7 @@ import import_test
 import TDMTests
 import CompilationTests
 import RunDesignerTest
+import DSDClassesTests
 
 def runem():
     suite = import_test.suite()
@@ -19,6 +20,10 @@ def run_compilation():
 
 def run_designer():
     suite = RunDesignerTest.suite()
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
+def run_translation():
+    suite = DSDClassesTests.suite()
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 def run_all():

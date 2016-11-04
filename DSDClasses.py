@@ -288,6 +288,36 @@ class ProduceGate(Gate):
                         zip( [ x.th(0) for x in out_strands],
                              [ [], [] ] ) )
 
+def pad_rxn(rxn):
+    """ Read a formal reaciton line and pad with placeholder strands if needed
+
+    Args:
+        rxns: Output of a import_crn call, a list of reaction dicts
+    Returns: 
+        padded: Also a reaction dictionary, padded with placeholder strands
+    """
+    reactants = rxn['reactants']
+    stoich_r = rxn['stoich_r']
+    products = rxn['products']
+    stoich_p = rxn['stoich_p']
+    if len(reactants) == 0:
+        reactants.append('FuelA')
+        stoich_r = [1]
+    if len(reactants) == 1 and stoich_r == [1]:
+        reactants.append('FuelB')
+        stoich_r.append(1)
+    if len(products) == 0:
+        products.append('FuelC')
+        stoich_p = [1]
+    if len(products) == 1 and stoich_p == [1]:
+        products.append('FuelD')
+        stoich_p.append(1)
+    return {'reactants':reactants,
+            'products':products,
+            'stoich_r':stoich_r,
+            'stoich_p':stoich_p}
+    
+    
 def process_rxns(rxns, species, d_params):
     """ Read CRN info into lists of strands and gates
 

@@ -8,16 +8,16 @@ from .. import sloth
 
 class TestCRNImport(unittest.TestCase):
     # Some 
-    fid, testfile = mkstemp(suffix='crn')
-    os.close(fid)
     def setUp(self):
-        
+        fid, testfile = mkstemp(suffix='.crn')
+        os.close(fid)
+        self.testfile = testfile
         f = open(self.testfile, 'w')
         test_crn = 'A + B -> C + D (1.1e5)\nB + B -> A (1.1e5)\n2B -> 3.2C + D (1/5)\n2B -> 2C (1)\n'
         f.write(test_crn)
         f.close()
         
-        output = sloth.read_crn(self.testfile[0:-4])
+        output = sloth.read_crn(self.testfile)
         self.reactions_in = output[0]
         self.species_in = output[1]
         self.reactions_T = [{'reactants':['A', 'B'],
@@ -45,7 +45,22 @@ class TestCRNImport(unittest.TestCase):
     
     def tearDown(self):
         os.remove(self.testfile)
-        
+
+    def test_proper_characters(self):
+        readin_b_b = self.reactions_in[1]
+        true_b_b = self.reactions_T[1]
+        self.assertEqual(readin_b_b['reactants'], true_b_b['reactants'], 
+            'Incorrect A+A-> reactants interpretation')
+        self.assertEqual(readin_b_b['stoich_r'], true_b_b['stoich_r'], 
+            'Incorrect A+A-> coefficients interpretation')
+        readin_2b = self.reactions_in[2]
+        true_2b = self.reactions_T[2]
+        self.assertEqual(readin_b_b['reactants'], true_b_b['reactants'], 
+            'Incorrect 2A-> reactants interpretation')
+        self.assertEqual(readin_b_b['stoich_r'], true_b_b['stoich_r'], 
+            'Incorrect 2A-> coefficients interpretation')
+    
+
     def test_integer_coefficients(self):
         readin_b_b = self.reactions_in[1]
         true_b_b = self.reactions_T[1]
@@ -83,6 +98,7 @@ class TestCRNImport(unittest.TestCase):
             'Incorrect decimal rate constant interpretation')
         self.assertEqual(readin_frac['rate'], true_frac['rate'], 
             'Incorrect fractional rate constant interpretation')
+    
     def runTest(self):
         self.test_integer_coefficients()
         self.test_noninteger_coefficients()

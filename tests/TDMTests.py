@@ -6,7 +6,7 @@ from tempfile import mkstemp
 import os
 from test_data import fixed_file
 
-from .. import sloth, tdm
+from .. import sloth, tdm, DSDClasses
 
 class TestTDM(unittest.TestCase):
     crn = 'A -> B + A\n'
@@ -86,7 +86,7 @@ class TestTDM(unittest.TestCase):
                  mfe_file=self.mfe_file, 
                  seq_file=self.seq_file,
                  design_params=(7, 15, 2),
-                 mod_str='DSDClasses')
+                 trans_module=DSDClasses)
         iterate_list = zip(self.scores, self.true_val, self.fmts, names)
         for score, tru, fmt, name in iterate_list:
             score_str = fmt.format(score)
