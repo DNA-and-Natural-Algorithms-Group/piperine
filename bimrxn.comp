@@ -1,0 +1,81 @@
+declare component gate_bim_react(t, bm, c): A + B -> C + D
+
+### Domains
+# Toeholds:
+sequence toe-fa = "<t>H"
+sequence toe-sa = "<t>H"
+sequence toe-fb-suffix = "<t - 1>H"
+sequence toe-fb-prefix = "H"
+sequence toe-sb = "<t>H"
+# For clarity, full fb toehold
+sequence toe-fb = toe-fb-suffix toe-fb-prefix
+sequence toe-fc = "<t>H"
+sequence toe-sc = "<t>H"
+sequence toe-fd = "<t>H"
+sequence toe-sd = "<t>H"
+
+# Branch migration domains:
+sequence am  = "<bm - c>H"
+sequence bm  = "<bm - c>H"
+sequence cm  = "<bm - c>H"
+sequence ch = "C<bm - c - 1>H"
+sequence dm  = "<bm - c>H"
+sequence dh = "C<bm - c - 1>H"
+
+# Clamps:
+sequence cam  = "W<c-1>C"
+sequence cbm  = "W<c-1>C"
+sequence ccm  = "W<c-1>C"
+sequence cch = "C<c-1>W"
+sequence cdm  = "W<c-1>C"
+sequence cdh = "C<c-1>W"
+
+### I/O connectors
+sequence A = toe-sa am cam toe-fa
+sequence B = toe-sb bm cbm toe-fb-suffix toe-fb-prefix
+sequence C = toe-sc cm ccm toe-fc
+sequence D = toe-sd dm cdm toe-fd
+
+### Strands
+strand a = toe-sa am cam toe-fa
+strand b = toe-sb bm cbm toe-fb-suffix toe-fb-prefix
+strand c = toe-sc cm ccm toe-fc ch cch
+strand d = toe-sd dm cdm toe-fd dh cdh
+strand backward = toe-fb-suffix toe-sa am cam
+strand gate_base = toe-fa* cam* am* toe-sa* toe-fb-suffix* cbm* bm* toe-sb* cch*
+strand out = ch cch toe-sb bm cbm
+strand helper = toe-fd dh cdh toe-fc
+strand cat_helper = toe-fd dh cdh toe-fc ch cch
+strand trans_base = toe-sb* cch* ch* toe-fc* cdh* dh* toe-fd* cdm*
+
+### Structures
+# Single-stranded:
+structure A_struct = a : domain ....
+structure B_struct = b : domain .....
+structure C_struct = c : domain ......
+structure D_struct = d : domain ......
+structure Backward = backward : domain ....
+structure Out = out : domain .....
+structure Helper = helper : domain ....
+structure Cat_Helper = cat_helper : domain ......
+
+# Gates:
+structure Gate = gate_base + out + backward : domain .((((((((+.))))+))))
+structure Trans = trans_base + d + c : domain .(((((((+..))))+...)))
+
+# Gate intermediates:
+structure Gate_int = gate_base + out + a : domain ((((.((((+.))))+))))
+structure Trans_int = trans_base + d + out : domain (((.((((+..))))+)))..
+
+# Waste products:
+structure Gate_waste = gate_base + b + a : domain ((((((((.+)))).+))))
+structure Trans_waste = trans_base + helper + out : domain (((((((.+))))+)))..
+structure Trans_cat_waste = trans_base + cat_helper : domain .((((((.+))))))
+
+### Reactions
+kinetic A_struct + Gate -> Gate_int + Backward
+kinetic Gate_int + Backward -> A_struct + Gate
+kinetic B_struct + Gate_int -> Gate_waste + Out
+kinetic Out + Trans -> Trans_int + C_struct
+kinetic Helper + Trans_int -> Trans_waste + D_struct
+kinetic Cat_Helper + Trans_int -> Trans_cat_waste + D_struct + Out

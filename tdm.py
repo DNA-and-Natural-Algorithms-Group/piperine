@@ -680,11 +680,6 @@ def Spurious_Weighted_Score(basename,
     fid, spurious_output = mkstemp(suffix='.txt')
     os.close(fid)
     
-    print '''pil={pil}
-             fixed={fixed}
-             mfe={mfe}
-             basename={basename}
-    '''.format(pil=compiled_file, fixed=fixed_file, mfe=out_file, basename=basename)
     # Write sequences to fixed file
     f = open(fixed_file, 'w')
     for dom in domains_list:

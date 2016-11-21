@@ -1,0 +1,7 @@
+declare system test(t, bm, c):  -> 
+
+import bimrxn
+
+component r0 = bimrxn(<t>, <bm>, <c>): A + Fuel0b -> B + B
+component r1 = bimrxn(<t>, <bm>, <c>): B + B -> A + Fuel1d
+component r2 = bimrxn(<t>, <bm>, <c>): D + Fuel2b -> A + Fuel2d

@@ -14,16 +14,16 @@ def call_compiler(basename,
                     synth=True, 
                     includes=
                       [os.path.dirname(__file__)]):
-    """ Generates a PIL file from a .sys and fixed files.
+    """ Generates a PIL file from a .sys. (PepperCompiler wrapper)
     
     Args:
         basename: The default name of filetypes to be produced and accessed.
         args: A tuple of system arguments. 
-        outputname: the PIL file produced by the compiler. def: basename.pil
-        savename: the save file produced by the compiler. def: basename.save
-        fixed_file: filename specifying sequence constraints. def: none
+        outputname: the PIL file produced by the compiler. (<basename>.pil)
+        savename: the save file produced by the compiler. def: (<basename>.save)
+        fixed_file: filename specifying sequence constraints.
         synth: Boolean, whether or not to produce an output. Deprecated.
-        includes: path to folder holding component files referenced by .sys
+        includes: path to folder holding component files referenced by .sys. (location of this file)
     Returns:
         Nothing
     """
@@ -50,19 +50,19 @@ def call_design(basename,
                 extra_pars="", 
                 findmfe=True, 
                 spuriousbinary="spuriousSSM"):
-    """ Generates an MFE file from a .pil file.
+    """ Generates an MFE file from a .pil file. (PepperCompiler wrapper)
     
     Args:
         basename: The default name of filetypes to be produced and accessed.
         infilename: PIL file read by the designer. (basename.pil)
         outfilename: MFE file read by the designer. (basename.mfe)
-        cleanup: Boolean, Delete st wc eq files
-        verbose: Boolean, verbose designer output
-        reuse: Boolean, if available and appropriate, use wc st eq files
-        just_files: Boolean, only produce wc st eq files
-        struct_orient: Boolean, list structures in MFE file
-        old_output: Deprecated
-        tempname: Optional temporary name for wc st eq files
+        cleanup: Boolean, Delete st wc eq files (True)
+        verbose: Boolean, verbose designer output (True)
+        reuse: Boolean, if available and appropriate, use wc st eq files (False)
+        just_files: Boolean, only produce wc st eq files (False)
+        struct_orient: Boolean, list structures in MFE file (False)
+        old_output: Deprecated (False)
+        tempname: Optional temporary name for wc st eq files (None)
         extra_pars: Options sent to spurious designer. ('')
         findmfe: Use DNAfold to do something mysterious. (True)
         spuriousbinary: Compiled C++ for negative design. (spuriousSSM)
@@ -93,14 +93,14 @@ def call_finish(basename,
                 conc=1,
                 spurious=False,
                 spurious_time=10.0):
-    """ Generates a .seqs file from an .mfe file.
+    """ Generates a .seqs file from an .mfe file. (PepperCompiler wrapper)
     
     Args:
-        basename: The default name of filetypes to be produced and accessed.
+        basename: The default name of all files produced and accessed.
         savename: File storing process states. (basename.save)
-        designname: MFE file read for sequences (basename.mfe)
+        designname: MFE file, read for sequences (basename.mfe)
         seqsname: Output file containing all sequences (basename.seqs)
-        strandsname: Output file containing all strand sequences
+        strandsname: Output file containing all strand sequences (None)
         run_kin: Run spurious kinetic tests on sequences (False)
         cleanup: Delete temporary files (True)
         trials: Number of kinetics trials to run (24)
@@ -124,7 +124,7 @@ def call_finish(basename,
                   cleanup, trials, time, temp, conc, spurious, spurious_time)
 
 def read_crn(in_file):
-    """ Interprets a CRN text file.
+    """ Interprets a CRN from a text file.
     
     Maintains a list of reactions and species. For each reaction, the rate 
     constant, reactants, products, and stoichiometric coefficients are read.
@@ -141,10 +141,11 @@ def read_crn(in_file):
         in_file : String of the file name holding the CRN specification
     
     Returns:
-        crn_info : A tuple containing lists 'reactions' and 'species'. 
+        crn_info : A tuple containing lists called 'reactions' and 'species'. 
                    'reactions' contains a list of dicionaries keyed by
                    'reactants', 'products', 'rate', 'stoich_r', and 
-                   'stoich_p'
+                   'stoich_p'. 'species' list holds strings representing
+                   signal species names.
     """
     import re 
     fid = open(in_file, 'r')
@@ -234,23 +235,6 @@ def read_crn(in_file):
     
     return (rxn_tup, species_list)
 
-def list_to_str(in_specs):
-    # Write a single string composed of the strings in the input list separated
-    # by plus signs and spaces
-    # early return for empty case
-    if len(in_specs) == 0:
-        return ''
-    # Make a deep copy to allow the pops
-    specs = in_specs[:]
-    spec_str = specs.pop()
-    if specs:
-        for spec in specs:
-            spec_str = spec_str + " + " + spec
-    return spec_str
-
-def import_from_string(strs):
-    return [import_module(x) for x in strs]
-
 def write_signal_equals(sysfile, species, i, trans_module):
     """ Writes a line to sysfile setting two signal identities equal
     
@@ -312,13 +296,13 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
         for i, th in zip(range(len(toeholds)), toeholds):
             strand = strands[ int(floor((i - modulo(i, n_th)) / n_th)) ]
             constraint = line.format(strand.th(modulo(i, n_th)), toeholds[i].upper(), 
-                                     strand.get_names()[-1])
+                                     strand.name)
             f.write(constraint)
     else:
         for strand, ths in zip(strands, toeholds):
             for i in range(len(ths)):
                 constraint = line.format(strand.th(i), ths[i].upper(), 
-                                         strand.get_names()[-1])
+                                         strand.name)
                 f.write(constraint)
     f.close()
 
@@ -326,7 +310,7 @@ def set_signal_instances_constraints(sysfile, strands, trans_module):
     """ Wrapper for writing instance equivalence 'reactions' to the sys file
     
     Args:
-        basename: The default name of filetypes to be produced and accessed.
+        sysfile: Name of the system file
         strands: List of SignalStrand objects
         trans_module: module containing scheme variables and classes
     
@@ -336,7 +320,7 @@ def set_signal_instances_constraints(sysfile, strands, trans_module):
     i = 0
     species = []
     for strand in strands:
-        instances = strand.get_names()
+        instances = strand.get_top_strands()
         if len(instances) > 2: # species is a product more than once
             i = write_signal_equals(sysfile, instances, i, trans_module)
     return i
@@ -394,12 +378,44 @@ def toehold_wrapper(n_ths,
         get_toeholds(n_ths, thold_l, thold_e, e_dev, m_spurious, e_module)
     return (ths, th_score)
 
+def write_sys_file(basename, 
+                   reactions=None,
+                   sys_file=None,
+                   trans_module=DSDClasses):
+    """ Write system file from reactions list
+
+    This function takes in filenames and a CRN specification and writes a system
+    file, which outlines the overall DNA implementation.
+    
+    Args:
+        basename: Default name for files accessed and written
+        reactions: List of dictionaries describing the input abstract CRN
+        sys_file: System file filename
+        trans_module: module containing scheme variables and classes
+    Returns:
+        Nothing
+    """
+    
+    # Write header immediately
+    if sys_file is None:
+        sys_file = basename + '.sys'
+    
+    with open(sys_file, 'w') as f:
+        f.write("declare system " + basename + trans_module.param_string + " -> \n")
+        f.write("\n")
+        # Comps is defined in Classes file
+        for comp in trans_module.comps:
+            f.write("import {0}\n".format(comp))
+        f.write("\n")
+        for rxn in reactions:
+            f.write("{} + {} -> {} + {}\n".format(rxn['reactants']+rxn['products']))
+
 def write_compiler_files(basename, 
                          gates, 
                          strands,
                          trans_module,
                          sysfile=None,
-                         inst_constraints=True):
+                         inst_constraints=False):
     """ Write input files to the Pepper compiler
 
     This function iterates through each reaction recording the gates and
@@ -432,7 +448,7 @@ def write_compiler_files(basename,
     
     # append signal strand constraints to the sys file and write toehold fixed
     # file
-    if inst_constraints:
+    if False:
         set_signal_instances_constraints(sysfile, strands, trans_module)
 
 def generate_scheme(basename,  
@@ -545,7 +561,7 @@ def generate_seqs(basename,
     
     # Make toeholds
     n_species = len(strands)
-    signal_names = [ s.get_names()[-1] for s in strands ]
+    signal_names = [ s.name for s in strands ]
     labs = [' first', ' second']
     labels = [ spec + lab for spec in signal_names for lab in labs ]
     

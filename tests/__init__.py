@@ -5,4 +5,5 @@ import run_unittests
 import SPWTests
 import TDMTests
 import THTests
+import test_data
 

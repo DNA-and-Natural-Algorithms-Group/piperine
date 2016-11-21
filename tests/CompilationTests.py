@@ -18,15 +18,39 @@ class Capturing(list):
         self.extend(self._stringio.getvalue().splitlines())
         sys.stdout = self._stdout
 
-
-class TestCompilation(unittest.TestCase):
+class TestMakePepperCompilerInputs(unittest.TestCase):
     crn = 'A -> B + B\nB + B -> A\nD -> A\n'
-
+    
     th_params = {"thold_l":7, "thold_e":7.7, "e_dev":1, \
                  "m_spurious":0.5, "e_module":'energyfuncs_james'}
-
+    
     design_params = (7, 15, 2)
+    
+    # Set true values
+    true_crn = ([{'products': ['B'],
+                'reactants': ['A'],
+                'rate':1,
+                'stoich_p':2,
+                'stoich_r':1,
+                }],
+                [{'products': ['A'],
+                 'reactants': ['B'],
+                 'rate':1,
+                 'stoich_p':1,
+                 'stoich_r':2,
+                  }],
+                [{'products': ['A'],
+                 'reactants': ['D'],
+                 'rate':1,
+                 'stoich_p':1,
+                 'stoich_r':1,
+                    }])
 
+    correct_sys_file = os.path.join(os.path.dirname(__file__), 'test_data', 'correct.sys')
+    fid = open(correct_sys_file)
+    correct_sys = fid.readlines()
+    fid.close()
+    
     def setUp(self):
         fid, self.crn_file = mkstemp(suffix='.crn')
         os.close(fid)
@@ -56,14 +80,6 @@ class TestCompilation(unittest.TestCase):
         f.write(self.crn)
         f.close()
 
-        #outlist = sloth.generate_scheme(self.basename, fixedfile=self.fixedfile)
-        #sloth.generate_seqs(self.basename)
-        #
-        #(gates, strands, toeholds, th_scores) = outlist
-        #self.outlist = outlist
-        #
-        #self.namespace = tdm.get_seq_lists(self.basename, gates, strands)
-
     def tearDown(self):
         for f in self.filelist:
             os.remove(f)
@@ -71,31 +87,34 @@ class TestCompilation(unittest.TestCase):
     def runTest(self):
         self.test_compilation()
 
-    def test_compilation(self):
+    def test_crn_file(self):
         import logging
-        from sloth import sloth as slothcomp
-        from sloth import DSDClasses as mod
-        logging.captureWarnings(False)
-        with Capturing() as output:
-            gates, strands = slothcomp.generate_scheme(self.basename,
-                                               self.design_params,
-                                               crn_file=self.crn_file,
-                                               systemfile=self.sys_file)
+        from .. import sloth
+        rxns, spcs = sloth.read_crn(self.crn_file)
+        for i in range(len(rxns)):
+            for key in rxns[i].keys():
+                true_rxn = self.true_crn[i]
+                test_rxn = rxns[i]
+                self.assertEqual(test_rxn[key], test_rxn[key])
+    
+    def test_process_rxns(self):
+        from .. import sloth
+        from .. import DSDClasses as trans_mod
+        design_params = trans_mod.default_params
+        abstract_rxns, spcs = sloth.read_crn(self.crn_file)
+        rxn_list, signals = trans_mod.process_rxns(abstract_rxns, spcs, design_params)
 
-            toeholds, th_scores = slothcomp.generate_seqs(self.basename,
-                                                gates,
-                                                strands,
-                                                self.design_params,
-                                                mod.n_th,
-                                                self.th_params,
-                                                systemfile=self.sys_file,
-                                                pilfile=self.pil_file,
-                                                mfefile=self.mfe_file,
-                                                seqfile=self.seq_file,
-                                                savefile=self.save_file,
-                                                fixedfile=self.fixed_file,
-                                                extra_pars='bored=10')
-
+    def test_sys_file(self):
+        import logging
+        from .. import sloth
+        from .. import DSDClasses as trans_mod
+        rxns, spcs = sloth.read_crn(self.crn_file)
+        sloth.write_sys_file('test', rxns, self.sys_file, trans_mod)
+        fid = open(self.sys_file)
+        lines_list = fid.readline()[:-1]
+        fid.close()
+        for i in range(len(lines_list)):
+            self.assertEqual(lines_list[i], self.correct_sys[i])
 
 class Test_readcrn(unittest.TestCase):
     crn = 'A -> B + B\nB + B -> A\nD -> A\n'
@@ -144,7 +163,6 @@ class Test_readcrn(unittest.TestCase):
         with Capturing() as output:
             crn = slothcomp.read_crn(self.crn_file)
 
-
 def suite():
-    tests = ['test_compilation']
-    return unittest.TestSuite(map(TestCompilation, tests))
+    tests = ['test_crn_file', 'test_sys_file']
+    return unittest.TestSuite(map(TestMakePepperCompilerInputs, tests))
