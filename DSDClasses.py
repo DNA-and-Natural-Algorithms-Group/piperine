@@ -1,5 +1,6 @@
 # Default params
 default_params = (7, 15, 2)
+n_th = 2
 # The .comp files to be imported in the .sys file
 comps = ['bimrxn']
 # Strings used to generate reaction lines in the .sys file.
@@ -26,7 +27,7 @@ pepper_values = [['{0}-a',
                   ['{0}-toe-fb', '{0}-toe-sb'],
                   ['{0}-bm{0}-cbm'],
                   []], 
-                ['{0}-c', 
+                 ['{0}-c', 
                   ['{0}-toe-fc', '{0}-toe-sc'], 
                   ['{0}-cm{0}-ccm'], 
                   ['{0}-ch{0}-cch']],
@@ -97,14 +98,6 @@ def F(ordered_species, rxn_name):
     
     return toehold_no_interact_map
 
-# Flux strands are a hacky treatment of SignalStrands. Just enough information
-# is supplied to allow Flux strands to inherit SignalStrand method attributes.
-flux_sequence = '{}-Out'
-flux_toehold = '{}-toe-sb'
-flux_bms = ['{0}-ch{0}-cch','{0}-bm{0}-cbm']
-# Number of toeholds per signal strand
-n_th = 2
-
 class SignalStrand(object):
     
     def __init__(self, species):
@@ -127,8 +120,8 @@ class SignalStrand(object):
         pepper_names = dict(zip(pepper_keys, 
                                 format_list(pepper_values[degree], 
                                             rxn_name)))
-        hd = pepper_names['history domains']
-        self.pepper_names['history domains'].append(hd)
+        hd = flatten(pepper_names['history domains'])
+        self.pepper_names['history domains'].extend(hd)
         self.sequences.append(pepper_names['sequence'])
         self.rxns.append(rxn_name)
     
@@ -146,15 +139,26 @@ class SignalStrand(object):
     def get_noninteracting_peppernames(self, th):
         toeholds = self.pepper_names['toeholds']
         bms = self.pepper_names['bm domains']
-        hds = self.pepper_names['history domains']
+        hds = flatten(self.pepper_names['history domains'])
         outlist = []
+        if len(hds) == 0:
+            if th == toeholds[0]:
+                outlist.append(toeholds[1] + bms[0])
+            elif th == toeholds[1]:
+                outlist.append(bms[0] + toeholds[0])
+            else:
+                outlist.append(self.pepper_names['sequence'])
+            return outlist
         for i, hd in enumerate(hds):
             if th == toeholds[0]:
                 outlist.extend([hd, toeholds[1] + bms[0]])
             elif th == toeholds[1]:
-                outlist.extend(bms[0] + toeholds[0] + hd)
+                outlist.append(bms[0] + toeholds[0] + hd)
             else:
-                outlist.append(self.sequences[i])
+                if len(self.sequences) == 0:
+                    outlist.append(self.pepper_names['sequence'])
+                else:
+                    outlist.append(self.sequences[i])
         return outlist
 
 class Bimrxn(object):
@@ -224,131 +228,6 @@ class Bimrxn(object):
         elif len(self.out_strands) == 1:
             eq = eq + self.out_strands[0].name
         return '{} {} = {}{}: {}\n'.format(rxn_strings[0], rxn, comp, rxn_strings[1], eq)
-
-class Gate(object):
-    '''
-    A class to help organize and access pertinent names used by the pepper com
-    piler. Children of this class provide all the functionality, this parent
-    class is, right now, defined uselessly for future purposes\
-    '''
-    def __repr__(self):
-        return self.get_reaction_line()
-    
-    def get_noninteracting_peppernames(self, toehold):
-        # Toehold should be the exact name of a toehold domain in the pil/mfe
-        # file, which should match the name assigned to the SignalStrand object
-        # passed to the gate upon initialization. The is-a Gate object should
-        # have an initialized overloading of this function that sees whether 
-        # the input toehold matches one of the toeholds in the gate, and if so
-        # which top strands it should interact with.
-        if toehold in self.toe_nointeract_map:
-            return self.toe_nointeract_map[toehold]
-        else:
-            return self.top_strands[:]
-    
-    def get_complexes(self):
-        return self.complexes[:]
-    
-    def get_top_strands(self):
-        return self.top_strands[:]
-    
-    def get_top_strand_dict(self):
-        return self.top_s_dict.copy()
-    
-    def get_base_domains(self):
-        return self.base[:]
-    
-    def get_reaction_line(self):
-        comp = self.comp
-        rxn = self.rxn_name
-        if len(self.in_strands) == 2:
-            eq = '{0} + {1}'.format(self.in_strands[0].name,
-                                    self.in_strands[1].name)
-        else:
-            eq = self.in_strands[0].name
-        eq = eq + ' -> '
-        if len(self.out_strands) == 2:
-            eq = eq + '{0} + {1}'.format(self.out_strands[0].name,
-                                         self.out_strands[1].name)
-        elif len(self.out_strands) == 1:
-            eq = eq + self.out_strands[0].name
-        return '{} {} = {}{}: {}\n'.format(rxn_strings[0], rxn, comp, rxn_strings[1], eq)
-
-class ReactGate(Gate):
-    def __init__(self, rxn_name, in_strands, out_strands, degree, params):
-        self.comp, complexes, top_strands = react[degree]
-        self.complexes, self.top_strands = \
-            [format_list(x, rxn_name) for x in (complexes, top_strands)]
-        self.rxn_name = rxn_name
-        self.in_strands = in_strands
-        self.out_strands = out_strands
-        #############
-        t, bm, c = params
-        if degree == 1:
-            self.top_s_dict = dict(zip(self.top_strands,[range(1+bm, 1+bm+t+4)]))
-        else:
-            self.top_s_dict = dict(zip(self.top_strands,
-                                        [range(1+bm, 1+bm+t+4),
-                                         range(1+bm+t-2, 1+bm+2*t)]))
-        if degree == 1:
-            # Grab toeholds, first toehold of first strand
-            self.base = [ in_strands[0].th(0)]
-            # second toehold interacts with flux
-            strand = in_strands[0]
-            self.toe_nointeract_map = dict([ (strand.th(1), [] )])
-            # Specify complexes
-        elif degree == 2:
-            # Grab toeholds, first toehold of both strands
-            self.base = [ in_strands[0].th(0), in_strands[1].th(0) ]
-            # Set toe nointeraction map
-            self.toe_nointeract_map = dict()
-            # toe-fa does not interact with either top strand
-            # toe-sa does not interact with flux
-            # toe-fb does not interact with flux
-            # toe-sb does not interact with backwards
-            self.toe_nointeract_map = dict(
-                zip([ in_strands[x].th(y) for x in [0,1] for y in [0, 1]],
-                    [self.top_strands[:], self.top_strands[1:], 
-                     self.top_strands[1:], self.top_strands[:1]]))
-
-class ProduceGate(Gate):
-    def __init__(self, rxn_name, in_strands, out_strands, degree, params):
-        self.comp, complexes, top_strands = produ[degree]
-        self.complexes, self.top_strands = \
-            [format_list(x, rxn_name) for x in (complexes, top_strands)]
-        self.rxn_name = rxn_name
-        self.in_strands = in_strands
-        self.out_strands = out_strands
-        #############
-        t, bm, c = params
-        if degree == 0:
-            self.top_s_dict = dict(zip(self.top_strands, [range(1+bm, 1+bm+t+4)]))
-        elif degree == 1:
-            self.top_s_dict = dict(zip(self.top_strands, [range(1+bm, 1+bm+t+4),
-                                                range(1+bm, 1+bm+t+4),
-                                                []]))
-        else:
-            self.top_s_dict = dict(zip(self.top_strands, [range(1+bm, 1+bm+t+4),
-                                                range(1+bm, 1+bm+t+4)]))
-        self.base = []
-        if degree == 0:
-            # This strand has no toehold, so should not interact with anything.
-            # Therefore, no toehold should appear in the dicionary keys, meaning
-            # there are no exceptions to the no-interaction assumption
-            self.toe_nointeract_map = dict()
-        elif degree == 1:
-            self.base = [ in_strands[0].th(0)]
-            # With one output, the two toeholds are the flux toehold and first
-            # output toehold. The flux, however, is counted elsewhere. So,
-            # the first output toehold should interact with all top strands
-            strand = out_strands[0]
-            self.toe_nointeract_map = dict([ (strand.th(0), [] )])
-        elif degree == 2:
-            self.base = [ in_strands[0].th(0), out_strands[0].th(0)]
-            # Both first toeholds interact with both top strands
-            self.toe_nointeract_map = dict(
-                        zip( [ x.th(0) for x in out_strands],
-                             [ [], [] ] ) )
 
 def process_rxns(rxns, species, d_params):
     """ Read CRN info into lists of strands and gates
@@ -425,9 +304,11 @@ def process_rxns(rxns, species, d_params):
                 species_dict[p_species] = strand
             else:
                 strand = species_dict[p_species]
-            for q in range(rxn['stoich_p'][j]):
-                strand.add_instance(j+q+2, rxn_name)
+            products.append(strand)
+            strand.add_instance(j+2, rxn_name)
+            if rxn['stoich_p'][j] == 2:
                 products.append(strand)
+                strand.add_instance(3, rxn_name)
         gates.append(Bimrxn(rxn_name, reactants, products, d_params))
     strands = species_dict.values()
     return (gates, strands)

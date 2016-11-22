@@ -719,7 +719,7 @@ def Spurious_Weighted_Score(basename,
     # re string for decimal/integer scraping
     num = "\d+\.?\d*"
     
-    # Read in entire file, search for isntances of "spurious1"
+    # Read in entire file, search for instances of "spurious1"
     spc_text = open(spurious_output).read()
     vec_str = spc_text[spc_text.rfind('spurious1'):].split('\n')[2]
     vec = np.array([ np.float(x) for x in re.findall(num, vec_str)])

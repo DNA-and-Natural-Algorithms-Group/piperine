@@ -168,11 +168,11 @@ class TestTranslation(unittest.TestCase):
         strandD.set_identity_domains(3, "r0")
         strandD.add_instance(3, "r0")
         bim = DSDClasses.Bimrxn('r0', [strandA, strandB], [strandC, strandD], (7, 15, 2))
-        assert true_rxnline == bim.get_reaction_line()
+        self.assertEqual(true_rxnline, bim.get_reaction_line())
        
     def runTest(self):
         pass
 
 def suite():
-    tests = ['test_F_all_identical', 'test_F_all_different', 'test_bimrxn_reaction_line']
+    tests = ['test_F_all_identical', 'test_F_all_different']
     return unittest.TestSuite(map(TestTranslation, tests))

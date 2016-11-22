@@ -408,7 +408,7 @@ def write_sys_file(basename,
             f.write("import {0}\n".format(comp))
         f.write("\n")
         for rxn in reactions:
-            f.write("{} + {} -> {} + {}\n".format(rxn['reactants']+rxn['products']))
+            f.write(rxn.get_reaction_line())
 
 def write_compiler_files(basename, 
                          gates, 
@@ -488,7 +488,8 @@ def generate_scheme(basename,
     output = trans_module.process_rxns(reactions, species, design_params)
     (gates, strands) = output
     
-    write_compiler_files(basename, gates, strands, trans_module, systemfile, inst_constraints) 
+    write_sys_file(basename, gates, systemfile, trans_module)
+    # write_compiler_files(basename, gates, strands, trans_module, systemfile, inst_constraints) 
     return (gates, strands)
 
 def generate_seqs(basename, 
