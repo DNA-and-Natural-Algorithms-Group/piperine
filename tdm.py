@@ -12,6 +12,8 @@ import re
 import random
 whiteSpaceSearch = re.compile('\s+')
 
+import gen_th
+
 class MyProgress(object):
     class ImproperInput(Exception):
         pass
@@ -35,12 +37,6 @@ class MyProgress(object):
             self.count = 0
         if self.clock >= self.clockmax:
             print('DONE')
-
-################################################################################
-#
-# Functions to read Template and Domain files
-# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-################################################################################
 
 def read_design(filename):
   from PepperCompiler import nupack_out_grammar as ngram
@@ -97,147 +93,6 @@ def make_pepper_seq_dict(pepperlist, seq_dict, update=False):
     
     return Strandseq_dict
 
-################################################################################
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Functions to read Template and Domain files
-# 
-################################################################################
-
-################################################################################
-# 
-# Sequence manipulation and mutation functions
-# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-################################################################################
-
-def Complement(base):
-    if base=='A':
-        return 'T'
-    elif base=='T':
-        return 'A'
-    elif base=='C':
-        return 'G'
-    elif base=='G':
-        return 'C'
-
-def Random_base(Type):
-    if Type == 'W':
-        return random.choice(['A', 'T'])
-    elif Type == 'N':
-        return random.choice(['A','C','T'])
-
-def GetCurrentSub():
-    current_Sub ={
-    'W1':'G','W|1':'C',
-    'W2':'C','W|2':'G',
-    'W3':'G','W|3':'C',
-    'N1':'C','N|1':'G',
-    'N2':'G','N|2':'C',
-    'N3':'G','N|3':'C',
-    'N4':'G','N|4':'C',
-    'N5':'G','N|5':'C',
-    'N6':'G','N|6':'C',
-    'N7':'G','N|7':'C',
-    'N8':'A','N|8':'T',
-    'N9':'G','N|9':'C',
-     }
-    return current_Sub
-
-def GetRandomStart():
-    W1 = Random_base(Type = 'W')
-    W2 = Random_base(Type = 'W')
-    N1 = Random_base(Type = 'N')
-    N2 = Random_base(Type = 'N')
-    N3 = Random_base(Type = 'N')
-    N4 = Random_base(Type = 'N')
-    N5 = Random_base(Type = 'N')
-    N6 = Random_base(Type = 'N')
-    return [W1, W2, N1, N2, N3, N4, N5, N6]
-
-def GetBigRandomStart():
-    W1 = Random_base(Type = 'W')
-    W2 = Random_base(Type = 'W')
-    W3 = Random_base(Type = 'W')
-    N1 = Random_base(Type = 'N')
-    N2 = Random_base(Type = 'N')
-    N3 = Random_base(Type = 'N')
-    N4 = Random_base(Type = 'N')
-    N5 = Random_base(Type = 'N')
-    N6 = Random_base(Type = 'N')
-    N7 = Random_base(Type = 'N')
-    return [W1, W2, W3, N1, N2, N3, N4, N5, N6, N7]
-
-
-def MakeSub(W1, W2, W3, N1, N2, N3, N4, N5, N6, N7, N8, N9):
-    tempSub = {
-    'W1': W1,'W|1':Complement(W1),
-    'W2': W2,'W|2':Complement(W2),
-    'W3': W3,'W|3':Complement(W3),
-    'N1': N1,'N|1':Complement(N1),
-    'N2': N2,'N|2':Complement(N2),
-    'N3': N3,'N|3':Complement(N3),
-    'N4': N4,'N|4':Complement(N4),
-    'N5': N5,'N|5':Complement(N5),
-    'N6': N6,'N|6':Complement(N6),
-    'N7': N7,'N|7':Complement(N7),
-    'N8': N8,'N|8':Complement(N8),
-    'N9': N9,'N|9':Complement(N9),
-    }
-    return tempSub
-
-def MakeHPSub(X1, X2, X3, X4, X5):
-    tempSub = {
-    'X1': X1,'Xp1':Complement(X1),
-    'X2': X2,'Xp2':Complement(X2),
-    'X3': X3,'Xp3':Complement(X3),
-    'X4': X4,'Xp4':Complement(X4),
-    'X5': X5,'Xp5':Complement(X5)
-    }
-    return tempSub
-
-def Mutate(InputBaseList):
-    # Input List = [W1, W2, N1, N2, N3, N4, N5, N6]
-    rand_index = random.randint(0, 7)
-    BaseToMutate = InputBaseList[rand_index]
-
-    if rand_index < 2:
-        if BaseToMutate=='A':
-            NewBase = 'T'
-        elif BaseToMutate=='T':
-            NewBase = 'A'
-    else:
-        if BaseToMutate=='A':
-            NewBase = random.choice(['T','C'])
-        elif BaseToMutate=='T':
-            NewBase = random.choice(['A','C'])
-        elif BaseToMutate=='C':
-            NewBase = random.choice(['A','T'])
-
-    NewBaseList = InputBaseList
-    NewBaseList[rand_index] = NewBase
-    return NewBaseList
-
-def MutateBig(InputBaseList):
-    # Input List = [W1, W2, W3, N1, N2, N3, N4, N5, N6, N7]
-    rand_index = random.randint(0, 9)
-    BaseToMutate = InputBaseList[rand_index]
-
-    if rand_index < 3:
-        if BaseToMutate=='A':
-            NewBase = 'T'
-        elif BaseToMutate=='T':
-            NewBase = 'A'
-    else:
-        if BaseToMutate=='A':
-            NewBase = random.choice(['T','C'])
-        elif BaseToMutate=='T':
-            NewBase = random.choice(['A','C'])
-        elif BaseToMutate=='C':
-            NewBase = random.choice(['A','T'])
-
-    NewBaseList = InputBaseList
-    NewBaseList[rand_index] = NewBase
-    return NewBaseList
-
 def compare_sequence_notoe(s1, s2, toeholds):
      siz = min((len(s1), len(s2)));
      maxmatchsize = 0;
@@ -256,91 +111,6 @@ def compare_sequence_notoe(s1, s2, toeholds):
                      if (maxmatchsize==siz):
                          ismaxmatch = "TRUE";           
      return [ismaxmatch, maxmatchsize, mm_i, mm_j]
-
-################################################################################
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Sequence manipulation and mutation functions
-# 
-################################################################################
-
-################################################################################
-# 
-# Table output functions
-# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-################################################################################
-
-def Write_Header(filename):
-    tempfile = open(filename, 'w')
-    tempfile.write('Design #' + ',' +
-                'W1W2' + ',' +
-                'N1N2N3N4N5N6' + ',' +
-                'Top spurious' + ',' +
-                'Toe spurious' + ',' +
-                'BM score'  + ',' +
-                'Top+Toe' + ',' +
-                'SPC Verboten' + ',' +
-                'SPC Spurious' + ',' +
-                'SPC Weighted' + ',' +
-                + '\n')
-    tempfile.close()
-
-def Write_Design(Log_file_name, designcounter, Sub, TopSpuriousRel, ToeSpuriousRel, BMRel):
-    tempfile = open(Log_file_name, 'a')
-    tempfile.write(str(designcounter) + ',' +
-                Sub['W1'] + Sub['W2'] + ',' +
-                Sub['N1'] + Sub['N2'] + Sub['N3'] + Sub['N4'] + Sub['N5'] + Sub['N6'] + ',' +
-                str(TopSpuriousRel) + ',' +
-                str(ToeSpuriousRel) + ',' +
-                str(BMRel)  + ',' +
-                str(TopSpuriousRel+ToeSpuriousRel)
-                + '\n')
-    tempfile.close()
-
-def HP_Write_Header(filename):
-     tempfile = open(filename, 'w')
-     tempfile.write('#' + ',' +
-                'X1-5' + ',' +
-                'Top' + ',' +
-                'Max' + ',' +
-                'Toe' + ',' +
-                'Max' + ',' +
-                'BM' + ',' +
-                'Max'  + ',' +
-                'SS min' + ',' +
-                'SS avg' + ',' +
-                '\n')
-     tempfile.close()
-
-def HP_Write_Design(Log_file_name, designcounter, Sub, Top, MaxTop, Toe, MaxToe, BM, MaxBM, SSmin, SSavg, SS_toe, SS_toeavg, ted_min, ted_avg, ted_std):
-    tempfile = open(Log_file_name, 'a')
-    tempfile.write(str(designcounter) + ',' + 
-                str(Top) + ',' +
-                str(MaxTop) + ',' +   
-                str(Toe) + ',' +
-                str(MaxToe) + ',' +
-                str(BM)  + ',' +
-                str(MaxBM)  + ',' +
-                str(SSmin)  + ',' +
-                str(SSavg)  + ',' +
-                str(SS_toe)  + ',' +
-                str(SS_toeavg)  + ',' +
-                str(ted_min)  + ',' +
-                str(ted_avg)  + ',' +
-                str(ted_std)  + ',' +
-                '\n')
-    tempfile.close()
-
-################################################################################
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Table output functions
-# 
-################################################################################
-
-################################################################################
-#
-# Set global peppername lists
-# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-################################################################################
 
 def get_seq_lists(seqsfile, mfefile, gates, strands):
     # Read in sequences
@@ -389,21 +159,9 @@ def get_seq_lists(seqsfile, mfefile, gates, strands):
     return (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
             NotToInteract, seq_dict, cmplx_dict, domains_list)
 
-################################################################################
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Set global peppername lists
-# 
-################################################################################
-
-################################################################################
-# 
-# Score wrapper functions
-# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-################################################################################
-
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
                 header=True, testname=None, seqs_file=None, mfe_file=None,
-                quick=False):
+                quick=False, targetdG=7.7):
     #import tolds_utils as tu
     # basename
     # Plan:
@@ -459,7 +217,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     
     # Retrieve toeholds for BM score calculation
     if not quick:
-        th_strs = [ th[:-1] for th in BaseStrandlist ]
+        th_strs = [ s.th(i) for s in strands for i in range(2) ]
         toeholds = [seq_dict[i] for i in th_strs]
     th_names = ['TH energy avg', 'TH energy range']
     
@@ -481,10 +239,16 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     ss_names = ['SSU Min', 'SSU Avg', 'SSTU Min', 'SSTU Avg']
     print ''
     
+    if quick:
+        th_scores = np.random.random((2,))
+    else:
+        th_scores = gen_th.score_toeholds(toeholds, targetdG)
+    th_names = ['Toehold Avg dG', 'Range of toehold dG\'s']
+    
     score_list = [css_scores, bm_scores, ss_scores, ted_scores, 
-                  ssm_scores]
+                  ssm_scores, th_scores]
     names_list = [css_names, bm_names, ss_names, ted_names, 
-                  ssm_names]
+                  ssm_names, th_names]
     scores = [ elem for sub in score_list for elem in sub]
     names  = [ elem for sub in names_list for elem in sub]
     
@@ -507,7 +271,7 @@ def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
     # to the tube ensemble defect (ted) , the running sum of such contributions
     # Set up empty lists
     ted_vec = np.empty(len(complex_names))
-    nam_list = list()
+    name_list = list()
     bp_vec = np.empty(len(complex_names))
     # Set parameters
     target_conc = 1e-06
@@ -531,15 +295,15 @@ def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
         ted = cmpx_defect * min(est_conc, target_conc) + \
                len(seq) * max(target_conc - est_conc, 0)
         ted_vec[counter] = ted
-        nam_list.append(cmpx_name)
+        name_list.append(cmpx_name)
         bp_vec[counter] = bp
         counter += 1
         prog.inc()
     
     # Convert TED to % bad nucleotides out of total nucleotides
-    bad_nuc_vec = ted_vec / (target_conc * bp_vec + ted_vec)
+    bad_nuc_vec = 100 * ted_vec / (target_conc * bp_vec + ted_vec)
     bad_nuc_max = bad_nuc_vec.max()
-    bn_max_name = nam_list[np.where(bad_nuc_vec == bad_nuc_max)[0]]
+    bn_max_name = name_list[int(np.where(bad_nuc_vec == bad_nuc_max)[0])]
     #return [Bad Nucleotide % max, max complex name, mean bad nuc]
     return [bad_nuc_max, bn_max_name, bad_nuc_vec.mean()]
 
@@ -617,7 +381,7 @@ def SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna'):
             min(MinProbs_toe), np.mean(avg_Unpaired_toe)] 
 
 def BM_Eval(seq_dict, BMlist, toeholds):
-    BM_score_weights = [0,0,0,0,0,1,2,3,4,5,6,7,8,9,10,11]
+    w_exp = np.concatenate([np.zeros((5,)), np.power(2, np.arange(6))])
     BM_score = 0
     Largest_match = 0
     
@@ -633,8 +397,8 @@ def BM_Eval(seq_dict, BMlist, toeholds):
                                        toeholds)
             if maxmatch > Largest_match:
                 Largest_match = maxmatch
-
-            BM_score = BM_score + BM_score_weights[min(maxmatch, 15)]
+    
+            BM_score = BM_score + w_exp[int(min(maxmatch, 10))]
             prog.inc()
     
     return [BM_score, Largest_match]
@@ -656,7 +420,6 @@ def Spurious_Weighted_Score(basename,
     #   * Run spuriousSSM negative design and generate scores
     #   * Grab spuriousSSM scores and calculate NSIH
       
-    ###### Playin' around for spurious C scores
     import sys
     import subprocess
     import re
@@ -709,7 +472,7 @@ def Spurious_Weighted_Score(basename,
     os.system(command)
     #subprocess.check_call(spur_exc)
     
-    w_vec = np.power(5, np.arange(spurious_range) + 1)
+    w_lin = np.concatenate([np.zeros((beta-3, )), np.arange(8), 7*np.ones((2,))])
     
     f = open(stname)
     st = f.readline()[:-1]
@@ -723,22 +486,22 @@ def Spurious_Weighted_Score(basename,
     spc_text = open(spurious_output).read()
     vec_str = spc_text[spc_text.rfind('spurious1'):].split('\n')[2]
     vec = np.array([ np.float(x) for x in re.findall(num, vec_str)])
-    score_vec = vec * w_vec
+    score_vec = vec * w_lin[2:]
     mis_intra_score = score_vec.sum() / num_strands
     
     vec_str = spc_text[spc_text.rfind('spurious1'):].split('\n')[4]
     vec = np.array([ np.float(x) for x in re.findall(num, vec_str)])
-    score_vec = vec * w_vec
+    score_vec = vec * w_lin[2:]
     mis_inter_score = score_vec.sum() / num_strands
     
     vec_str = spc_text[spc_text.rfind('spurious('):].split('\n')[2]
     vec = np.array([ np.float(x) for x in re.findall(num, vec_str)])
-    score_vec = vec * w_vec
+    score_vec = vec * w_lin[:10]
     spc_intra_score = score_vec.sum() / num_strands
     
     vec_str = spc_text[spc_text.rfind('spurious('):].split('\n')[4]
     vec = np.array([ np.float(x) for x in re.findall(num, vec_str)])
-    score_vec = vec * w_vec
+    score_vec = vec * w_lin[:10]
     spc_inter_score = score_vec.sum() / num_strands
     
     vec_str = spc_text[spc_text.rfind('** score_verboten'):]
@@ -755,18 +518,6 @@ def Spurious_Weighted_Score(basename,
     return [spc_intra_score, spc_inter_score, \
             mis_intra_score, mis_inter_score, \
             verboten_score, wsi_score]
-
-################################################################################
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Score wrapper functions
-# 
-################################################################################
-
-################################################################################
-# 
-# Nupack-calling scoring functions
-# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-################################################################################
 
 def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc']):
     # This function calls the NUPACK methods 'complexes' and 'concentrations' to 
@@ -1039,10 +790,3 @@ def NUPACKSSScore(str1, seq_dict, T, material, toe_region=[None]):
         return [min_Unpaired, sum_Unpaired, min_Unpaired_toe, \
                 sum_Unpaired_toe, UnpairedIndex-1]
         
-
-
-################################################################################
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Nupack-calling scoring functions
-# 
-################################################################################

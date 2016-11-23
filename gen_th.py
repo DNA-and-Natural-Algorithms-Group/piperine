@@ -48,7 +48,7 @@ def get_toeholds(n_ths=6, thold_l=int(7.7), thold_e=7.7, e_dev=0.5, m_spurious=0
     while notoes:
         try:
             ends = sd.easyends('TD', thold_l, interaction=thold_e,
-                               fdev=e_dev/thold_e, alphabet='h', adjs=['h','d'],
+                               fdev=e_dev/thold_e, alphabet='h', adjs=['c','g'],
                                maxspurious=m_spurious, energetics=ef,
                                oldends=avoid_list)
             notoes = len(ends) < n_ths
@@ -65,19 +65,21 @@ def get_toeholds(n_ths=6, thold_l=int(7.7), thold_e=7.7, e_dev=0.5, m_spurious=0
     th_all = [ th[1:-1] for th in th_cands]
     ends_full = sd.endarray(th_cands, 'TD')
     ends_all = sd.endarray(th_all, 'TD')
-    
-    # Re-order toeholds so that first/second pairs are adjacent, in component-alphab
-    # etical order
-    e_vec = ef.matching_uniform(ends_full)
-    e_vec_ext = ef.th_external_dG(ends_full)
-    e_vec_int = ef.th_internal_dG(ends_full)
+    return ends_all.tolist()
+
+def score_toeholds(toeholds, targetdG=7.7, e_module=efj):
+    toeholds_flanked = [ 'c' + th.lower() + 'c' for th in toeholds]
+    ef = e_module.energyfuncs(targetdG=targetdG)
+    ends = sd.endarray(toeholds_flanked, 'TD')
+    e_vec = ef.matching_uniform(ends)
+    e_vec_ext = ef.th_external_dG(ends)
+    e_vec_int = ef.th_internal_dG(ends)
     e_vec_avg = (e_vec_ext + e_vec_int) / 2
     e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
     e_avg = e_vec_all.mean()
     e_rng = e_vec_all.max() - e_vec_all.min()
+    return (e_avg, e_rng)
     
-    return ends_all.tolist(), (e_avg, e_rng)
-
 
 def generate_pairs(n_ths=3, thold_l=int(7), thold_e=7.7, e_dev=0.5, m_spurious=0.4, 
                  e_module='energyfuncs_james', labels=None):

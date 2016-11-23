@@ -129,7 +129,7 @@ class SignalStrand(object):
         return self.pepper_names['toeholds'][i]
     
     def get_bms(self):
-        return self.pepper_names['bm domains']
+        return self.pepper_names['bm domains'] + self.pepper_names['history domains']
     
     def get_top_strands(self):
         if len(self.sequences) == 0:
@@ -176,8 +176,9 @@ class Bimrxn(object):
         self.out_strands = out_strands
         #############
         t, bm, c = params
-        # Grab toeholds, first toehold of both strands
-        self.base = [ in_strands[0].th(0), in_strands[1].th(0), out_strands[0].th(0)]
+        # Grab all first toeholds, second toehold of second input
+        self.base = flatten([[ in_strands[x].th(y), out_strands[x].th(y)] for x in [0,1] for y in [0,1]] +
+                    [ in_strands[1].th(1)])
         # Hard-coded splitting of top-strand domains for toehold occlusion calculation
         self.toe_nointeract_map = F(in_strands + out_strands, rxn_name)
         self.top_s_dict = dict(zip(self.top_strands,
