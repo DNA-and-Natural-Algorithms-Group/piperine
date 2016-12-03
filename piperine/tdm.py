@@ -427,7 +427,7 @@ def Spurious_Weighted_Score(basename,
     from tempfile import mkstemp
     import numpy as np
     
-    from piperine.piperine.designer import call_compiler, call_design
+    from designer import call_compiler, call_design
     
     # Command parameters
     ssm_params = "bored=%s tmax=%s spurious_range=%s" % (bored, tmax, spurious_range)
