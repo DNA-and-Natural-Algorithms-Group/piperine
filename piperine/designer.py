@@ -13,7 +13,7 @@ def call_compiler(basename,
                     fixed_file=None, 
                     synth=True, 
                     includes=
-                      [os.path.dirname(__file__)]):
+                      [os.path.abspath('data')]):
     """ Generates a PIL file from a .sys. (PepperCompiler wrapper)
     
     Args:
@@ -235,48 +235,6 @@ def read_crn(in_file):
     
     return (rxn_tup, species_list)
 
-def write_signal_equals(sysfile, species, i, trans_module):
-    """ Writes a line to sysfile setting two signal identities equal
-    
-    The set_signal_equals component takes two species (writen as A -> B) and
-    sets the toes and identity branch migration domains euqal. This is used to
-    set the different produce instances of signals equal to one another yet
-    allow them different history domains
-    
-    Args:
-        sysfile: The system file to write the reaction line to
-        species: Species instances to be set equal
-        i: reaction index
-        trans_module: module containing scheme variables and classes
-    
-    Returns:
-        i: increased reaction index
-    """
-    comp = trans_module.set_equals
-    f = open(sysfile, 'a')
-    lines = []
-    base_line = '{}eq{} = {}{}: {} -> {}\n'
-    if len(species) > 2:
-        spec_a = species.pop()
-        for spec_b in species:
-            line = base_line.format(trans_module.rxn_strings[0], str(i), comp, 
-                                    trans_module.rxn_strings[1], spec_a, spec_b)
-            lines.append(line)
-            i = i + 1
-    elif len(species) == 2:
-        spec_a = species[0]
-        spec_b = species[1]
-        line = base_line.format(trans_module.rxn_strings[0], str(i), comp, 
-                                trans_module.rxn_strings[1], spec_a, spec_b)
-        lines.append(line)
-        i = i + 1
-    else:
-        f.close()
-        return i
-    f.writelines(lines)
-    f.close()
-    return i
-
 def write_toehold_file(toehold_file, strands, toeholds, n_th):
     """ Writes the fixed file for the given strands and toeholds
     
@@ -305,25 +263,6 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
                                          strand.name)
                 f.write(constraint)
     f.close()
-
-def set_signal_instances_constraints(sysfile, strands, trans_module):
-    """ Wrapper for writing instance equivalence 'reactions' to the sys file
-    
-    Args:
-        sysfile: Name of the system file
-        strands: List of SignalStrand objects
-        trans_module: module containing scheme variables and classes
-    
-    Returns:
-        i : reaction index
-    """
-    i = 0
-    species = []
-    for strand in strands:
-        instances = strand.get_top_strands()
-        if len(instances) > 2: # species is a product more than once
-            i = write_signal_equals(sysfile, instances, i, trans_module)
-    return i
 
 def write_sys_header(sysfile, trans_module):
     """ Writes header for the CRN system file
@@ -679,7 +618,7 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
         sys.stdout = stdout
     return winner
 
-def run_designer(basename=os.path.dirname(__file__)+'/small', 
+def run_designer(basename=os.path.abspath(os.path.join('./data', 'small')), 
                  reps=1, 
                  design_params=(7, 15, 2),
                  thold_l=7,

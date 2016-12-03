@@ -17,7 +17,7 @@ class energyfuncs:
         try:
             import pkg_resources
             #dsb = pkg_resources.resource_stream(__name__, os.path.join('params','dnastackingbig.csv'))
-            dsb = pkg_resources.resource_stream(__name__, 'params/dnastackingbig.csv')
+            dsb = pkg_resources.resource_stream(__name__, 'data/dnastackingbig.csv')
         except:
             try:
                 this_dir, this_filename = os.path.split(__file__)
@@ -27,7 +27,7 @@ class energyfuncs:
         try:
             import pkg_resources
             #dgl = pkg_resources.resource_stream(__name__, os.path.join('params','dnadangle.csv'))
-            dgl = pkg_resources.resource_stream(__name__, 'params/dnadangle.csv')
+            dgl = pkg_resources.resource_stream(__name__, 'data/dnadangle.csv')
         except:
             try:
                 this_dir, this_filename = os.path.split(__file__)
