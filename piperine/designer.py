@@ -618,7 +618,7 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
         sys.stdout = stdout
     return winner
 
-def run_designer(basename=os.path.abspath(os.path.join(os.path.dirname(__file__), 'small')), 
+def run_designer(basename=os.path.abspath(os.path.join(os.path.dirname(__file__), 'data','small')), 
                  reps=1, 
                  design_params=(7, 15, 2),
                  thold_l=7,
