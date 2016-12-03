@@ -11,14 +11,15 @@ setup(
     include_package_data = True,
     package_data={
         '': ['*.csv', '*.comp', '*.crn'],
+        'piperine': ['data/*.csv', 'data/*.comp', 'data/*.crn'],
     },
     
-    data_files = [
-                  ('comps', ['data/bimrxn.comp', 'data/leakless_and.comp', 'data/leakless_translate.comp', 
-                             'data/leakless_flux.comp']),
-                  ('crns', ['data/oscillator.crn', 'data/Rossler.crn', 'data/RW.crn', 'data/small.crn']),
-                  ('params', ['data/dnadangle35.csv', 'data/dnadangle.csv', 'data/dnastackingbig.csv']),
-                    ],
+   # data_files = [
+   #               ('comps', ['data/bimrxn.comp', 'data/leakless_and.comp', 'data/leakless_translate.comp', 
+   #                          'data/leakless_flux.comp']),
+   #               ('crns', ['data/oscillator.crn', 'data/Rossler.crn', 'data/RW.crn', 'data/small.crn']),
+   #               ('params', ['data/dnadangle35.csv', 'data/dnadangle.csv', 'data/dnastackingbig.csv']),
+   #                 ],
 
     # metadata for upload to PyPI
     author="James Parkin",
