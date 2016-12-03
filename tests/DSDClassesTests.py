@@ -4,7 +4,7 @@ import sys
 from tempfile import mkstemp
 import os
 
-from .. import sloth, DSDClasses
+from .context import designer, DSDClasses
 
 def format_list(templates, word):
     if type(templates) is list:

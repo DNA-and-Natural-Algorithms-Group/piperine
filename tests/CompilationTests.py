@@ -5,7 +5,6 @@ import sys
 import os
 from tempfile import mkstemp
 
-#from .. import sloth, tdm
 # From a stackoverflow, 16571150
 from cStringIO import StringIO
 
@@ -89,8 +88,8 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
 
     def test_crn_file(self):
         import logging
-        from .. import sloth
-        rxns, spcs = sloth.read_crn(self.crn_file)
+        from .context import designer
+        rxns, spcs = designer.read_crn(self.crn_file)
         for i in range(len(rxns)):
             for key in rxns[i].keys():
                 true_rxn = self.true_crn[i]
@@ -98,18 +97,18 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
                 self.assertEqual(test_rxn[key], test_rxn[key])
     
     def test_process_rxns(self):
-        from .. import sloth
-        from .. import DSDClasses as trans_mod
+        from .context import designer
+        from .context import DSDClasses as trans_mod
         design_params = trans_mod.default_params
-        abstract_rxns, spcs = sloth.read_crn(self.crn_file)
+        abstract_rxns, spcs = designer.read_crn(self.crn_file)
         rxn_list, signals = trans_mod.process_rxns(abstract_rxns, spcs, design_params)
 
     def test_sys_file(self):
         import logging
-        from .. import sloth
-        from .. import DSDClasses as trans_mod
-        rxns, spcs = sloth.read_crn(self.crn_file)
-        sloth.write_sys_file('test', rxns, self.sys_file, trans_mod)
+        from .context import designer
+        from .context import DSDClasses as trans_mod
+        rxns, spcs = designer.read_crn(self.crn_file)
+        designer.write_sys_file('test', rxns, self.sys_file, trans_mod)
         fid = open(self.sys_file)
         lines_list = fid.readline()[:-1]
         fid.close()
@@ -158,10 +157,10 @@ class Test_readcrn(unittest.TestCase):
 
     def test_compilation(self):
         import logging
-        from .. import sloth as slothcomp
+        from .context import designer
         logging.captureWarnings(False)
         with Capturing() as output:
-            crn = slothcomp.read_crn(self.crn_file)
+            crn = designer.read_crn(self.crn_file)
 
 def suite():
     tests = ['test_crn_file', 'test_sys_file']

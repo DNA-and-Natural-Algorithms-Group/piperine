@@ -4,7 +4,7 @@ import unittest
 import sys
 import os
 
-from .. import sloth, tdm
+from .context import designer, tdm
 
 class TestSPW(unittest.TestCase):
     cwd = os.getcwd()
@@ -20,8 +20,8 @@ class TestSPW(unittest.TestCase):
         f.write(self.crn_file)
         f.close()
         
-        sloth.generate_scheme(self.basename, fixedfile=self.fixedfile)
-        sloth.generate_seqs(self.basename)
+        designer.generate_scheme(self.basename, fixedfile=self.fixedfile)
+        designer.generate_seqs(self.basename)
         
         self.seq_dict = tdm.Read_Finished('{0}.seqs'.format(self.basename))
         self.domains_list = self.seq_dict.keys()

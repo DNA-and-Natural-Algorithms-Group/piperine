@@ -7,7 +7,7 @@ from tempfile import mkstemp
 from test_data import fixed_file
 from time import time
 
-from .. import sloth, tdm, energyfuncs_james, gen_th
+from .context import designer, tdm, energyfuncs_james, gen_th
 
 # From a stackoverflow, 16571150
 from cStringIO import StringIO

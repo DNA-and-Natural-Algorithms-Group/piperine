@@ -7,7 +7,7 @@ from tempfile import mkstemp
 from test_data import fixed_file
 from time import time
 
-from .. import sloth, tdm, energyfuncs_james, gen_th, DSDClasses
+from .context import designer, tdm, energyfuncs_james, gen_th, DSDClasses
 
 # From a stackoverflow, 16571150
 from cStringIO import StringIO
@@ -51,12 +51,12 @@ class Test_run_designer(unittest.TestCase):
     
     def test_run_designer_noargs(self):
         with Capturing() as output:
-            out = sloth.run_designer(quick=True)
+            out = designer.run_designer(quick=True)
         
     def test_run_designer_accepts_string_modules(self):
         try:
             with Capturing() as output:
-                out = sloth.run_designer(basename=self.basename,
+                out = designer.run_designer(basename=self.basename,
                                          e_module=self.ef_str,
                                          trans_module=self.trans_str,
                                          quick=True)
@@ -81,7 +81,7 @@ class Test_run_designer(unittest.TestCase):
         fakemod2 = "notAmodule"
         try:
             with Capturing() as output:
-                out = sloth.run_designer(basename=self.basename,
+                out = designer.run_designer(basename=self.basename,
                                          e_module=fakemod1,
                                          trans_module=fakemod2,
                                          quick=True)

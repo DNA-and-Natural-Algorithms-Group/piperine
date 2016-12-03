@@ -7,7 +7,7 @@ nupackpath = os.environ['NUPACKHOME']+'/bin/'
 
 from numpy import array, hstack
 import numpy as np
-from scipy import zeros
+#from scipy import zeros
 import re
 import random
 whiteSpaceSearch = re.compile('\s+')
@@ -312,7 +312,7 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
                 shouldclean=1, quiet=1):
     numstrands = len(TopStrandlist)
     
-    TopSpuriousPairwise = zeros([numstrands, numstrands]);
+    TopSpuriousPairwise = np.zeros([numstrands, numstrands]);
     
     print 'Calculating Top Strand Pairwise interactions'
     countmax = (numstrands**2 + numstrands)/2
@@ -327,7 +327,7 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
     
     numbase = len(BaseStrandlist)
     
-    BaseSpurious = zeros([numbase, 1]);
+    BaseSpurious = np.zeros([numbase, 1]);
     
     print 'Calculating Toehold occupation'
     countmax = sum(map(len, NotToInteract.values()))
@@ -427,7 +427,7 @@ def Spurious_Weighted_Score(basename,
     from tempfile import mkstemp
     import numpy as np
     
-    from Piperine.sloth.sloth import call_compiler, call_design
+    from piperine.piperine.designer import call_compiler, call_design
     
     # Command parameters
     ssm_params = "bored=%s tmax=%s spurious_range=%s" % (bored, tmax, spurious_range)

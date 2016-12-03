@@ -16,7 +16,8 @@ class energyfuncs:
         import os
         try:
             import pkg_resources
-            dsb = pkg_resources.resource_stream(__name__, os.path.join('params','dnastackingbig.csv'))
+            #dsb = pkg_resources.resource_stream(__name__, os.path.join('params','dnastackingbig.csv'))
+            dsb = pkg_resources.resource_stream(__name__, 'params/dnastackingbig.csv')
         except:
             try:
                 this_dir, this_filename = os.path.split(__file__)
@@ -25,7 +26,8 @@ class energyfuncs:
                 raise IOError("Error loading dnastackingbig.csv")
         try:
             import pkg_resources
-            dgl = pkg_resources.resource_stream(__name__, os.path.join('params','dnadangle.csv'))
+            #dgl = pkg_resources.resource_stream(__name__, os.path.join('params','dnadangle.csv'))
+            dgl = pkg_resources.resource_stream(__name__, 'params/dnadangle.csv')
         except:
             try:
                 this_dir, this_filename = os.path.split(__file__)

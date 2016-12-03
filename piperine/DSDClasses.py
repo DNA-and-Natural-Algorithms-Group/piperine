@@ -1,3 +1,6 @@
+import pkg_resources
+
+comps = [pkg_resources.resource_stream(__name__, 'comps/bimrxn.comp')]
 # Default params
 default_params = (7, 15, 2)
 n_th = 2

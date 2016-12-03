@@ -4,7 +4,7 @@ import sys
 from tempfile import mkstemp
 import os
 
-from .. import sloth
+from .context import designer
 
 class TestCRNImport(unittest.TestCase):
     # Some 
@@ -17,7 +17,7 @@ class TestCRNImport(unittest.TestCase):
         f.write(test_crn)
         f.close()
         
-        output = sloth.read_crn(self.testfile)
+        output = designer.read_crn(self.testfile)
         self.reactions_in = output[0]
         self.species_in = output[1]
         self.reactions_T = [{'reactants':['A', 'B'],

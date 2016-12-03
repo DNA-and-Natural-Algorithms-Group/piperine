@@ -399,6 +399,10 @@ def write_sys_file(basename,
     if sys_file is None:
         sys_file = basename + '.sys'
     
+    # Clean basename if it was provided with directory prefix
+    if os.path.sep in basename:
+        basename = os.path.basename(basename)
+    
     with open(sys_file, 'w') as f:
         f.write("declare system " + basename + trans_module.param_string + " -> \n")
         f.write("\n")
@@ -719,9 +723,9 @@ def run_designer(basename=os.path.dirname(__file__)+'/small',
     """
     # If module inputs are strings, import them
     if type(trans_module) is str:
-        trans_module = importlib.import_module('.' + trans_module, 'Piperine.sloth')
+        trans_module = importlib.import_module('.' + trans_module, 'piperine.piperine')
     if type(e_module) is str:
-        e_module = importlib.import_module('.' + e_module, 'Piperine.sloth')
+        e_module = importlib.import_module('.' + e_module, 'piperine.piperine')
     # 
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"

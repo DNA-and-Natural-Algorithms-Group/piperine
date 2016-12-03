@@ -6,7 +6,7 @@ from tempfile import mkstemp
 import os
 from test_data import fixed_file
 
-from .. import sloth, tdm, DSDClasses
+from .context import designer, tdm, DSDClasses
 
 class TestTDM(unittest.TestCase):
     crn = 'A -> B + A\n'
@@ -77,7 +77,7 @@ class TestTDM(unittest.TestCase):
     
     def test_tdm(self):
         # Score test sequences
-        self.scores, names = sloth.score_fixed(self.fixed_file, 
+        self.scores, names = designer.score_fixed(self.fixed_file, 
                  basename=self.basename, 
                  crn_file=self.crn_file, 
                  sys_file=self.sys_file, 
