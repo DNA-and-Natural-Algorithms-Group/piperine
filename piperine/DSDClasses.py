@@ -1,5 +1,4 @@
 import pkg_resources
-from .. import piperine
 
 comps = [pkg_resources.resource_stream('piperine', 'comps/bimrxn.comp')]
 # Default params
