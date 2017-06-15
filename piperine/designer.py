@@ -1,10 +1,16 @@
 from __future__ import division
 import sys
+import pkg_resources
 import numpy as np
+import os
 import os.path
 import importlib
 import energyfuncs_james
 import DSDClasses
+
+small_crn = pkg_resources.resource_filename(__name__, "small.crn")
+data_dir = os.path.dirname(small_crn)
+#data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
 def call_compiler(basename, 
                     args = (7, 15, 2), 
@@ -13,7 +19,7 @@ def call_compiler(basename,
                     fixed_file=None, 
                     synth=True, 
                     includes=
-                      [os.path.abspath('data')]):
+                      [data_dir]):
     """ Generates a PIL file from a .sys. (PepperCompiler wrapper)
     
     Args:
@@ -32,9 +38,6 @@ def call_compiler(basename,
         outputname = '{}.pil'.format(basename)
     if savename is None:
         savename = '{}.save'.format(basename)
-    #if os.path.dirname(basename) is not '':
-    #    includes = includes + [os.path.dirname(basename)]
-    #    basename = os.path.basename(basename)
     compiler(basename, args, outputname, savename, fixed_file, synth, includes)
 
 def call_design(basename, 
@@ -242,7 +245,7 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
         toehold_file: File where toehold constraints are written
         strands: List of SignalStrand objects
         toeholds: List of toehold two-big tuples
-    
+        n_th: Number of toeholds
     Returns:
         Nothing
     """
@@ -264,47 +267,21 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
                 f.write(constraint)
     f.close()
 
-def write_sys_header(sysfile, trans_module):
-    """ Writes header for the CRN system file
-    
-    Writes the system declaration line and import statements. No need to be
-    intelligent about the import statements used, so this is a pretty dumb
-    function
-    
-    Args:
-        sysfile: System file passed to PepperCompiler
-        trans_module: module containing scheme variables and classes
-    
-    Returns:
-        Nothing
-    """
-    basename = os.path.basename(sysfile[:-4])
-    f = open(sysfile, 'w')
-    f.write("declare system " + basename + trans_module.param_string + " -> \n")
-    f.write("\n")
-    # Comps is defined in Classes file
-    for comp in trans_module.comps:
-        f.write("import {0}\n".format(comp))
-    f.write("\n")
-    f.close()
-
 def toehold_wrapper(n_ths, 
                     thold_l=7,
                     thold_e=7.7,
                     e_dev=1,
                     m_spurious=0.5,
-                    e_module=energyfuncs_james,
-                    labels=None):
+                    e_module=energyfuncs_james):
     """ Wrapper generating toeholds, calls gen_th
     
     Args:
-        n_spec: Number of species requiring two toeholds each
-        paramdict: Dictionary of parameters used in producing toeholds
-            thold_l: Nt in a toehold (7)
-            thold_e: Target deltaG in kCal/Mol (7.7)
-            e_dev: Allowable standard deviation in kCal/mole (0.5)
-            m_spurious: Maximum spurious dG as fraction of thold_e (0.4)
-            e_module: Thermodynamics used by stickydesign (energyfuncs_james)
+        n_ths: Number of toeholds
+        thold_l: Nt in a toehold (7)
+        thold_e: Target deltaG in kCal/Mol (7.7)
+        e_dev: Allowable standard deviation in kCal/mole (1)
+        m_spurious: Maximum spurious dG as fraction of thold_e (0.5)
+        e_module: Thermodynamics used by stickydesign (energyfuncs_james)
     Returns:
         ths: Toeholds, listed as tupled-pairs
         th_score: average toehold dG and the range of dG's
@@ -327,9 +304,9 @@ def write_sys_file(basename,
     
     Args:
         basename: Default name for files accessed and written
-        reactions: List of dictionaries describing the input abstract CRN
-        sys_file: System file filename
-        trans_module: module containing scheme variables and classes
+        reactions: List of dictionaries describing the input abstract CRN (None)
+        sys_file: System file filename (basename + .sys)
+        trans_module: module containing scheme variables and classes (DSDClasses)
     Returns:
         Nothing
     """
@@ -356,8 +333,7 @@ def generate_scheme(basename,
                     design_params=(7, 15, 2), 
                     trans_module=None,
                     crn_file=None,
-                    systemfile=None,
-                    inst_constraints=True):
+                    system_file=None):
     """ Produce SYS file describing a CRN
     
     A scheme consists a .sys file and lists of gate and strand objects. Gate 
@@ -372,6 +348,8 @@ def generate_scheme(basename,
         basename: Default name for files accessed and written
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
         trans_module: module containing scheme variables and classes (DSDClasses)
+        crn_file: name of the text file specifying the CRN (basename + .crn)
+        system_file: name of the system file (basename + .sys)
     Returns:
         gates: A list of gate objects
         strands: A list of strand objects
@@ -381,15 +359,15 @@ def generate_scheme(basename,
     
     if crn_file is None:
         crn_file = basename + ".crn"
-    if systemfile is None:
-        systemfile = basename + ".sys"
+    if system_file is None:
+        system_file = basename + ".sys"
     
     reactions, species = read_crn(crn_file)
     
     output = trans_module.process_rxns(reactions, species, design_params)
     (gates, strands) = output
     
-    write_sys_file(basename, gates, systemfile, trans_module)
+    write_sys_file(basename, gates, system_file, trans_module)
     return (gates, strands)
 
 def generate_seqs(basename, 
@@ -404,13 +382,13 @@ def generate_seqs(basename,
                   e_module=energyfuncs_james,
                   outname=None,
                   extra_pars="",
-                  systemfile=None,
-                  pilfile=None,
-                  mfefile=None,
-                  seqfile=None,
-                  fixedfile=None,
-                  savefile=None,
-                  strandsfile=None):
+                  system_file=None,
+                  pil_file=None,
+                  mfe_file=None,
+                  seq_file=None,
+                  fixed_file=None,
+                  save_file=None,
+                  strands_file=None):
     """ Produce sequences for a scheme
     
     This function accepts a base file name, a list of gate objects, a list of 
@@ -423,72 +401,75 @@ def generate_seqs(basename,
         strands: A list of SignalStrand objects
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
         n_th: How many toeholds to generate per signal strand
-        th_params: Dictionary of toehold design parameters 
-            thold_l: Nt in a toehold (7)
-            thold_e: Target deltaG in kCal/Mol (7.7)
-            e_dev: Allowable standard deviation in kCal/mole (0.5)
-            m_spurious: Maximum spurious dG as fraction of thold_e (0.4)
-            e_module: Thermodynamics used by stickydesign (energyfuncs_james)
-        outname: Optional name for files produced as a result of this call
-        extra_pars: Options sent to spurious designer. ('')
+        thold_l: Nt in a toehold (7)
+        thold_e: Target deltaG in kCal/Mol (7.7)
+        e_dev: Allowable standard deviation in kCal/mole (1)
+        m_spurious: Maximum spurious dG as fraction of thold_e (0.5)
+        e_module: Thermodynamics used by stickydesign (energyfuncs_james)
+        outname: Optional name for files produced as a result of this call (basename + .mfe)
+        extra_pars: Options sent to spurious designer. ("")
+        system_file: Filename of the PepperCompiler system file (basename + .sys)
+        pil_file: Filename of the PepperCompiler (basename + .pil)
+        mfe_file: Filename of the PepperCompiler MFE file (basename + .mfe)
+        seq_file: Filename of the PepperCompiler sequence file (basename + .seqs)
+        fixed_file: Filename of the PepperCompiler fixed file (basename + .fixed)
+        save_file: Filename of the PepperCompiler save file (basename + .save)
+        strands_file: Filename of the PepperCompiler strands file (basename + _strands.txt)
     Returns:
-        Nothing
+        toeholds: 
     """
     
     # Prepare filenames
-    if systemfile is None:
-        systemfile = basename + ".sys"
-    if pilfile is None:
-        pilfile = basename + ".pil"
-    if savefile is None:
-        savefile = basename + ".save"
-    if mfefile is None:
+    if system_file is None:
+        system_file = basename + ".sys"
+    if pil_file is None:
+        pil_file = basename + ".pil"
+    if save_file is None:
+        save_file = basename + ".save"
+    if mfe_file is None:
         if outname is not None:
-            mfefile = outname + '.mfe'
+            mfe_file = outname + '.mfe'
         else:
-            mfefile = basename + ".mfe"
-    if seqfile is None:
+            mfe_file = basename + ".mfe"
+    if seq_file is None:
         if outname:
-            seqfile = outname + ".seqs"
+            seq_file = outname + ".seqs"
         else:
-            seqfile = basename + ".seqs"
-    if strandsfile is None:
+            seq_file = basename + ".seqs"
+    if strands_file is None:
         if outname:
-            strandsfile = outname + "_strands.txt"
+            strands_file = outname + "_strands.txt"
         else:
-            strandsfile = basename + "_strands.txt"
-    if fixedfile is None:
-        fixedfile = basename + ".fixed"
+            strands_file = basename + "_strands.txt"
+    if fixed_file is None:
+        fixed_file = basename + ".fixed"
     
     # Make toeholds
     n_species = len(strands)
     signal_names = [ s.name for s in strands ]
-    labs = [' first', ' second']
-    labels = [ spec + lab for spec in signal_names for lab in labs ]
     
     toeholds = toehold_wrapper(n_species*n_th, 
-                                          thold_l=thold_l,
-                                          thold_e=thold_e,
-                                          e_dev=e_dev,
-                                          m_spurious=m_spurious,
-                                          e_module=e_module,
-                                          labels=labels)
+                               thold_l=thold_l,
+                               thold_e=thold_e,
+                               e_dev=e_dev,
+                               m_spurious=m_spurious,
+                               e_module=e_module)
     
     toehold_sets = [ toeholds[i:(i+n_th)] for i in range(0,n_th*n_species,n_th)]
     # Write the fixed file for the toehold sequences and compile the sys file to PIL
-    write_toehold_file(fixedfile, strands, toeholds, n_th)
+    write_toehold_file(fixed_file, strands, toeholds, n_th)
     try:
-        call_compiler(basename, args=design_params, fixed_file=fixedfile, 
-                      outputname=pilfile, savename=savefile)
+        call_compiler(basename, args=design_params, fixed_file=fixed_file, 
+                      outputname=pil_file, savename=save_file)
     except KeyError, e:
         raise(e)
     
     # Now do the sequence makin' 
-    call_design(basename, pilfile, mfefile, verbose=True, 
+    call_design(basename, pil_file, mfe_file, verbose=True, 
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
-    call_finish(basename, savename=savefile, designname=mfefile, \
-                seqsname=seqfile, strandsname=strandsfile, run_kin=False)
+    call_finish(basename, savename=save_file, designname=mfe_file, \
+                seqsname=seq_file, strandsname=strands_file, run_kin=False)
     return toeholds
 
 def selection(scores):
@@ -618,7 +599,7 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
         sys.stdout = stdout
     return winner
 
-def run_designer(basename=os.path.abspath(os.path.join(os.path.dirname(__file__), 'data','small')), 
+def run_designer(basename=small_crn, 
                  reps=1, 
                  design_params=(7, 15, 2),
                  thold_l=7,
@@ -628,6 +609,7 @@ def run_designer(basename=os.path.abspath(os.path.join(os.path.dirname(__file__)
                  e_module=energyfuncs_james,
                  trans_module=DSDClasses,
                  extra_pars="",
+                 temp_files=True,
                  quick=False
                 ):
     """ Generate and score sequences
@@ -640,17 +622,15 @@ def run_designer(basename=os.path.abspath(os.path.join(os.path.dirname(__file__)
     sequence set.
     
     Args:
-        basename: Default name for files accessed and written
-        reps: Number of sequence sets to be generated and scored (2)
-        th_params: Dictionary of toehold design parameters 
-            thold_l: Nt in a toehold (7)
-            thold_e: Target deltaG in kCal/Mol (7.7)
-            e_dev: Allowable standard deviation in kCal/mole (0.5)
-            m_spurious: Maximum spurious dG as fraction of thold_e (0.4)
-            e_module: Thermodynamics used by stickydesign (energyfuncs_james)
+        basename: Default name for files accessed and written (small)
+        reps: Number of sequence sets to be generated and scored (1)
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        mod_str: A string of the name of the .py file containing the scheme 
-                 definitions
+        thold_l: Nt in a toehold (7)
+        thold_e: Target deltaG in kCal/Mol (7.7)
+        e_dev: Allowable standard deviation in kCal/mole (1)
+        m_spurious: Maximum spurious dG as fraction of thold_e (0.5)
+        e_module: Thermodynamics used by stickydesign (energyfuncs_james)
+        trans_module: module containing scheme variables and classes (DSDClasses)
         extra_pars: Options sent to spurious designer. ('')
         quick: Make random scores instead of computing heursitics. Skips time
                consuming computations for debugging purposes. (False)
@@ -670,9 +650,9 @@ def run_designer(basename=os.path.abspath(os.path.join(os.path.dirname(__file__)
         extra_pars = "imax=-1 quiet=TRUE"
     
     import tdm
-    fixedfile = basename + ".fixed"
-    systemfile = basename + ".sys"
-    pilfile = basename + ".pil"
+    fixed_file = basename + ".fixed"
+    system_file = basename + ".sys"
+    pil_file = basename + ".pil"
     
     (gates, strands) = \
         generate_scheme(basename, design_params, trans_module)
@@ -692,7 +672,7 @@ def run_designer(basename=os.path.abspath(os.path.join(os.path.dirname(__file__)
                                          e_dev=1,
                                          m_spurious=0.5,
                                          e_module=energyfuncs_james,
-                                         strandsfile=testname, 
+                                         strands_file=testname, 
                                          extra_pars=extra_pars)
                 
                 scores, score_names = tdm.EvalCurrent(basename, 
@@ -738,11 +718,17 @@ def score_fixed(fixed_file,
     and outputs the heuristic scores of the set. 
     
     Args:
-        fixedfile: Filename pointing to the seqeunce set
+        fixed_file: Filename pointing to the seqeunce set
         basename: Default name for files accessed and written
+        crn_file: Filename of text file specifying the CRN (basename + .crn)
+        sys_file: Filename of the PepperCompiler system file (basename + .sys)
+        pil_file: Filename of the PepperCompiler PIL file (basename + .pil)
+        save_file: Filename of the PepperCompiler save file (basename + .save)
+        mfe_file: Filename of the PepperCompiler MFE file (basename + .mfe)
+        seq_file: Filename of the PepperCompiler output seq file (basename + .seq)
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        mod_str: A string of the name of the .py file containing the scheme 
-                 definitions
+        trans_module: Module containing scheme variables and classes (DSDClasses)
+        quick: Skip time-consuming steps of minimizing sequence symetry and scoring (False)
     Returns:
         scores: A list containing the scores generated by EvalCurrent
         score_names: A list of strings describing the scores
@@ -765,7 +751,7 @@ def score_fixed(fixed_file,
     gates, strands = generate_scheme(basename,  
                                    design_params, 
                                    crn_file=crn_file, 
-                                   systemfile=sys_file)
+                                   system_file=sys_file)
     call_compiler(basename, args=design_params, fixed_file=fixed_file, 
                   outputname=pil_file, savename=save_file)
     #try:
@@ -815,7 +801,7 @@ if __name__ == "__main__":
     if args.basename:
         basename = args.basename
     else:
-        basename = os.path.dirname(__file__)+'/small'
+        basename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data','small'))
     # Find absolute path to basename
     basedir = os.path.dirname(basename)
     if basedir == '':

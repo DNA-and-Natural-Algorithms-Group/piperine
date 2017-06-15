@@ -5,6 +5,8 @@ import sys
 import os
 from tempfile import mkstemp
 
+import filecmp
+
 # From a stackoverflow, 16571150
 from cStringIO import StringIO
 
@@ -108,12 +110,9 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
         from .context import designer
         from .context import DSDClasses as trans_mod
         rxns, spcs = designer.read_crn(self.crn_file)
-        designer.write_sys_file('test', rxns, self.sys_file, trans_mod)
-        fid = open(self.sys_file)
-        lines_list = fid.readline()[:-1]
-        fid.close()
-        for i in range(len(lines_list)):
-            self.assertEqual(lines_list[i], self.correct_sys[i])
+        gates, strands = trans_mod.process_rxns(rxns, spcs, self.design_params)
+        designer.write_sys_file(self.basename, gates, self.sys_file, trans_mod)
+        self.assertTrue(filecmp.cmp(self.sys_file, self.correct_sys_file))
 
 class Test_readcrn(unittest.TestCase):
     crn = 'A -> B + B\nB + B -> A\nD -> A\n'

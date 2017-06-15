@@ -14,7 +14,7 @@ def flatten(x):
     
     
 def get_toeholds(n_ths=6, thold_l=int(7.7), thold_e=7.7, e_dev=0.5, m_spurious=0.4, 
-                 e_module=efj, labels=None, timeout=8):
+                 e_module=efj, timeout=8):
     """ Generate specified stickyends for the Soloveichik DSD approach
     
     A given run of stickydesign may not generate toeholds that match the 
@@ -30,7 +30,6 @@ def get_toeholds(n_ths=6, thold_l=int(7.7), thold_e=7.7, e_dev=0.5, m_spurious=0
         e_dev: Allowable energy deviation in kcal/mol
         m_spurious: Maximum spurious interaction strength as a ratio of target
                     energy
-        labels: Species names to be passed to the barplot maker
     Returns:
         ends_all: Stickydesign stickyends object
         (e_avg, e_rng): Average and range (max minus min) of toehold energies

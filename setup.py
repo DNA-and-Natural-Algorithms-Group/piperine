@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 setup(
     name="piperine",
     version="0.1",
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(),#exclude=['tests']),
     scripts=['piperine/designer.py'],
 
     install_requires=['numpy'],
@@ -10,7 +10,7 @@ setup(
 
     include_package_data = True,
     package_data={
-        '': ['*.csv', '*.comp', '*.crn'],
+        '': ['*.csv', '*.comp', '*.crn', 'tests/test_data/*'],
         'piperine': ['data/*.csv', 'data/*.comp', 'data/*.crn'],
     },
     

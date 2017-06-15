@@ -5,4 +5,4 @@ import gen_th
 import selectseq
 import designer
 import tdm
-import tests
+#import tests
