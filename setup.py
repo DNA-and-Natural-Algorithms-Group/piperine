@@ -6,8 +6,11 @@ from setuptools.command.develop import develop
 
 class install_with_spurious(install):
     def run(self):
+        # compile spuriousSSM
         import os
         os.system("cc -Wall -O3 piperine/SpuriousDesign/spuriousSSM.c -o piperine/PepperCompiler/_spuriousSSM -lm")
+        # run config.py in PepperCompiler
+        from piperine.PepperCompiler import config
         install.run(self)
 
 class build_with_spurious(build):
@@ -20,6 +23,8 @@ class develop_with_spurious(develop):
     def run(self):
         import os
         os.system("cc -Wall -O3 piperine/SpuriousDesign/spuriousSSM.c -o piperine/PepperCompiler/_spuriousSSM -lm")
+        # run config.py in PepperCompiler
+        from piperine.PepperCompiler import config
         develop.run(self)
 
 spurious_ext = Extension('piperine.SpuriousDesign.spuriousSSM', 
