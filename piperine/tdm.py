@@ -12,7 +12,7 @@ import re
 import random
 whiteSpaceSearch = re.compile('\s+')
 
-import gen_th
+from . import gen_th
 
 class MyProgress(object):
     class ImproperInput(Exception):
@@ -39,11 +39,11 @@ class MyProgress(object):
             print('DONE')
 
 def read_design(filename):
-  from PepperCompiler import nupack_out_grammar as ngram
+  from .PepperCompiler.nupack_out_grammar import document
   """Extracts the designed sequences and the mfe structures"""
   if not os.path.isfile(filename):
     error("Cannot load design. No such file '%s'." % filename)
-  stats, total_n_star = ngram.document.parseFile(filename)
+  stats, total_n_star = document.parseFile(filename)
   seqs = {}
   structs = {}
   # Catches everything (struct, seq and seq*) except bad inters (struct N struct)
@@ -427,7 +427,7 @@ def Spurious_Weighted_Score(basename,
     from tempfile import mkstemp
     import numpy as np
     
-    from designer import call_compiler, call_design
+    from .designer import call_compiler, call_design
     
     # Command parameters
     ssm_params = "bored=%s tmax=%s spurious_range=%s" % (bored, tmax, spurious_range)

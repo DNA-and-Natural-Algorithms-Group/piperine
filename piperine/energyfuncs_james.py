@@ -1,3 +1,4 @@
+from pkg_resources import Requirement, resource_stream
 import numpy as np
 import itertools
 import logging
@@ -15,9 +16,8 @@ class energyfuncs:
     def __init__(self, mismatchtype='max', targetdG=7):
         import os
         try:
-            import pkg_resources
             #dsb = pkg_resources.resource_stream(__name__, os.path.join('params','dnastackingbig.csv'))
-            dsb = pkg_resources.resource_stream(__name__, 'data/dnastackingbig.csv')
+            dsb = resource_stream(Requirement('stickydesign'), 'stickydesign/params/dnastackingbig.csv')
         except:
             try:
                 this_dir, this_filename = os.path.split(__file__)
@@ -25,13 +25,11 @@ class energyfuncs:
             except IOError:
                 raise IOError("Error loading dnastackingbig.csv")
         try:
-            import pkg_resources
-            #dgl = pkg_resources.resource_stream(__name__, os.path.join('params','dnadangle.csv'))
-            dgl = pkg_resources.resource_stream(__name__, 'data/dnadangle.csv')
+            dgl = resource_stream('peppersuite.piperine', 'data/dnadangle.csv')
         except:
             try:
                 this_dir, this_filename = os.path.split(__file__)
-                dgl = open( os.path.join(this_dir, "params", "dnadangle.csv") )
+                dgl = open( os.path.join(this_dir, "data", "dnadangle.csv") )
             except IOError:
                 raise IOError("Error loading dnadangle.csv")
         self.targetdG=targetdG

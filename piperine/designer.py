@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import division
 import sys
 import pkg_resources
@@ -5,10 +6,11 @@ import numpy as np
 import os
 import os.path
 import importlib
-import energyfuncs_james
-import DSDClasses
 
-small_crn = pkg_resources.resource_filename(__name__, "small.crn")
+from . import energyfuncs_james
+from . import DSDClasses
+
+small_crn = pkg_resources.resource_filename('piperine', "data/small.crn")
 data_dir = os.path.dirname(small_crn)
 #data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
@@ -33,7 +35,7 @@ def call_compiler(basename,
     Returns:
         Nothing
     """
-    from PepperCompiler.compiler import compiler
+    from .PepperCompiler.compiler import compiler
     if outputname is None:
         outputname = '{}.pil'.format(basename)
     if savename is None:
@@ -72,12 +74,12 @@ def call_design(basename,
     Returns:
         Nothing
     """
-    from PepperCompiler.design import spurious_design as spd
+    from .PepperCompiler.design.spurious_design import design
     if not infilename:
         infilename = '{}.pil'.format(basename)
     if not outfilename:
         outfilename = '{}.mfe'.format(basename)
-    spd.design(basename, infilename, outfilename, cleanup, verbose, reuse, 
+    design(basename, infilename, outfilename, cleanup, verbose, reuse, 
               just_files, struct_orient, old_output, tempname, extra_pars, 
               findmfe, spuriousbinary)
     if not os.path.isfile(outfilename):
@@ -115,7 +117,7 @@ def call_finish(basename,
     Returns:
         Nothing
     """
-    from PepperCompiler import finish
+    from .PepperCompiler.finish import finish
     if not savename:
         savename = '{}.save'.format(basename)
     if not designname:
@@ -123,7 +125,7 @@ def call_finish(basename,
     if not seqsname:
         seqsname = '{}.seqs'.format(basename)
     
-    finish.finish(savename, designname, seqsname, strandsname, run_kin, 
+    finish(savename, designname, seqsname, strandsname, run_kin, 
                   cleanup, trials, time, temp, conc, spurious, spurious_time)
 
 def read_crn(in_file):
@@ -599,7 +601,7 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
         sys.stdout = stdout
     return winner
 
-def run_designer(basename=small_crn, 
+def run_designer(basename=small_crn[:-4], 
                  reps=1, 
                  design_params=(7, 15, 2),
                  thold_l=7,

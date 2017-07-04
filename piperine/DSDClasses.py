@@ -179,6 +179,7 @@ class Bimrxn(object):
         self.out_strands = out_strands
         #############
         t, bm, c = params
+        self.params = params
         # Grab all first toeholds, second toehold of second input
         self.base = flatten([[ in_strands[x].th(y), out_strands[x].th(y)] for x in [0,1] for y in [0,1]] +
                     [ in_strands[1].th(1)])
@@ -212,6 +213,14 @@ class Bimrxn(object):
         return self.top_strands[:]
     
     def get_top_strand_dict(self):
+        t, bm, c = self.params
+        in_strands = self.in_strands
+        for in_strand in in_strands:
+            for seq in in_strand.get_top_strands():
+                if seq[-2:] in ["-a", "-b"]:
+                    self.top_s_dict.update({seq : range(1, 1+t+3)})
+                else:
+                    self.top_s_dict.update({seq : range(1+bm, 1+bm+t+3)})
         return self.top_s_dict.copy()
     
     def get_base_domains(self):
