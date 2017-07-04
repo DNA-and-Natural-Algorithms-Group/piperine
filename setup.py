@@ -7,22 +7,22 @@ from setuptools.command.develop import develop
 class install_with_spurious(install):
     def run(self):
         import os
-        os.system("cc -Wall -O3 peppersuite/SpuriousDesign/spuriousSSM.c -o peppersuite/PepperCompiler/_spuriousSSM -lm")
+        os.system("cc -Wall -O3 piperine/SpuriousDesign/spuriousSSM.c -o piperine/PepperCompiler/_spuriousSSM -lm")
         install.run(self)
 
 class build_with_spurious(build):
     def run(self):
         import os
-        os.system("cc -Wall -O3 peppersuite/SpuriousDesign/spuriousSSM.c -o peppersuite/PepperCompiler/_spuriousSSM -lm")
+        os.system("cc -Wall -O3 piperine/SpuriousDesign/spuriousSSM.c -o piperine/PepperCompiler/_spuriousSSM -lm")
         build.run(self)
 
 class develop_with_spurious(develop):
     def run(self):
         import os
-        os.system("cc -Wall -O3 peppersuite/SpuriousDesign/spuriousSSM.c -o peppersuite/PepperCompiler/_spuriousSSM -lm")
+        os.system("cc -Wall -O3 piperine/SpuriousDesign/spuriousSSM.c -o piperine/PepperCompiler/_spuriousSSM -lm")
         develop.run(self)
 
-spurious_ext = Extension('peppersuite.SpuriousDesign.spuriousSSM', 
+spurious_ext = Extension('piperine.SpuriousDesign.spuriousSSM', 
                          sources=['piperine/SpuriousDesign/spuriousSSM.c'])
 
 setup(name='piperine',
