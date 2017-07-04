@@ -124,7 +124,7 @@ else:
 ## Write configuration file
 # We need to write the configuration file in the same directory as this script.
 path = sys.argv[0]  # path to this script
-dir = os.path.dirname(path)  # directory this script is in
+dir = os.path.dirname(__file__)  # directory this script is in
 config_file = os.path.join(dir, "config_choices.py")
 
 f = open(config_file, "w")
