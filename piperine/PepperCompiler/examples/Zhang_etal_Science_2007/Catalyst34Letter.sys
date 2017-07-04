@@ -1,0 +1,7 @@
+declare system Catalyst34Letter:  -> 
+
+import Catalyst
+import Reporter
+
+component catalyst = Catalyst(15, 22, 5, 11, 8, 10): -> ob
+component reporter = Reporter(20, 7, 10): ob ->

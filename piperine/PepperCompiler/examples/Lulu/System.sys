@@ -1,0 +1,12 @@
+declare system System: ->
+
+import Dual_Nand   # Would be nice if we could do: import Dual_Nand(5, 15)
+
+component g1 = Dual_Nand(5, 15): s10 + s11 + s20 + s21 -> i10 + i11
+component g2 = Dual_Nand(5, 15): s20 + s21 + s30 + s31 -> i20 + i21
+
+component g3 = Dual_Nand(5, 15): s40 + s41 + i20 + i21 -> i30 + i31
+component g4 = Dual_Nand(5, 15): i20 + i21 + s50 + s51 -> i40 + i41
+
+component g5 = Dual_Nand(5, 15): i10 + i11 + i30 + i31 -> out60 + out61
+component g6 = Dual_Nand(5, 15): i30 + i31 + i40 + i41 -> out70 + out71

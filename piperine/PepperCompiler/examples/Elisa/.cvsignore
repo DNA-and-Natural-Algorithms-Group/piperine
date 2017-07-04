@@ -1,0 +1,12 @@
+*.pil
+*.save
+*.des
+*.mfe
+*.seqs
+*.strands
+
+*.sp
+*.st
+*.wc
+*.eq
+

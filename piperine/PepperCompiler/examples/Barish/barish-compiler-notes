@@ -1,0 +1,16 @@
+
+
+=== First verify the compilation of a single tile
+
+python ../../compiler.py DAOEtile5up
+python ../../design/spurious_design.py DAOEtile5up
+python ../../finish.py DAOEtile5up
+
+  alternative: python ../../design/spurious_design.py --keep-temp --struct DAOEtile5up
+  the --struct option keeps the strands in each tile "together" for SpuriousC
+
+=== Now compile the Variable Width system
+
+python ../../compiler.py --pil VariableWidth
+python ../../design/spurious_design.py --keep-temp VariableWidth
+

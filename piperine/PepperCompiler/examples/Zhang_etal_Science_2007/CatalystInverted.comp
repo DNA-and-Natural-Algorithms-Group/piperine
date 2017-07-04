@@ -1,0 +1,44 @@
+declare component CatalystInverted: -> output
+
+# ob and cat are sequence-independent, but ob's 3'-end 16nt must be identical to cat's 5'-end 16nt.
+# sequences are defined with mostly-three-letter alphabets to be compatible with Dave's actual sequences.
+
+## Sequences
+sequence d1  = "?H" : 10
+sequence d2  = "?N" : 24
+sequence d10 = "?H" : 6
+sequence d11 = "?N" : 16
+sequence d12 = "?N" : 4
+sequence d13 = "?N" : 14
+
+## Sequences for system constraints
+sequence output = d13 d1 d2
+
+## Strands
+# Inputs
+strand fuel = d11 d12 d13 d1
+strand cat  = d10 d11
+# Gate sections
+strand bot = d1* d13* d12* d11* d10*
+strand out = d13 d1 d2
+strand sig = d11 d12
+
+## Structures/Complexes
+# Input
+structure F  = fuel : domain ....
+structure C  = cat  : domain ..
+# Gate (and Intermediate structures)
+structure S  = bot + sig + out : domain ((((.+))+)).
+structure I  = bot + cat + out : domain ((.((+))+)).
+# Outputs
+structure SP = sig : domain ..
+structure OP = out : domain ...
+# Waste
+structure W = bot + fuel : domain ((((.+))))
+
+## Kinetics
+# Overall: C + S + F  ->  SP + OP + C + W
+kinetic C  + S -> SP + I
+kinetic SP + I -> C  + S
+kinetic F  + I -> OP + W + C
+

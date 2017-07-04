@@ -1,0 +1,8 @@
+declare system Dual_Nand(toe, base): in10 + in11 + in20 + in21 -> out0 + out1
+
+import And
+import Or
+
+component or  = Or(<toe>, <base>):  in10 + in20 -> out1
+component and = And(<toe>, <base>): in11 + in21 -> out0
+

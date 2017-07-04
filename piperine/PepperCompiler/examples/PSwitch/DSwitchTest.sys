@@ -1,0 +1,5 @@
+declare system DSwitchTest: in -> out
+
+import DSwitch
+
+component s1 = DSwitch: in -> out

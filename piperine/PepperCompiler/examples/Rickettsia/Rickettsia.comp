@@ -1,0 +1,50 @@
+###  DNA-based Rickettsia mimic from Figure 1 of:
+###     Venkataraman, et. al. (2007) "An autonomous polymerization motor powered by DNA hybridization", Nature Nanotechnology, Vol 2: pp. 490-494. doi:10.1038/nnano.2007.225
+
+declare component Rickettsia: -> #TODO: How would this be connected with a larger system?
+
+# Set up default domain lengths, these could be made parameters.
+length la = 6
+length lc = 6
+length lb = 18
+length lx = 6
+length ly = 3
+
+## Domains
+sequence a = "?N" : <la>
+sequence b = "?N" : <lb>
+sequence c = "?N" : <lc>
+sequence x = "?N" : <lx>
+sequence y = "?N" : <ly>
+
+## Strands
+strand A  = b* a*  # Anchor strand
+strand R  = x b y  # Rickettsia strand
+
+strand H1 = a  b  c  b* x*  # Fuel hairpin 1 strand
+strand H2 = y* b* a* b  c*  # Fuel hairpin 2 strand
+
+strand H1b = a  b  c  b* x*  # Copy of H1 (needs to be labeled seperately for technical reasons)
+strand H2b = y* b* a* b  c*  # Copy of H2 (specifically, for kinetics that must distinguish two hairpin molecules)
+
+## Structures
+structure Meta_H1 = H1 : domain .(.).  # H1 as a meta-stable hairpin
+structure Meta_H2 = H2 : domain .(.).  # H2 ------------------------
+
+structure Meta_H1b = H1b : domain .(.).
+structure Meta_H2b = H2b : domain .(.).
+
+structure AR_Seed = A + R : domain (.+.).  # A-R bound complex - the seed for polymerization
+
+# First few polymerized structures
+structure State2 = H1 + R + A : domain ((.((+)).+))  # After branch migration from first H1
+structure State5 = H1 + R + H2 + A : domain ((((.+.((+)).))+))  # After b.m. from first H2
+structure State8 = H1 + H1b + R + H2 + A : domain ((((.+((.((+)).+.))))+))  # After second H1
+structure State11 = H1 + H1b + R + H2b + H2 + A : domain ((((.+((((.+.((+)).))+.))))+))  # After second H2
+
+## Kinetics
+# Test first 4 polymerization reactions.
+kinetic AR_Seed + Meta_H1 -> State2
+kinetic State2  + Meta_H2 -> State5
+kinetic State5  + Meta_H1b -> State8
+kinetic State8  + Meta_H2b -> State11

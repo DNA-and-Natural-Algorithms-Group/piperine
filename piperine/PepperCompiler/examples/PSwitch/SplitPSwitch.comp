@@ -1,0 +1,46 @@
+declare component SplitPSwitch: input -> gatea0_output + gatea1_output
+
+
+################
+# SEQUENCES
+################
+sequence toehold 		= "?N" : 5
+
+sequence input 			= "?N" : 15
+sequence gatea0_output	= "?N" : 15
+sequence gatea1_output	= "?N" : 15
+
+sequence gatea 			= "?N" : 15
+
+
+################
+# STRANDS
+################
+strand st_in_signal		= input toehold gatea toehold : 40
+
+strand st_gatea0_output = gatea toehold gatea0_output toehold : 40
+strand st_gatea0_base   = toehold* gatea* toehold* : 25
+
+strand st_gatea1_output = gatea toehold gatea1_output toehold : 40
+strand st_gatea1_base	= toehold* gatea* toehold* : 25
+
+
+################
+# STRUCTURES
+################
+structure In_signal			= st_in_signal : domain ....
+structure Gatea0_Output		= st_gatea0_output : domain ....
+structure Gatea1_Output		= st_gatea1_output : domain ....
+
+structure Gatea0			= st_gatea0_output + st_gatea0_base : domain ((..+)).
+structure Gatea1		 	= st_gatea1_output + st_gatea1_base : domain ((..+)).
+
+structure Gatea0_Waste		= st_in_signal + st_gatea0_base : domain .(((+)))
+structure Gatea1_Waste		= st_in_signal + st_gatea1_base : domain .(((+)))
+
+
+################
+# KINETICS
+################
+kinetic In_signal + Gatea0 -> Gatea0_Waste + Gatea0_Output
+kinetic In_signal + Gatea1 -> Gatea1_Waste + Gatea1_Output

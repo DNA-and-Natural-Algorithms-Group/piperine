@@ -1,0 +1,21 @@
+To compile a seesaw circuit into a PIL file, use the following command (from 
+this directory):
+
+../../../compiler.py XXXX.sys 3 11 2 5
+
+where 'XXXX' can be 'And21', 'Simple41', or 'Sqrt42'.
+
+
+
+To compile into a .des file for NUPACK's multiobjective designer, use
+
+../../../compiler.py --des XXXX.sys 3 11 2 5
+
+
+
+The arguments 3, 11, 2, and 5 represent toehold length, recognition domain
+length, clamp length, and threshold extension length, respectively.
+
+This gives the toehold an effective length of 3 + 2 = 5 and gives the 
+recognition domain an effective length of 11 + 2 + 2 = 15, which should agree
+with the lengths used in Lulu's experiments.

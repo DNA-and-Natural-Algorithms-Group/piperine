@@ -1,0 +1,74 @@
+declare component switchA2A(spacer1in,spacer2in,spacer1out,spacer2out):  transcript_plus_in -> transcript_plus_out
+## Builds a switch controlled by the input activator transcript, and produces the output activator transcript.
+## Activator transcripts have the form GGGAGA [spacer1] [recognition:18] [act_toe:9] [inh_toe:7] [spacer2] [terminal_hairpin].
+## Activator transcript_plus is [removal_toe:4] [transcript].
+
+##lengths
+length removal_toe = 4
+length recognition = 18
+length act_toe = 9
+length inh_toe = 7
+
+## Sequences
+# promoter region
+sequence pro1 = "TAATA"
+sequence pro2 = "CGACTCACTATA"
+sequence pro3 = "GGGAGA"
+
+# terminating hairpin
+sequence hairpin1 = "CTGAC"
+sequence hairpin2 = "AAA"
+
+sequence spacer1in = "<spacer1in>N"
+sequence spacer2in = "<spacer2in>N"
+sequence recognition_in = "<recognition>N"
+sequence act_toe_in = "<act_toe>N"
+sequence inh_toe_in = "<inh_toe>N"
+sequence removal_toe_in = "<removal_toe>N"
+
+sequence spacer1out = "<spacer1out>N"
+sequence spacer2out = "<spacer2out>N"
+sequence recognition_out = "<recognition>N"
+sequence act_toe_out = "<act_toe>N"
+sequence inh_toe_out = "<inh_toe>N"
+sequence removal_toe_out = "<removal_toe>N"
+
+sequence transcript_in = pro3 spacer1in recognition_in act_toe_in inh_toe_in* spacer2in hairpin1 hairpin2 hairpin1* hairpin2
+sequence transcript_out = pro3 spacer1out recognition_out act_toe_out inh_toe_out* spacer2out hairpin1 hairpin2 hairpin1* hairpin2
+
+sequence transcript_plus_in = removal_toe_in transcript_in
+sequence transcript_plus_out = removal_toe_out transcript_out
+
+## Strands
+strand [dummy] Trans_in = domains(transcript_in)
+strand [dummy] Act_in = pro1* removal_toe_in recognition_in act_toe_in
+strand [dummy] Inh_in = inh_toe_in act_toe_in* recognition_in* removal_toe_in*
+# Note that the dummy strands are actually real, but they are already included in the "signal" component.
+# Note that Trans should be RNA, not DNA.  But we don't yet have a good notation for indicating that.
+
+strand Switch_code = recognition_in* removal_toe_in* pro1 pro2 pro3 transcript_out
+strand Switch_anti = transcript_out* pro3* pro2*
+
+# The structures below are only if we want kinetics for the full switches defined here.
+# Sufficient kinetics and thermodynamics for design are provided in the signal module (if the dummy Switch kinetics are used there).
+
+## Structures
+structure Transcript = Trans_in : domain ......(.).
+structure Activator = Act_in : domain ....
+structure Inhibitor = Inh_in : domain ....
+structure ActInh = Act_in + Inh_in : domain .(((+.)))
+structure TransInh = Trans_in + Inh_in : domain ..(((.(.).+))).
+
+structure Switch_Off = Switch_code + Switch_anti : domain ...(((+)))
+structure Switch_On  = Switch_code + Switch_anti + Act_in : domain ((((((+)))+))).
+structure Switch_Trans = Switch_code + Switch_anti + Trans_in : domain (..(((+)))+..)...(.).
+
+## Kinetics involving the switch
+kinetic Activator + Switch_Off -> Switch_On
+kinetic Inhibitor + Switch_On  -> ActInh + Switch_Off  		# should add rate & dG requirements
+kinetic Transcript + Switch_Off -> Switch_Trans
+kinetic Switch_Trans + Inhibitor -> Switch_Off + TransInh	# should add rate & dG requirements
+kinetic Switch_Trans + Activator -> Switch_On + Transcript	# should add rate & dG requirements
+
+## Transcription kinetics is not part of the Pepper semantics!
+# transcription: Switch_On -> Transcript + Switch_On

@@ -1,0 +1,8 @@
+declare system DualNand31(toe, rec, clamp, ext): in10 + in11 + in20 + in21 + in30 + in31 -> out0 + out1
+
+import Or31
+import And31
+
+component or = Or31(<toe>, <rec>, <clamp>, <ext>): in10 + in20 + in30 -> out1
+component and = And31(<toe>, <rec>, <clamp>, <ext>): in11 + in21 + in31 -> out0
+

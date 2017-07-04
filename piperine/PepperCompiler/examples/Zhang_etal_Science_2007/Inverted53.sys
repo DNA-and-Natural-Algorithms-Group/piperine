@@ -1,0 +1,7 @@
+declare system Inverted53: ->
+
+import CatalystInverted
+import ReporterInverted
+
+component catalyst = CatalystInverted: -> ob
+component reporter = ReporterInverted(14, 16, 6, 12): ob ->

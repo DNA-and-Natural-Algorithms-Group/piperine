@@ -1,0 +1,6 @@
+declare system Splitter12(toe, rec, clamp): in -> out1 + out2
+
+import Seesaw_3_1
+
+component g = Seesaw_3_1(<toe>, <rec>, <clamp>): out1 + out2 + fuel -> in
+

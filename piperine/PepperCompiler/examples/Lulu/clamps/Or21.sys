@@ -1,0 +1,9 @@
+declare system Or21(toe, rec, clamp, ext): in1 + in2 -> out
+
+import Seesaw_2_1
+import Seesaw_1_2
+import Threshold_0_1
+
+component g1 = Seesaw_1_2(<toe>, <rec>, <clamp>): int -> in1 + in2
+component t  = Threshold_0_1(<toe>, <rec>, <clamp>, <ext>): -> int
+component g2 = Seesaw_2_1(<toe>, <rec>, <clamp>): out + fuel -> int

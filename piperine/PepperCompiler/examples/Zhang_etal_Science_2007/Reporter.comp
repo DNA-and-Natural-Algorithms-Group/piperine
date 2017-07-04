@@ -1,0 +1,31 @@
+declare component Reporter(bm, toe, extra): input -> 
+
+# strand "input" is divided into three sections for the reporter: branch migration (bm), toehold (toe), and extraneous (extra).
+
+## Sequences
+sequence d1  = "?N" : <bm>     # Corresponds to d1 + d2a in catalyst system
+sequence d2  = "?N" : <toe>    # Corresponds to d2b in catalyst system
+sequence d3  = "?N" : <extra>  # Corresponds to d2c in catalyst system
+
+## Sequences for system constraints
+sequence input = d1 d2 d3
+
+## Strands
+strand in  = d1 d2 d3
+strand out = d1
+strand bot = d2* d1* 
+
+## Structures/Complexes
+# Input
+structure Input = in : domain ...
+# Gate (and Intermediate structures)
+structure Reporter  = bot + out  : domain .(+)
+# Outputs
+structure Output = out : domain .
+# Waste
+structure Waste = bot + in : domain ((+)).
+
+## Kinetics
+kinetic Reporter + Input -> Output + Waste
+
+

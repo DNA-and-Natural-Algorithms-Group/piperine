@@ -1,0 +1,105 @@
+declare component rxn_ab_2b(t, bm, c): A1 + A2 + B1 + B2 -> B1 + B2
+
+### Domains
+# Toeholds:
+sequence toe-a1 = "<t>N"
+sequence toe-a2 = "<t>N"
+sequence toe-b1 = "<t>N"
+sequence toe-b2 = "<t>N"
+
+# Branch migration domains:
+sequence a  = "<bm - c>N"
+sequence a1 = "<bm - c>N"
+sequence a2 = "<bm - c>N"
+sequence b  = "<bm - c>N"
+sequence b1 = "<bm - c>N"
+sequence b2 = "<bm - c>N"
+
+# Clamps:
+sequence ca  = "<c>N"
+sequence ca1 = "<c>N"
+sequence ca2 = "<c>N"
+sequence cb  = "<c>N"
+sequence cb1 = "<c>N"
+sequence cb2 = "<c>N"
+
+### I/O connectors
+sequence A1 = ca1 a1 toe-a1 ca a toe-a2
+sequence A2 = ca2 a2 toe-a1 ca a toe-a2
+sequence B1 = cb1 b1 toe-b1 cb b toe-b2
+sequence B2 = cb2 b2 toe-b1 cb b toe-b2
+
+### Strands
+strand a_1 = ca1 a1 toe-a1 ca a toe-a2
+strand a_2 = ca2 a2 toe-a1 ca a toe-a2
+strand b_1 = cb1 b1 toe-b1 cb b toe-b2
+strand b_2 = cb2 b2 toe-b1 cb b toe-b2
+strand backward_b = cb b toe-b2 toe-a1
+strand helper_b = toe-b1 cb2 b2 toe-b1
+strand gate_base = cb1* toe-a2* a* ca* toe-a1* toe-b2* b* cb* toe-b1*
+strand out_b = ca a toe-a2 cb1 b1
+strand trans_base = cb* toe-b1* b2* cb2* toe-b1* b1* cb1* toe-a2*
+
+### Structures
+# Single-stranded:
+structure A_1 = a_1 : domain ......
+structure A_2 = a_2 : domain ......
+structure B_1 = b_1 : domain ......
+structure B_2 = b_2 : domain ......
+structure Backward_b = backward_b : domain ....
+structure Helper_b = helper_b : domain ....
+structure Out_b = out_b : domain .....
+
+# Gates:
+structure Gate_b = gate_base + backward_b + out_b : domain ((((((((.+))))+)))).
+structure Trans_b = trans_base + b_1 + b_2 : domain (((((((.+)))...+))))..
+
+# Gate intermediates:
+structure Gate_b_int_1 = gate_base + b_1 + out_b : domain ((((.((((+..))))+)))).
+structure Gate_b_int_2 = gate_base + b_2 + out_b : domain ((((.((((+..))))+)))).
+structure Trans_b_int = trans_base + out_b + b_2 : domain ((((.(((+..)))+))))..
+
+# Waste products:
+structure Gate_waste_11 = gate_base + b_1 + a_1 : domain .((((((((+..))))+..))))
+structure Gate_waste_12 = gate_base + b_1 + a_2 : domain .((((((((+..))))+..))))
+structure Gate_waste_21 = gate_base + b_2 + a_1 : domain .((((((((+..))))+..))))
+structure Gate_waste_22 = gate_base + b_2 + a_2 : domain .((((((((+..))))+..))))
+structure Trans_waste = trans_base + out_b + helper_b : domain .(((((((+..)))+))))
+
+### Reactions
+kinetic B_1 + Gate_b -> Gate_b_int_1 + Backward_b
+kinetic B_2 + Gate_b -> Gate_b_int_2 + Backward_b
+kinetic Gate_b_int_1 + Backward_b -> B_1 + Gate_b
+kinetic Gate_b_int_2 + Backward_b -> B_2 + Gate_b
+kinetic A_1 + Gate_b_int_1 -> Gate_waste_11 + Out_b
+kinetic A_2 + Gate_b_int_1 -> Gate_waste_12 + Out_b
+kinetic A_1 + Gate_b_int_2 -> Gate_waste_21 + Out_b
+kinetic A_2 + Gate_b_int_2 -> Gate_waste_22 + Out_b
+kinetic Out_b + Trans_b -> Trans_b_int + B_1
+kinetic Helper_b + Trans_b_int -> Trans_waste + B_2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

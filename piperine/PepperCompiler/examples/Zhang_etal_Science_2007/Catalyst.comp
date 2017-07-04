@@ -1,0 +1,44 @@
+declare component Catalyst(d1, d2, d3, d4, d5, d6): catalyst + fuelstrand -> signal + output
+
+## Sequences
+sequence d1 = "?N" : <d1>
+sequence d2 = "?N" : <d2>
+sequence d3 = "?N" : <d3>
+sequence d4 = "?N" : <d4>
+sequence d5 = "?N" : <d5>
+sequence d6 = "?N" : <d6>
+
+## Sequences for system constraints
+sequence fuelstrand = d2 d3 d4
+sequence catalyst = d4 d5
+sequence output = d1 d2
+sequence signal = d6 d3 d4
+
+## Strands
+# Inputs
+strand fuel = d2 d3 d4
+strand cat  = d4 d5
+# Gate sections
+strand bot = d5* d4* d3* d2*
+strand out = d1 d2
+strand sig = d6 d3 d4
+
+## Structures/Complexes
+# Input
+structure F = fuel : domain ...
+structure C  = cat  : domain ..
+# Gate (and Intermediate structures)
+structure S  = bot + out + sig : domain .(((+.)+.))
+structure I  = bot + out + cat : domain ((.(+.)+))
+# Outputs
+structure SP = sig : domain ...
+structure OP = out : domain ..
+# Waste
+structure W = bot + fuel : domain .(((+)))
+
+## Kinetics
+# Overall: C + S + F  ->  SP + OP + C + W
+kinetic C  + S -> SP + I
+kinetic SP + I -> C  + S
+kinetic F  + I -> OP + W + C
+

@@ -1,0 +1,22 @@
+declare component DAOtileR: sLL + sLR -> sUL + sUR
+
+## Sequences
+# sticky ends
+sequence sLL = "5N" : 5
+sequence sUL = "5N" : 5
+sequence sLR = "5N" : 5
+sequence sUR = "5N" : 5
+
+# core 
+sequence sULarm = "S 7N" : 8
+sequence sUcore = "S 14N S" : 16
+sequence sURarm = "7N S" : 8 
+sequence sLLarm = "S 7N" : 8 
+sequence sLcore = "S 14N S" : 16
+sequence sLRarm = "7N S" : 8
+
+## Strands
+strand longLeft   = sLLarm sLcore sUcore* sULarm* : 48
+strand longRight  = sLRarm* sLcore* sUcore sURarm : 48
+strand shortLeft  = sUL* sULarm sLLarm* sLL : 26
+strand shortRight = sUR* sURarm* sLRarm sLR : 26

@@ -1,0 +1,25 @@
+declare component Detector(t,i): s -> 
+
+## Sequences
+sequence s =  "?N" : <t+i>
+
+## Strands
+# Inputs
+strand inS = s* : <t+i>
+# Gate sections
+strand Fluor = "?N" : <i>
+strand Bind = "?N" : <t+i>
+
+## Structures/Complexes
+# Input
+structure InS = inS : <t+i>.
+# Gate
+structure Det = Fluor + Bind : <i>( + <t>. <i>)
+# Paired inputs (waste)
+structure wasteDet = inS + Bind : <t+i>( + <t+i>)
+# Outputs
+structure OutFluor = Fluor : <i>.
+
+## Kinetics
+kinetic InS + Det -> wasteDet + OutFluor
+

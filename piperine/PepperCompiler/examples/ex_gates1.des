@@ -1,0 +1,231 @@
+## Layer 0
+# Structures
+structure NX0   =  U21
+structure  X0   =  U21
+structure NY0   =  U36
+structure  Y0   =  U36
+structure G0_00 =  U6 H15(+ H15(U29 + U14 H15(+)))
+structure G0_01 =  U6 H15(+ H15(U29 + U14 H15(+)))
+structure G0_10 =  U6 H15(+ H15(U29 + U14 H15(+)))
+structure G0_11 =  U6 H15(+ H15(U29 + U14 H15(+)))
+structure DNS0  =  H15(+ U6)
+structure  DS0  =  H15(+ U6)
+#structure DNC1  =  H30(+) U6
+#structure  DC1  =  H30(+) U6
+#
+# Data regions
+sequence nx0  =  6N S 13N S
+sequence  x0  =  6N S 13N S
+sequence ny0  =     S 28N S 6N
+sequence  y0  =     S 28N S 6N
+sequence ns0  =  6N S 13N S
+sequence  s0  =  6N S 13N S
+sequence nc1  =     S 28N S 6N
+sequence  c1  =     S 28N S 6N
+# "Junk" regions (these will be constrained by wc pairing, but are not inherently important)
+sequence jny0  =  9N
+sequence  jy0  =  9N
+sequence jns0  =  8N
+sequence  js0  =  8N
+sequence jnc1  =  8N
+sequence  jc1  =  8N
+sequence jdns0 =  15N
+sequence  jds0 =  15N
+#sequence jdnc1 =  30N
+#sequence  jdc1 =  30N
+#
+# Inputs
+NX0 : nx0*
+ X0 :  x0*
+NY0 : ny0*
+ Y0 :  y0*
+# Gates (xy)
+G0_00 : nx0   jnc1 nc1*   ns0* jns0   ny0 jny0
+G0_01 : nx0   jnc1 nc1*    s0*  js0    y0  jy0
+G0_10 :  x0   jnc1 nc1*    s0*  js0   ny0 jny0
+G0_11 :  x0    jc1  c1*   ns0* jns0    y0  jy0
+# Output Detectors
+DNS0 : jdns0  ns0
+ DS0 :  jds0   s0
+#DNC1 : jdnc1  nc1
+# DC1 :  jnc1   c1
+#
+#
+#objective function
+NX0 < 1.0
+ X0 < 1.0
+NY0 < 1.0
+ Y0 < 1.0
+G0_00 < 1.0
+G0_01 < 1.0
+G0_10 < 1.0
+G0_11 < 1.0
+DNS0 < 1.0
+ DS0 < 1.0
+#
+prevent NX0 X0 NY0 Y0 < 1.0
+#
+#
+## Layer 1
+# Structures
+structure NX1    =  U21
+structure  X1    =  U21
+structure NY1    =  U21
+structure  Y1    =  U21
+structure G1_000 =  H15(H15(+ H15(U29 + U14 H15(+))) +) U6
+structure G1_001 =  H15(H15(+ H15(U29 + U14 H15(+))) +) U6
+structure G1_010 =  H15(H15(+ H15(U29 + U14 H15(+))) +) U6
+structure G1_011 =  H15(H15(+ H15(U29 + U14 H15(+))) +) U6
+structure G1_100 =  H15(H15(+ H15(U29 + U14 H15(+))) +) U6
+structure G1_101 =  H15(H15(+ H15(U29 + U14 H15(+))) +) U6
+structure G1_110 =  H15(H15(+ H15(U29 + U14 H15(+))) +) U6
+structure G1_111 =  H15(H15(+ H15(U29 + U14 H15(+))) +) U6
+structure DNS1   =  H15(+ U6)
+structure  DS1   =  H15(+ U6)
+#structure DNC2   =  H30(+) U6
+#structure  DC2   =  H30(+) U6
+#
+# Data regions
+sequence nx1  =     S 13N S 6N
+sequence  x1  =     S 13N S 6N
+sequence ny1  =  6N S 13N S
+sequence  y1  =  6N S 13N S
+sequence ns1  =  6N S 13N S
+sequence  s1  =  6N S 13N S
+sequence nc2  =     S 28N S 6N
+sequence  c2  =     S 28N S 6N
+# "Junk" regions
+sequence jny1  =  9N
+sequence  jy1  =  9N
+sequence jnc1b =  9N
+sequence  jc1b =  9N
+sequence jns1  =  8N
+sequence  js1  =  8N
+sequence jnc2  =  8N
+sequence  jc2  =  8N
+sequence jdns1 =  15N
+sequence  jds1 =  15N
+#sequence jdnc2 =  30N
+#sequence  jdc2 =  30N
+#
+# Inputs
+NX1 : nx1*
+ X1 :  x1*
+NY1 : ny1*
+ Y1 :  y1*
+# Gates (xyc)
+G1_000 : jny1 ny1   jnc2 nc2*   ns1* jns1   nc1 jnc1b   nx1
+G1_001 : jny1 ny1    jc2  c2*    s1*  js1   nc1 jnc1b   nx1
+G1_010 :  jy1  y1   jnc2 nc2*    s1*  js1   nc1 jnc1b   nx1
+G1_011 :  jy1  y1    jc2  c2*   ns1* jns1    c1  jc1b   nx1
+G1_100 : jny1 ny1   jnc2 nc2*    s1*  js1   nc1 jnc1b    x1
+G1_101 : jny1 ny1    jc2  c2*   ns1* jns1    c1  jc1b    x1
+G1_110 :  jy1  y1   jnc2 nc2*   ns1* jns1    c1  jc1b    x1
+G1_111 :  jy1  y1    jc2  c2*    s1*  js1    c1  jc1b    x1
+# Output Detectors
+DNS1 : jdns1  ns1
+ DS1 :  jds1   s1
+#DNC2 : jdnc2  nc2
+# DC2 :  jnc2   c2
+#
+#objective function
+NX1 < 1.0
+ X1 < 1.0
+NY1 < 1.0
+ Y1 < 1.0
+G1_000 < 1.0
+G1_001 < 1.0
+G1_010 < 1.0
+G1_011 < 1.0
+G1_100 < 1.0
+G1_101 < 1.0
+G1_110 < 1.0
+G1_111 < 1.0
+DNS1 < 1.0
+ DS1 < 1.0
+#
+prevent NX1 X1 NY1 Y1 < 1.0
+#
+#
+## Layer 2
+# Structures
+structure NX2    =  U21
+structure  X2    =  U21
+structure NY2    =  U21
+structure  Y2    =  U21
+structure G2_000 =  H15(H15(+ H15(U14 + U14 H15(+))) +) U6
+structure G2_001 =  H15(H15(+ H15(U14 + U14 H15(+))) +) U6
+structure G2_010 =  H15(H15(+ H15(U14 + U14 H15(+))) +) U6
+structure G2_011 =  H15(H15(+ H15(U14 + U14 H15(+))) +) U6
+structure G2_100 =  H15(H15(+ H15(U14 + U14 H15(+))) +) U6
+structure G2_101 =  H15(H15(+ H15(U14 + U14 H15(+))) +) U6
+structure G2_110 =  H15(H15(+ H15(U14 + U14 H15(+))) +) U6
+structure G2_111 =  H15(H15(+ H15(U14 + U14 H15(+))) +) U6
+structure DNS2   =  H15(+ U6)
+structure  DS2   =  H15(+ U6)
+structure DNC3   =  H15(+) U6
+structure  DC3   =  H15(+) U6
+#
+# Data regions
+sequence nx2  =     S 13N S 6N
+sequence  x2  =     S 13N S 6N
+sequence ny2  =  6N S 13N S
+sequence  y2  =  6N S 13N S
+sequence ns2  =  6N S 13N S
+sequence  s2  =  6N S 13N S
+sequence nc3  =     S 13N S 6N
+sequence  c3  =     S 13N S 6N
+# "Junk" regions
+sequence jny2  =  9N
+sequence  jy2  =  9N
+sequence jnc2b =  9N
+sequence  jc2b =  9N
+sequence jns2  =  8N
+sequence  js2  =  8N
+sequence jnc3  =  8N
+sequence  jc3  =  8N
+sequence jdns2 =  15N
+sequence  jds2 =  15N
+sequence jdnc3 =  15N
+sequence  jdc3 =  15N
+#
+# Inputs
+NX2 : nx2*
+ X2 :  x2*
+NY2 : ny2*
+ Y2 :  y2*
+# Gates (xyc)
+G2_000 : jny2 ny2   jnc3 nc3*   ns2* jns2   nc2 jnc2b   nx2
+G2_001 : jny2 ny2    jc3  c3*    s2*  js2   nc2 jnc2b   nx2
+G2_010 :  jy2  y2   jnc3 nc3*    s2*  js2   nc2 jnc2b   nx2
+G2_011 :  jy2  y2    jc3  c3*   ns2* jns2    c2  jc2b   nx2
+G2_100 : jny2 ny2   jnc3 nc3*    s2*  js2   nc2 jnc2b    x2
+G2_101 : jny2 ny2    jc3  c3*   ns2* jns2    c2  jc2b    x2
+G2_110 :  jy2  y2   jnc3 nc3*   ns2* jns2    c2  jc2b    x2
+G2_111 :  jy2  y2    jc3  c3*    s2*  js2    c2  jc2b    x2
+# Output Detectors
+DNS2 : jdns2  ns2
+ DS2 :  jds2   s2
+DNC3 : jdnc3  nc3
+ DC3 :  jdc3   c3
+#
+NX2 < 1.0
+ X2 < 1.0
+NY2 < 1.0
+ Y2 < 1.0
+# Gates (xyc)
+G2_000 < 1.0
+G2_001 < 1.0
+G2_010 < 1.0
+G2_011 < 1.0
+G2_100 < 1.0
+G2_101 < 1.0
+G2_110 < 1.0
+G2_111 < 1.0
+# Output Detectors
+DNS2 < 1.0
+ DS2 < 1.0
+DNC3 < 1.0
+ DC3 < 1.0
+#
+prevent NX2 X2 NY2 Y2 < 1.0

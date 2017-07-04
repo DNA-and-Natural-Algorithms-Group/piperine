@@ -1,0 +1,47 @@
+declare component CatalystOverhang: -> output
+
+# ob and cat are sequence-independent, but ob's 3'-end 16nt must be identical to cat's 5'-end 16nt.
+# sequences are defined with mostly-three-letter alphabets to be compatible with Dave's actual sequences.
+
+## Sequences
+sequence d1 = "10H" : 10
+sequence d2 = "24N" : 24
+sequence d3 = "4H"  : 4
+sequence d4 = "16N" : 16
+sequence d5 = "6H"  : 6
+sequence d6 = "16H" : 16
+sequence d7 = "15N" : 15
+sequence d8 = "15N" : 15
+sequence d9 = "15N" : 15
+
+## Sequences for system constraints
+sequence output = d1 d2
+
+## Strands
+# Inputs
+strand fuel = d2 d3 d4
+strand cat9 = d9 d4 d5
+# Gate sections
+strand bot = d5* d4* d3* d2*
+strand out = d1  d2
+strand sig = d6  d3  d4
+
+## Structures/Complexes
+# Input
+structure F  = fuel : domain ...
+structure CE = cat9 : domain ...
+# Gate (and Intermediate structures)
+structure S  = bot + out + sig : domain .(((+.)+.))
+structure IE = bot + out + cat9 : domain ((.(+.)+.))
+# Outputs
+structure SP = sig : domain ...
+structure OP = out : domain ..
+# Waste
+structure W = bot + fuel : domain .(((+)))
+
+## Kinetics
+# Overall: C + S + F  ->  SP + OP + C + W
+kinetic CE + S  ->  SP + IE
+kinetic SP + IE ->  CE + S
+kinetic F  + IE ->  OP + W  + CE
+

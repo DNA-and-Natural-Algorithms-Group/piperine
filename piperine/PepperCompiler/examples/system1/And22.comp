@@ -1,0 +1,41 @@
+declare component And22: x + y -> s + c
+
+## Sequences
+sequence x = "26N" : 26
+sequence s = "26N" : 26
+sequence c = "26N" : 26
+sequence y = "26N" : 26
+
+
+## Strands
+# Inputs
+strand inX = x : 26
+strand inY = y : 26
+
+# Gate sections
+strand X  = x*  : 26
+strand SC = "4N" s c "4N" : 60
+strand Y  = y* "14N" : 40
+
+
+## Structures/Complexes
+# Input
+structure InX = inX : U26
+structure InY = inY : U26
+
+# Gate (and partial structures)
+structure [10nt] G  = X + SC + Y  : U6 H20(+ H10(U40 H10(+)))
+structure [10nt] Ga =     SC + Y  :          H10(U40 H10(+)) U20
+
+# Paired inputs (waste)
+structure [no-opt] wasteX = inX + X : H26(+)
+structure [no-opt] wasteY = inY + Y : H26(+) U14
+
+# Outputs
+structure OutSC = SC : U60
+
+
+## Kinetics
+# Overall: InX + InY + G  ->  wasteX + wasteY + OutS + OutC
+kinetic  InX + G   -> wasteX + Ga
+kinetic  InY + Ga  -> wasteY + OutSC

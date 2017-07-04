@@ -1,0 +1,19 @@
+declare component Hairpin: a -> b + c
+
+## Sequences (recognition regions)
+sequence a = "15N" : 15
+sequence b = "15N" : 15
+sequence c = "15N" : 15
+
+## Strands
+strand input = a : 15
+strand hairpin = a* "5N" b "5N" c "5N" : 60
+
+## Structures/Complexes
+structure Input = input : 15.
+structure Closed = hairpin : 5. 25( 5. 25)
+structure Open = input + hairpin : 15( + 15) 45.
+
+## Kinetics
+kinetic Input + Closed -> Open
+

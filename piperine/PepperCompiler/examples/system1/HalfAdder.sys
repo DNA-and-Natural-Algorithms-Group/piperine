@@ -1,0 +1,8 @@
+declare system HalfAdder:  -> 
+
+import And22
+
+component G0_00 = And22: nx0 + ny0 -> ns0 + nc1
+component G0_01 = And22: nx0 +  y0 ->  s0 + nc1
+component G0_10 = And22:  x0 + ny0 ->  s0 + nc1
+component G0_11 = And22:  x0 +  y0 -> ns0 +  c1

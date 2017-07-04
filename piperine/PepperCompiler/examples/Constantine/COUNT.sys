@@ -1,0 +1,48 @@
+declare system COUNT:  ->
+# Uses bond numbers, etc from actual system. Don't use this itself, use the
+# pil file with the correct sequences inserted.
+
+import DAOEtile5up, DAOEtile3up, DAOEdoubletile35bh_down, DAOEdoubletile35hi_up, DAOEdoubletile35rii
+
+# Low-bit nucleation barrier
+component Z78_count     = DAOEdoubletile35hi_up: e1* + e2 -> e3 + e1 + inert
+component Z13_count      = DAOEtile5up: e29 + e32 -> e2* + e30
+component Z14_count	   = DAOEtile3up: e30* + e31 -> e3* + e29*
+component Z15_count	   = DAOEtile3up: e34* + e10 -> e32* + e33*
+component Z16_count      = DAOEtile5up: e33 + e27* -> e31* + e34
+
+# High-bit nucleation barrier
+component Z56_count     = DAOEdoubletile35bh_down: e20* + e19* -> e18* + e20
+component Z1_count       = DAOEtile3up: e13* + e14 -> e11* + e12*
+component Z2_count       = DAOEtile3up: e17* + e18 -> e15* + e16*
+component Z3_count	   = DAOEtile5up: e12 + e15 -> e10* + e13
+component Z4_count       = DAOEtile5up: e16 + e19 -> e14* + e17
+
+# Zero_count
+component Z9_count       = DAOEtile3up: e5* + e6 -> e11* + e4*
+component Z10_count	   = DAOEtile3up: e9* + e10 -> e7* + e8*
+component Z11_count	   = DAOEtile5up: e4 + e7 -> e10* + e5
+component Z12_count      = DAOEtile5up: e8 + e11 -> e6* + e9
+
+# One
+component ZA_count       = DAOEtile5up: e21 + e24 -> e10* + e22
+component ZB_count       = DAOEtile3up: e22* + e23 -> e11* + e21*
+component ZC_count	   = DAOEtile3up: e26* + e10 -> e24* + e25*
+component ZD_count       = DAOEtile5up: e25 + e11 -> e23* + e26
+
+# Zero-Count_count
+component ZG_count	   = DAOEtile3up: e22* + e28* -> e27 + e4*
+component ZE_count       = DAOEtile5up: e25 + e27* -> e28 + e9
+
+# One-Count
+component ZF_count	   = DAOEtile3up: e5* + e35* -> e27 + e21*
+component ZH_count       = DAOEtile5up: e8 + e11 -> e35 + e26
+
+# Cap
+component ZNO       = DAOEdoubletile35rii: e13* + eC -> e27 + eB
+component ZI        = DAOEtile3up: e9* + eB* -> eA + inert
+component ZJ        = DAOEtile5up: e4 + eA* -> eB + inert
+component ZK        = DAOEtile3up: e34* + eB* -> eA + inert
+component ZL        = DAOEtile5up: e29 + eA* -> inert + inert
+component ZM        = DAOEtile5up: e16 + inert -> eC* + inert
+

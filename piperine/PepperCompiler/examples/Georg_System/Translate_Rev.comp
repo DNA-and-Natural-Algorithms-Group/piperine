@@ -1,0 +1,22 @@
+declare component Translate_Rev(t, di, do, c, sp): in(IN) -> out(OUT)
+
+sequence toe_in = "?N" : <t>
+sequence data_in = "?N" : <di>
+sequence toe_out = "?N" : <t>
+sequence data_out = "?N" : <do>
+
+sequence in = data_in toe_in : <t+di>
+sequence out = data_out toe_out : <t+do>
+
+strand [dummy] In = in : <t+di>
+strand Base = "?N" : <t+di+sp>
+strand Out = out "?N" : <di + sp + do - c>
+
+## Structures
+structure IN = In : domain .
+structure Gate = Base + Out : <t>. <di+sp>( + <do-c>. <di+sp>)
+
+structure IN_waste = In + Base : <t+di>( + <t+di>) <sp>.
+structure OUT = Out : domain ..
+
+kinetic IN + Gate -> OUT + IN_waste

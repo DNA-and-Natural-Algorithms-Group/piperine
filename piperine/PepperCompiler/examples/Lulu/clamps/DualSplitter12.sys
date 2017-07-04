@@ -1,0 +1,7 @@
+declare system DualSplitter12(toe, rec, clamp): in0 + in1 -> out10 + out11 + out20 + out21
+
+import Splitter12
+
+component g0 = Splitter12(<toe>, <rec>, <clamp>): in0 -> out10 + out20
+component g1 = Splitter12(<toe>, <rec>, <clamp>): in1 -> out11 + out21
+

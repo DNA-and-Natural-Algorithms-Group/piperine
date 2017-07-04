@@ -1,0 +1,43 @@
+declare component And31(t, di1, di2, di3, do, c, end): x(InX) + y(InY) + z(InZ) -> out(OUT)
+
+sequence tx = "?N" : <t>
+sequence dx = "?N" : <di1>
+sequence ty = "?N" : <t>
+sequence dy = "?N" : <di2>
+sequence tz = "?N" : <t>
+sequence dz = "?N" : <di3>
+sequence toe_out = "?N" : <t>
+sequence data_out = "?N" : <do>
+
+sequence x = tx dx : <t+di1>
+sequence y = dy ty : <t+di2>
+sequence z = tz dz : <t+di3>
+sequence out = toe_out data_out : <t+do>
+
+strand [dummy] inX = x : <t+di1>
+strand [dummy] inY = y : <t+di2>
+strand [dummy] inZ = z : <t+di3>
+
+strand X = "?N" : <t+di1>
+strand Y = "?N" : <di1+di2>
+strand Z = "?N" : <di2+di3>
+strand Out = "?N" out "<end>N" : <do+(di3-c)>
+
+## Structures
+structure InX = inX : domain .
+structure InY = inY : domain .
+structure InZ = inZ : domain .
+
+structure Gate = Y + Out + Z + X :    H<di1>(H<di2>(+ H<di3-end>(U<do-c> H<end>(+))) +) U<t>
+structure Gate_inter1 = Y + Out + Z : U<di1> H<di2>(+ H<di3-end>(U<do-c> H<end>(+)))
+structure Gate_inter2 =     Out + Z :                 H<di3-end>(U<do-c> H<end>(+)) U<di2>
+
+structure X_waste = inX + X : domain (+)
+structure Y_waste = inY + Y : H<t+di2>(+ U<di1-t>)
+structure Z_waste = inZ + Z : H<t+di3>(+) U<di2-t>
+
+structure OUT = Out : domain ...
+
+kinetic InX + Gate -> X_waste + Gate_inter1
+kinetic InY + Gate_inter1 -> Y_waste + Gate_inter2
+kinetic InZ + Gate_inter2 -> Z_waste + OUT

@@ -1,0 +1,50 @@
+declare component rxn1_2(t, bm): x1 -> x2 + x3
+
+# Domains
+# Toeholds: d1, d3, d4, d6, d7, d9
+sequence d1 = "<t>N"
+sequence d3 = "<t>N"
+sequence d4 = "<t>N"
+sequence d6 = "<t>N"
+sequence d7 = "<t>N"
+sequence d9 = "<t>N"
+
+# Branch migration domains: d2, d5, d8, d10, d11
+sequence d2 = "<bm>N"
+sequence d5 = "<bm>N"
+sequence d8 = "<bm>N"
+sequence d10 = "<bm>N"
+sequence d11 = "<bm>N"
+
+# I/O sequences
+sequence x1 = d1 d2 d3
+sequence x2 = d4 d5 d6
+sequence x3 = d7 d8 d9
+
+# Strands
+strand x1 = d1 d2 d3
+
+strand gi_base = d3* d2* d1*
+strand oi = d2 d3 d10 d4 d11 d7
+strand ti_base = d7* d11* d4* d10* d3*
+
+strand x2 = d10 d4 d5 d6
+strand x3 = d11 d7 d8 d9
+
+# Complexes
+structure X1 = x1 : domain ...
+
+structure Gi = oi + gi_base : domain ((....+)).
+structure Waste1 = x1 + gi_base : domain (((+)))
+
+structure Oi = oi : domain ......
+
+structure Ti = x2 + x3 + ti_base : domain ((..+((..+)))).
+structure Waste2 = oi + ti_base : domain .(((((+)))))
+
+structure X2 = x2 : domain ....
+structure X3 = x3 : domain ....
+
+# Kinetics
+kinetic X1 + Gi -> Waste1 + Oi
+kinetic Oi + Ti -> Waste2 + X2 + X3

@@ -1,0 +1,27 @@
+declare system Adder_2Bit:  -> 
+
+import HalfAdder
+import Adder
+import Detector
+
+component G0_00 = HalfAdder(6  3  4  20): nx0  ny0 -> ns0  nc1
+component G0_01 = HalfAdder(6  3  4  20): nx0   y0 ->  s0  nc1
+component G0_10 = HalfAdder(6  3  4  20):  x0  ny0 ->  s0  nc1
+component G0_11 = HalfAdder(6  3  4  20):  x0   y0 -> ns0   c1
+
+component G1_000 = Adder(6  3  4  20): nx1  ny1  nc1 -> ns1  nc2
+component G1_001 = Adder(6  3  4  20): nx1  ny1   c1 ->  s1  nc2
+component G1_010 = Adder(6  3  4  20): nx1   y1  nc1 ->  s1  nc2
+component G1_011 = Adder(6  3  4  20): nx1   y1   c1 -> ns1   c2
+component G1_100 = Adder(6  3  4  20):  x1  ny1  nc1 ->  s1  nc2
+component G1_101 = Adder(6  3  4  20):  x1  ny1   c1 -> ns1   c2
+component G1_110 = Adder(6  3  4  20):  x1   y1  nc1 -> ns1   c2
+component G1_111 = Adder(6  3  4  20):  x1   y1   c1 ->  s1   c2
+
+component DNS0 = Detector(6  16): ns0 ->
+component  DS0 = Detector(6  16):  s0 ->
+component DNS1 = Detector(6  16): ns1 ->
+component  DS1 = Detector(6  16):  s1 ->
+component DNC2 = Detector(6  16): nc2 ->
+component  DC2 = Detector(6  16):  c2 ->
+

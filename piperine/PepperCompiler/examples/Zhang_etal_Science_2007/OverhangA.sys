@@ -1,0 +1,7 @@
+declare system OverhangA:  -> 
+
+import CatalystA
+import Reporter
+
+component catalyst = CatalystA: -> ob
+component reporter = Reporter(16, 6, 12): ob ->

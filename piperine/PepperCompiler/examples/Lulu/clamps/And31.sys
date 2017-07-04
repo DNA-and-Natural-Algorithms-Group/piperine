@@ -1,0 +1,9 @@
+declare system And31(toe, rec, clamp, ext): in1 + in2 + in3 -> out
+
+import Seesaw_1_3
+import Seesaw_2_1
+import Threshold_0_1
+
+component g1 = Seesaw_1_3(<toe>, <rec>, <clamp>): int -> in1 + in2 + in3
+component t = Threshold_0_1(<toe>, <rec>, <clamp>, <ext>): -> int
+component g2 = Seesaw_2_1(<toe>, <rec>, <clamp>): out + fuel -> int

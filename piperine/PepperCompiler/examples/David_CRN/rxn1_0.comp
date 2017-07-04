@@ -1,0 +1,29 @@
+declare component rxn1_0(t, bm): x1 -> 
+
+# Domains
+# Toeholds: d1, d3
+sequence d1 = "<t>N"
+sequence d3 = "<t>N"
+
+# Branch migration domains: d2
+sequence d2 = "<bm>N"
+
+# I/O sequences
+sequence x1 = d1 d2 d3
+
+# Strands
+strand x1 = d1 d2 d3
+
+strand gi_base = d3* d2* d1*
+strand oi = d2 d3
+
+# Complexes
+structure X1 = x1 : domain ...
+
+structure Gi = oi + gi_base : domain ((+)).
+structure Waste1 = x1 + gi_base : domain (((+)))
+
+structure Oi = oi : domain ..
+
+# Kinetics
+kinetic X1 + Gi -> Waste1 + Oi

@@ -1,0 +1,16 @@
+declare component Helices:  -> 
+
+## Sequences
+sequence x = "26N" : 26
+sequence y = "26N" : 26
+
+
+## Strands
+strand wX = x : 26
+strand wY = y : 26
+strand cX = x* : 26
+strand cY = y* : 26
+
+## Structures/Complexes
+structure X = wX + cX : H26(+)
+structure Y = wY + cY : H26(+)

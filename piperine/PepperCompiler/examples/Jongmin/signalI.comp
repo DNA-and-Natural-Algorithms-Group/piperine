@@ -1,0 +1,55 @@
+declare component signalI(spacer1,spacer2):  -> transcript
+## Declares an inhibitor signal, with transcript = GGGAGA [spacer1] [toehold:8] [recognition:22] TAATA [spacer2] [terminal_hairpin].
+## This file include kinetics specifications for interactions between the transcript and activating threshold species,
+## since these are independent of the particular switch involved.
+## Further, since actual switch templates have their identical lefthand side reactions, regardless of their output,
+## it's reasonable to include dummy reactions that obviate the need for explicit reactions in the switch components themselves.
+## However, for semantic completeness one would want to include those reactions as well.
+
+# lengths
+length recognition = 22
+length toehold = 8
+
+## Sequences
+# promoter region
+sequence pro1 = "TAATA"
+sequence pro2 = "CGACTCACTATA"
+sequence pro3 = "GGGAGA"
+
+# terminating hairpin
+sequence hairpin1 = "CTGAC"
+sequence hairpin2 = "AAA"
+
+sequence spacer1 = "<spacer1>N"
+sequence spacer2 = "<spacer2>N"
+
+sequence recognition = "<recognition>N"
+sequence toehold = "<toehold>N"
+
+sequence transcript = pro3 spacer1 toehold recognition pro1 spacer2 hairpin1 hairpin2 hairpin1* hairpin2
+
+strand Trans = domains(transcript)
+strand Act = pro1* recognition* toehold*
+# note that Trans should be RNA, not DNA.  But we don't yet have a good notation for indicating that.
+
+strand [dummy] Switch = recognition pro1 pro2 "TTT" pro2*
+
+## Structures
+structure Transcript = Trans : domain ......(.).
+structure Activator = Act : domain ...
+structure TransAct = Trans + Act : domain ..(((.(.).+)))
+
+# The structures below are only if we want kinetics for dummy reactions defined here.
+structure Switch_Off = Switch : domain ..(.)
+structure Switch_On  = Switch + Act : domain  (((.)+)).
+
+## Kinetics
+# Kinetics not involving the dummy switch
+kinetic Transcript + Activator -> TransAct
+
+# Kinetics involving the dummy switch
+kinetic Activator + Switch_Off -> Switch_On
+kinetic Transcript + Switch_On -> Switch_Off + TransAct
+
+## Transcription kinetics is not part of the Pepper semantics!
+# transcription: Switch_On -> Transcript + Switch_On

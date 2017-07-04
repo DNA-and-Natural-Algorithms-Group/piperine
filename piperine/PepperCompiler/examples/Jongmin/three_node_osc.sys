@@ -1,0 +1,10 @@
+declare system three_node_osc: ->
+
+import signalI, switchI2I
+
+component rI1 = signalI(10,0): -> trans_rI1
+component rI2 = signalI(5,0): -> trans_rI2
+component rI3 = signalI(7,0): -> trans_rI3
+component Sw23 = switchI2I(7,0,5,0): trans_rI3 -> trans_rI2
+component Sw12 = switchI2I(5,0,10,0): trans_rI2 -> trans_rI1
+component Sw31 = switchI2I(10,0,7,0): trans_rI1 -> trans_rI3

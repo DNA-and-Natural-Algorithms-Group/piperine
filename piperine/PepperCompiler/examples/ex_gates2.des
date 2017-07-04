@@ -1,0 +1,16 @@
+## Layer 0
+# Structures
+structure Foo = H4(+)
+#structure Bar = U2 H2(+) U2
+#
+# Data regions
+sequence a = 2N
+sequence b = 2N
+sequence c = 2N
+# Inputs
+Foo : a a b* c*
+#Bar : a a b* b
+#objective function
+Foo < 1.0
+#Bar < 1.0
+

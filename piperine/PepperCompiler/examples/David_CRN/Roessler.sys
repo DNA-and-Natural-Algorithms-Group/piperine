@@ -1,0 +1,11 @@
+declare system Roessler(t, bm): ->
+
+import rxn1_2, rxn2_1, rxn2_2, rxn1_0, rxn2_0
+
+component c1 = rxn1_2(<t>, <bm>):      x1 -> x1 + x1
+component c2 = rxn2_1(<t>, <bm>): x1 + x1 -> x1
+component c3 = rxn2_2(<t>, <bm>): x2 + x1 -> x2 + x2
+component c4 = rxn1_0(<t>, <bm>):      x2 ->
+component c5 = rxn2_0(<t>, <bm>): x1 + x3 -> 
+component c6 = rxn1_2(<t>, <bm>):      x3 -> x3 + x3
+component c7 = rxn2_1(<t>, <bm>): x3 + x3 -> x3

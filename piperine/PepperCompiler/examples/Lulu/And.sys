@@ -1,0 +1,12 @@
+### Implementation of an AND gate with Seesaw gates. Based on Figure 3(b) from
+###   Qian, Lulu and Winfree, Erik (2009) "A Simple DNA Gate Motif for Synthesizing Large-Scale Circuits". doi:10.1007/978-3-642-03076-5_7
+
+declare system And(toe, base): a + b -> out
+
+import Seesaw
+
+component s4 = Seesaw(<toe>, <base>): a     -> inter
+component s8 = Seesaw(<toe>, <base>): inter -> inter2
+component s2 = Seesaw(<toe>, <base>): b     -> inter
+component s5 = Seesaw(<toe>, <base>): inter -> out
+

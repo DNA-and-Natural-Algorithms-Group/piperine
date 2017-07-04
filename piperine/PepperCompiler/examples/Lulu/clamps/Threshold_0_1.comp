@@ -1,0 +1,26 @@
+declare component Threshold_0_1(toe, rec, clamp, ext): -> in
+
+### Domains
+sequence toe     = "?N" : <toe>       # Universal toehold domain
+sequence base    = "?N" : <rec>       # Base recognition domain on seesaw gate
+sequence c       = "?N" : <clamp>     # Clamp domain
+sequence in_ext  = "?N" : <ext>       # Toehold extension
+sequence in_rest = "?N" : <rec - ext> # The rest of the input recognition domain
+
+### I/O connector
+sequence in = c base c toe c in_ext in_rest c : <4*clamp + 2*rec + toe>  # Input recognition domain
+
+### Strands
+strand Base = in_ext* c* toe* c* base* c* : <3*clamp + rec + toe + ext>  # Base of the threshold gate
+strand Top  = c base c : <2*clamp + rec>                                 # Top strand of the threshold
+strand In   = c base c toe c in_ext in_rest c : <4*clamp + 2*rec + toe>  # Input strand to be eaten
+
+### Structures
+structure GATE   = Base + Top : domain ...(((+)))       # The threshold gate
+structure INPUT  = In         : domain ........         # The single-stranded input
+structure WASTE1 = Top        : domain ...              # The single-stranded top strand
+structure WASTE2 = Base + In  : domain ((((((+))))))..  # The double-stranded waste product
+
+### Reactions
+kinetic INPUT + GATE -> WASTE1 + WASTE2  # The feast
+

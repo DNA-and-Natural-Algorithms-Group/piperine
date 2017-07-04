@@ -1,0 +1,79 @@
+
+% notes-spuriousC
+% last edited: EW, 8/24/02
+
+% see spuriousC.c and/or make_spuriousC for compiling information
+
+% The input format for spuriousC is based on the DNAdesign toolbox.
+%   spuriousC --help 
+% will display useful information.
+%
+% For many structures, it's easiest to create the wc and eq
+% arrays using DNAdesign tools, such as constraints().
+
+% first go to your design directory, and test this out
+%
+% cd my_designs
+% matlab -nojvm
+
+% We'll load a structure built according to notes-examples in DNAdesign.
+addpath /research/src/DNAdesign
+addpath /research/src/SpuriousDesign
+load DAOexample
+
+save_spuriousC_files(S,St,wc,eq,'DAOexample')
+% Note that DAOexample.rS and DAOexample.St MUST HAVE NO TRAILING SPACE.
+
+% Just for fun, run the DNAdesign optimizer, and compare speed...
+ global bestS DAOsticky bad6mer
+ load Bad6mer
+ load DAOexample
+ spurious(S, 3,8, wc,eq)
+ spurious1(S, 5,10)     
+ sum ( score_spurious(S,St,wc,eq) )
+% mcc -x -h score_spurious
+% mcc -x -h optimize %fails
+ optimize(S,St,wc,eq, 'score_spurious')  % comparison to spuriousC
+
+unix('spuriousC DAOexample.rS DAOexample.St DAOexample.wc DAOexample.eq');
+%
+% 15 x faster than compiled Matlab!!!   scoring is identical  (w/o optimize)
+% 22 x faster with -03  (ie register vars, inlines)
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% create files for designing a TAE structure. 
+
+load ../TripleAxis/TAE_for_real
+S=constrain(randbase(St),wc,eq);
+save_spuriousC_files(S,St,wc,eq,'TAE')
+
+unix('spuriousC TAE.rS TAE.St TAE.wc TAE.eq');
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% test spuriousC for designing non-interacting, non-folding strands
+
+S30 = 'NNNNNNNNNNNNNNNNNNNNNNNNNNNNNN';
+St = [S30 ' ' S30 ' ' S30 ' ' S30 ' ' S30 ' ' ...
+      S30 ' ' S30 ' ' S30 ' ' S30 ' ' S30]; 
+eq = (St ~= ' ').*(1:length(St));
+wc = -ones(1,length(St));
+S=constrain(randbase(St),wc,eq);
+save_spuriousC_files(S,St,wc,eq,'NOF')
+
+optimize(S,St,wc,eq, 'score_nofold')  % comparison to spuriousCfold
+% t=0: score = 20.24
+
+unix('spuriousC wc=NOF.wc eq=NOF.eq score=nofold W_verboten=0.05');
+
+% roughly 1.5x faster  (2x faster if 20-mers instead of 30-mers are designed)
+% in terms of steps/sec, but poisson-mutation in matlab seems 
+% more effective than single-mutation in Ccode, making results comparable
+
+unix('spuriousC wc=NOF.wc eq=NOF.eq W_verboten=1 imax=2000');
+
+% hundreds of times faster (steps/sec) using score_spurious
+
+% better than score-nofold's from-scratch results in same total time
+% but matlab version is ahead overall, until improvements here take lead.
+
+

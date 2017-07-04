@@ -1,0 +1,18 @@
+#! /bin/bash
+
+if [ -d /research ]
+then
+/Users/winfree/Research_Software/ViennaRNA-1.8.4
+echo "compiling for DNA Linux cluster"
+gcc -Wall -O3 spuriousC.c -o spuriousC -I/research/include/ViennaRNA-1.4 -L/research/lib  -D'VIENNA_DIR="/research/src/ViennaRNA-1.4/"' -lRNA -lm
+
+else
+
+echo "compiling for Erik's Mac OS X laptop"
+#gcc -Wall -O3 spuriousC.c -o spuriousC -I/Users/winfree/DNA_cluster/ViennaRNA-1.4/H/ -L/Users/winfree/DNA_cluster/ViennaRNA-1.4/lib/ -D'VIENNA_DIR="/Users/winfree/DNA_cluster/ViennaRNA-1.4/"' -lRNA -lm
+
+gcc -Wall -O3 spuriousC.c -o spuriousC -I/Users/winfree/Research_Software/ViennaRNA-1.8.4/H/ -L/Users/winfree/DNA_cluster/ViennaRNA-1.4/lib/
+-D'VIENNA_DIR="/Users/winfree/Research_Software/ViennaRNA-1.8.4/"' -lRNA -lm
+
+fi
+

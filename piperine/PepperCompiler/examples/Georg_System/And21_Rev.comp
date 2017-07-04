@@ -1,0 +1,34 @@
+declare component And21_Rev(t, di1, di2, do, c, end): x(InX) + y(InY) -> out(OUT)
+
+sequence tx = "?N" : <t>
+sequence dx = "?N" : <di1>
+sequence ty = "?N" : <t>
+sequence dy = "?N" : <di2>
+sequence toe_out = "?N" : <t>
+sequence data_out = "?N" : <do>
+
+sequence x = dx tx : <t+di1>
+sequence y = ty dy : <t+di2>
+sequence out = toe_out data_out : <t+do>
+
+strand [dummy] inX = x : <t+di1>
+strand [dummy] inY = y : <t+di2>
+
+strand X = "?N" : <t+di1>
+strand Y = "?N" : <di1+di2>
+strand Out = "<end>N" out "?N" : <do+(di2-c)>
+
+## Structures
+structure InX = inX : domain .
+structure InY = inY : domain .
+
+structure Gate = Y + Out + X : H<di1>(H<di2-end>(H<end>(+) U<do-c>) +) U<t>
+structure Gate_inter = Y + Out : U<di1> H<di2-end>(H<end>(+) U<do-c>)
+
+structure X_waste = inX + X : domain (+)
+structure Y_waste = inY + Y : <t+di2>( + <di1-t>. <t+di2>)
+
+structure OUT = Out : domain ...
+
+kinetic InX + Gate -> X_waste + Gate_inter
+kinetic InY + Gate_inter -> Y_waste + OUT

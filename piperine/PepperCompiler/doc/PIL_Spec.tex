@@ -1,0 +1,304 @@
+\documentclass{article}
+\usepackage{fullpage}
+
+\usepackage{color}
+\usepackage[normalem]{ulem}  % needed for \sout{} and \cut{}. 
+\newcommand{\note}[1]{\textcolor{red}{#1}}
+\newcommand{\add}[1]{\textcolor{blue}{#1}}
+\newcommand{\cut}[1]{\sout{#1}}
+\newcommand{\comment}[1]{}
+
+\parindent 0cm
+\parskip 1em
+
+% Define code environment
+\newenvironment{code}
+{\vspace{-0.1in}\par\begin{list}{}{
+%\setlength{\rightmargin}{\leftmargin}
+\setlength{\listparindent}{0pt}
+\raggedright
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\normalfont\ttfamily}
+ \item[]}
+{\end{list}\vspace{-0.1in}}
+
+
+\begin{document}
+
+\title{PIL Specification}
+\author{Shawn Ligocki, Chris Berlind, Joseph Schaeffer, Erik Winfree}
+\date{November 30, 2010}
+\maketitle
+
+PIL (Pepper Intermediate Language) is a language used by the Pepper
+compiler framework to describe a DNA design specification. It is
+derived from the .DES design specification language created by Joe
+Zadeh, Brian Wolfe, Niles Pierce, et al for the NUPACK multiobjective designer and
+has been extended to include kinetic and other information about DNA
+designs. A PIL design contains information about every sequence
+(domain), strand, structure (multi-stranded complex) and kinetic
+reaction in a design.  It is meant to provide a common framework for
+sequence designers, including those used for pseudoknotted structures
+such as DNA tiles.  Existing software may not yet implement or utilize all features of PIL, as discussed in section~\ref{software}.
+
+
+
+
+\section{Specification}
+
+A specification is a list of statements. Each statement ends in a
+line-break (newline character) but contains no line-breaks, so each non-blank line corresponds to exactly one statement.
+
+
+\subsection{General lexical conventions}
+\begin{itemize}
+\item Integers are nonempty sequences of digits (regex: [0-9]+).
+
+\item Floating point numbers will have the standard syntax used by C, Python, etc.\ (e.g.\ .1, -24.551, 1e6, 4.2E12, 1.1e-05, etc.).
+
+\item Names are nonempty sequences of characters which are alphanumeric, underscore (\_), \textbf{or hyphen (-)}. The first character must \textbf{not} be a digit (regex: [a-zA-Z\_-][a-zA-Z0-9\_-]*). Names are identifiers for different objects in the specification, thus each object must have a unique name. Names \textbf{are} case sensitive.
+\end{itemize}
+
+
+\subsection{Comments and Whitespace}
+
+Extraneous whitespace will be ignored. That is, wherever a sequence of at least one whitespace character (i.e.\ space or tab, but not newline) appears in the specification, the sequence will be treated as a single space character.
+
+Everything on one line following a \texttt{\#} is a comment and will be ignored. The comment ends at the end of the line. There are no multiline comments.
+
+Any line which contains only whitespace and/or a comment is considered blank and is ignored.
+
+\pagebreak
+Examples of comments:
+\begin{code}
+\# This is a comment
+
+\#\#\# This is a comment too
+
+sequence toe\_x = NNNNNN~:~6   \# This comment could talk about the sequence 
+\end{code}
+
+\subsection{Sequences}
+
+A sequence is an indivisible segment of a nucleotide sequence. They are often called domains. Each sequence must be declared with a name, a length, and constraints on the allowable nucleotides.
+
+Syntax:
+\begin{code}
+sequence <Name> = <Constraints>~:~<Length>
+\end{code}
+\texttt{<Constraints>} is a sequence of characters describing what base may be assigned to each nucleotide. Each character is one of ACGTRYWSMKBDHVN. The most common are N for any base, S for a strong base (C or G), W for a weak base (A or T), and A, T, C or G for a specific base. For a complete list see Table \ref{tab:Nucleotide-symbols}. Whitespace is allowed between symbols. 
+
+\begin{table}[b]
+\noindent \begin{centering}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+Symbol & A & C & G & T & R & Y & W & S & M & K & B & D & H & V & N\\
+\hline 
+Allowed bases & A & C & G & T & AG & CT & AT & CG & AC & GT & CGT & AGT & ACT & ACG & ACGT\\
+\hline
+\end{tabular}
+\par\end{centering}
+
+\caption{\label{tab:Nucleotide-symbols}Nucleotide symbols}
+\end{table}
+
+\texttt{<Length>} is the integer length of the sequence. While explicitly including the length is redundant (as it can be inferred from the constraints), it is required as an error-checking step and to improve ease of readability.
+
+Example sequence statements:
+\begin{code}
+sequence toe\_x = NNNNNN~:~6
+
+sequence regulator = TCGGACT~:~7
+
+sequence \_\_Anon-435 = SWABBBBBSS~:~10
+
+sequence Translate-And-Gate-data\_x = SNNNNNNNNNNNNNNNNNNS~:~20
+\end{code}
+
+\subsection{Supersequences}
+
+A supersequence is a named ordered collection of sequences (or other supersequences) grouped together for convenience. Like sequences, each supersequence must be declared with a length matching the sum of the lengths of its constituent sequences.
+
+Syntax:
+\begin{code}
+supersequence <Name> = <List of (sequence | supersequence)>~:~<Length>
+\end{code}
+The \texttt{<List of (sequence | supersequence)>} is a space separated list. Each element in the list is the name of a sequence or supersequence optionally followed by an asterisk (\texttt{*}) meaning the Watson-Crick complement of the named sequence (\texttt{toe\_x*} means complement of sequence \texttt{toe\_x}).
+
+While it would be possible to allow such groups to be declared using sequence statements, this would lead to ambiguity whenever a sequence is given a name consisting entirely of characters allowable for nucleotide constraints. For example, the string \texttt{TAG} could be used as a name or as sequence constraints, and in certain contexts, these two usages would be indistinguishable. To avoid this problem, the supersequence statement was introduced.
+
+Examples of supersequence statements:
+\begin{code}
+supersequence x = toe\_x data\_x~:~21
+
+supersequence input = x y{*} x~:~60
+\end{code}
+
+\subsection{Equal}
+
+A sequence or supersequence can be forced to be exactly equal to
+another sequence, supersequence, or it complement.  This is
+particularly useful for linking together PIL code fragments that define two DNA components that must interact by shared sequence domains.
+
+Example equal statement:
+\begin{code}
+equal anon435 y* toehold
+\end{code}
+
+\subsection{Strands}
+
+A strand statement represents an individual nucleic acid strand and
+its sequence constraints. Strand statements follow a syntactic pattern
+similar to supersequence statements, but while a supersequence is a
+logical grouping of sequences, a strand represents a physical molecule
+of DNA or RNA.
+
+Syntax:
+\begin{code}
+strand <Name> = <List of (sequence | supersequence)>~:~<Length>
+\end{code}
+or 
+\begin{code}
+strand [<Substrate type>] <Name> = <List of (sequence | supersequence)>~:~<Length>
+\end{code}
+
+As defined for supersequences, \texttt{<List of (sequence |
+  supersequence)>} is a space-separated list of sequence or
+supersequence names. \texttt{<Substrate type>} can be either
+\texttt{DNA} or \texttt{RNA} to indicate the nucleic acid type of the
+strand.
+
+Examples of strand statements:
+\begin{code}
+strand X = x~:~21
+
+strand Base = x{*} data\_y data\_z{*}~:~51
+\end{code}
+
+\subsection{Structures}
+
+A structure statement represents a single- or multi-stranded ordered complex and its exact secondary structure (pseudoknotted or unpseudoknotted) at the base-pair level.
+
+Syntax:
+\begin{code}
+structure <Name> = <List of strands>~:~<Secondary structure>
+\end{code}
+or
+\begin{code}
+structure [<Parameters>] <Name> = <List of strands>~:~<Secondary structure>
+\end{code}
+The \texttt{<List of strands>} is a list of strand names separated by plus signs (\texttt{+}). A strand \textbf{may} appear twice in a single structure.
+
+\texttt{<Secondary structure>} is specified using dot-bracket
+notation. To allow for pseudoknotted structures, \add{future versions will support} any bracket type (i.e.\ \texttt{(} \texttt{)}, \texttt{[} \texttt{]}, \texttt{\{} \texttt{\}}, \texttt{<} \texttt{>}) or labeled brackets (i.e.\ \texttt{(0} \texttt{0)}, \texttt{(1} \texttt{1)}, etc.) may represent paired bases, a dot (\texttt{.}) represents unpaired bases, and a plus sign represents a strand break. Whitespace is allowed between symbols and must appear after number-labeled left brackets and before number-labeled right brackets. 
+
+\texttt{<Parameters>} uses the following syntax:
+\begin{code}
+<List of targets> \textsf{@} <List of conditions>
+\end{code}
+where \texttt{<List of targets>} and \texttt{<List of conditions>} are
+comma-separated lists. \texttt{<List of conditions>} should contain a
+set of conditions under which the set of targets in \texttt{<List of
+targets>} should be satisfied. Possible target elements include
+\texttt{no-opt} (meaning no optimization) and \texttt{<Float>nt}
+(meaning within \texttt{<Float>} nucleotides of the target
+structure, e.g. on average), and \texttt{<Low> kcal/mol < dG < <High> kcal/mol} (meaning the free energy must be within the range).
+\texttt{<Low>} and \texttt{<High>} may be \texttt{-inf} or \texttt{inf} to indicate no bounds are given. 
+Possible condition elements include
+\texttt{temperature=<Float>C} (temperature in degrees Celsius) and
+\texttt{Na=<Float>M} (sodium ion concentration) and
+\texttt{Mg=<Float>M} (magnesium ion concentration).
+Units \texttt{K} for Kelvin, and \texttt{mM}, \texttt{uM}, \texttt{nM} are also supported.
+
+
+Examples of structure statements:
+\begin{code}
+structure Gate = Out + Base~:~(((((((((((...............+)))))))))))......
+
+structure [no-opt] In\_Waste = In + Base~:~((((((((((((((+...))))))))))))))
+
+structure [1nt \textsf{@} temperature=37.5C, Na=1.0M] IN = In~:~...................
+
+structure pknot = s1 + s2~:~((((((((....[[[[[[[[....))))))))+....]]]]]]]]....
+\end{code}
+
+\subsection{Kinetics}
+
+Kinetic statements express the reactions you want to take place between
+structures. Kinetic reactions must preserve strands, thus each strand
+in an input structure must appear in an output structure. Also, a
+strand may not appear more than once in a kinetic reaction.
+
+Syntax:
+\begin{code}
+kinetic <List of inputs> -> <List of outputs>
+\end{code}
+or
+\begin{code}
+kinetic [<Parameters>] <List of inputs> -> <List of outputs>
+\end{code}
+\texttt{<List of inputs>} and \texttt{<List of outputs>} are both lists of structure
+names separated by plus sign (\texttt{+}). \texttt{<Parameters>} is currently being
+used to specify target reaction rates. Its syntax is:
+\begin{code}
+<Low> /M/s < k < <High> /M/s
+
+<Low> /s < k < <High> /s
+\end{code}
+where the units clearly depend on whether this is a bimolecular or
+unimolecular reaction. \texttt{<Low>} and \texttt{<High>} are floating point numbers
+and \texttt{<High>} may be \texttt{inf} for no upper bound.
+
+For example:
+\begin{code}
+kinetic IN + Gate -> OUT + IN\_Waste
+
+kinetic [0 /M/s < k < 1e6 /M/s] Left + SeesawRight -> Right + SeesawLeft
+
+kinetic [1000.1 /s < k < inf /s] Glob -> X + Y
+\end{code}
+
+\subsection{Noninteracting}
+
+Noninteracting statements are used to specify specific negative design
+targets. These are sets of things that we do not want to interact
+with each other.
+
+Generally, the syntax is:
+\begin{code}
+noninteracting [<Type>] <List of things>
+\end{code}
+Where \texttt{<List of things>} could be sequences, strands or structures and
+their interpretation depends up on the \texttt{<Type>}. Currently, we have
+one possible type:
+\begin{code}
+noninteracting [kinetic] <List of structures>
+\end{code}
+where \texttt{<List of structures>} is a space separated list of structures
+which should pairwise not react kinetically, and not waste too much
+time interacting. 
+
+Additional noninteracting lists will be used by Spurious\_Design:
+\texttt{sticky-ends} for tile sticky ends, \texttt{toeholds} for
+strand displacement toeholds, \texttt{branch-migration} for 3-way and
+4-way branch migration domains, and \texttt{single-stranded} for
+single-stranded sequences that must not hybridize to each other.
+
+
+\section{Related software tools} \label{software}
+
+
+\subsection{Software}
+
+Software that currently (November 2010) reads or writes PIL include: 
+  \texttt{spurious\_design.py} (the wrapper for the \texttt{spuriousC} sequence-symmetry designer),
+  \texttt{KinD.py} (strand displacement kinetics network evaluator and sequence designer),
+  \texttt{random\_design.py} (a trivial random sequence designer),
+  \texttt{PIL-to-DES.py} (an yet-to-be-written converter for using the NUPACK designer).
+
+\subsection{Implementation status}
+
+Currently, no software implements the \texttt{[<Substrate type>]} qualifier.  Currently no software implements the psuedoknotted dot-paren notation.  Currently no software implements the structure target criteria specifications.
+
+\end{document}

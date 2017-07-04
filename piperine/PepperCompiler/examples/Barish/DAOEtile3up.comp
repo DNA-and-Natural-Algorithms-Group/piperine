@@ -1,0 +1,28 @@
+declare component DAOEtile3up: sLL + sLR -> sUL + sUR
+
+## Sequences
+# sticky ends
+sequence sLL = "5N" : 5
+sequence sUL = "5N" : 5
+sequence sLR = "5N" : 5
+sequence sUR = "5N" : 5
+
+# core 
+sequence sULarm = "S 7N" : 8
+sequence sUcore = "S 14N S" : 16
+sequence sURarm = "7N S" : 8 
+sequence sLLarm = "S 7N" : 8 
+sequence sLcore = "S 14N S" : 16
+sequence sLRarm = "7N S" : 8
+
+## Strands
+strand longLeft   = sULarm sUcore sLcore* sLLarm* : 48
+strand longRight  = sURarm* sUcore* sLcore sLRarm : 48
+strand shortLeft  = sLL sLLarm sULarm* sUL : 26
+strand shortRight = sLR sLRarm* sURarm sUR : 26
+
+## Structures
+structure [no-opt] tile = shortLeft + longLeft + longRight + shortRight : 26. + 48. + 48. + 26.  
+# This is a dummy structure that tells the designer that these strands are in a 
+#   complex, but provides no further base-pairing information because we don't 
+#   "yet" handle psuedoknots

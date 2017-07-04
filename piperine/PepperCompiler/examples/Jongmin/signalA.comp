@@ -1,0 +1,73 @@
+declare component signalA(spacer1,spacer2):  -> transcript_plus
+## Declares an activator signal, with transcript = GGGAGA [spacer1] [recognition:18] [act_toe:9] [inh_toe:7] [spacer2] [terminal_hairpin].
+## The actual sequence information required for linking the signal must include the removal toehold, so the signal is
+## the virtual sequence [removal_toe:4] [transcript].
+## This file include kinetics specifications for interactions between the transcript and activating/inhibiting threshold species,
+## since these are independent of the particular switch involved.
+## Further, since actual switch templates have their identical lefthand side reactions, regardless of their output,
+## it's reasonable to include dummy reactions that obviate the need for explicit reactions in the switch components themselves.
+## However, for semantic completeness one would want to include those reactions as well.
+
+##lengths
+length removal_toe = 4
+length recognition = 18
+length act_toe = 9
+length inh_toe = 7
+
+## Sequences
+# promoter region
+sequence pro1 = "TAATA"
+sequence pro2 = "CGACTCACTATA"
+sequence pro3 = "GGGAGA"
+
+# terminating hairpin
+sequence hairpin1 = "CTGAC"
+sequence hairpin2 = "AAA"
+
+sequence spacer1 = "<spacer1>N"
+sequence spacer2 = "<spacer2>N"
+
+sequence recognition = "<recognition>N"
+sequence act_toe = "<act_toe>N"
+sequence inh_toe = "<inh_toe>N"
+sequence removal_toe = "<removal_toe>N"
+
+# (virtual) sequence information for linking between components
+
+sequence transcript_plus = removal_toe pro3 spacer1 recognition act_toe inh_toe* spacer2 hairpin1 hairpin2 hairpin1* hairpin2
+
+## Strands
+strand Trans = pro3 spacer1 recognition act_toe inh_toe* spacer2 hairpin1 hairpin2 hairpin1* hairpin2
+strand Act = pro1* removal_toe recognition act_toe
+strand Inh = inh_toe act_toe* recognition* removal_toe*
+# note that Trans should be RNA, not DNA.  But we don't yet have a good notation for indicating that
+
+strand [dummy] Switch = recognition* removal_toe* pro1 pro2 "TTT" pro2*
+
+## Structures
+structure Transcript = Trans : domain ......(.).
+
+structure Activator = Act : domain ....
+structure Inhibitor = Inh : domain ....
+structure ActInh = Act + Inh : domain .(((+.)))
+structure TransInh = Trans + Inh : domain ..(((.(.).+))).
+
+# The structures below are only if we want kinetics for dummy reactions defined here.
+structure Switch_Off = Switch : domain ...(.)
+structure Switch_On  = Switch + Act : domain  ((((.)+))).
+structure Switch_Trans = Switch + Trans : domain (..(.)+..)...(.).
+
+## Kinetics not involving the dummy switch
+kinetic Transcript + Inhibitor -> TransInh
+kinetic Activator + Inhibitor -> ActInh
+kinetic ActInh + Transcript -> Activator + TransInh 		# should add rate & dG requirements
+
+## Kinetics involving the dummy switch
+kinetic Activator + Switch_Off -> Switch_On
+kinetic Inhibitor + Switch_On  -> ActInh + Switch_Off  		# should add rate & dG requirements
+kinetic Transcript + Switch_Off -> Switch_Trans
+kinetic Switch_Trans + Inhibitor -> Switch_Off + TransInh	# should add rate & dG requirements
+kinetic Switch_Trans + Activator -> Switch_On + Transcript	# should add rate & dG requirements
+
+## Transcription kinetics is not part of the Pepper semantics!
+# transcription: Switch_On -> Transcript + Switch_On
