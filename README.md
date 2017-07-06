@@ -33,9 +33,9 @@ Choose 1. The prompt will then ask if it has guessed the right location for NUPA
 
 Piperine reads in plaintext files that specify an abstract CRN, converts the CRN into a domain-level DNA specification, then designs sequences implementing the domain-level constraints. An example CRN might be the following, saved in a file called `my.crn`
 
-` -> B`
-`B -> A`
-`A + A -> A`
+> ` -> B`
+> `B -> A`
+> `A + A -> A`
 
 This could then be compiled into DNA sequences by executing the following code in python
 
