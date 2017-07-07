@@ -1,5 +1,0 @@
-declare system PSwitchTest: in -> out
-
-import PSwitch
-
-component s1 = PSwitch: in -> out

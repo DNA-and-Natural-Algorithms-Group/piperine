@@ -1,8 +1,0 @@
-declare system DualNor21(toe, rec, clamp, ext): in10 + in11 + in20 + in21 -> out10 + out11 + out20 + out21
-
-import Or22
-import And22
-
-component or = Or22(<toe>, <rec>, <clamp>, <ext>): in11 + in21 -> out10 + out20
-component and = And22(<toe>, <rec>, <clamp>, <ext>): in10 + in20 -> out11 + out21
-

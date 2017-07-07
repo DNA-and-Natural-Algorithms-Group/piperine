@@ -1,7 +1,0 @@
-declare system Catalyst4Letter:  -> 
-
-import Catalyst
-import Reporter
-
-component catalyst = Catalyst(16, 20, 5, 15, 8, 15): -> ob
-component reporter = Reporter(20, 7, 9): ob ->

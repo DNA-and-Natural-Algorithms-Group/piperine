@@ -1,9 +1,8 @@
 __doc__ = ''' Doc string? '''
-import CompilationTests
-import import_test
-import run_unittests
-import SPWTests
-import TDMTests
-import THTests
-import test_data
-
+from . import CompilationTests
+from . import import_test
+from . import run_unittests
+from . import SPWTests
+from . import TDMTests
+from . import THTests
+from . import test_data

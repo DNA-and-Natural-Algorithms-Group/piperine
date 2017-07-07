@@ -139,8 +139,8 @@ class SignalStrand(object):
             side: ('r' or 'p') reactants or products half-equation ('r')
         '''
         self.pepper_names = dict(
-            zip(pepper_keys, 
-                format_list(pepper_values[side][degree], rxn_name)))
+            list(zip(pepper_keys, 
+                format_list(pepper_values[side][degree], rxn_name))))
     
     def add_instance(self, name, degree, rxn_name, ref_strand):
         '''Associates a new history domain, sequence, name, and reaction name
@@ -158,8 +158,8 @@ class SignalStrand(object):
             rxn_name: Reaction name appearing in the system file
             ref_strand: Reactant strand contributing the history domains
         '''
-        pepper_names = dict(zip(pepper_keys, 
-                                format_list(pepper_values['p'][degree], rxn_name)))
+        pepper_names = dict(list(zip(pepper_keys, 
+                                format_list(pepper_values['p'][degree], rxn_name))))
         self.history_domains.append(pepper_names['history reference'])
         self.sequences.append(pepper_names['sequence'])
         self.names.append(name)
@@ -304,7 +304,7 @@ class ReactGate(Gate):
         self.out_strands = out_strands
         ############
         l = params[0]
-        self.top_s_dict = dict(zip(self.top_strands,[range(1+l*2, 1+l*3+4)]))
+        self.top_s_dict = dict(list(zip(self.top_strands,[list(range(1+l*2, 1+l*3+4))])))
         if degree == 2:
             # Grab toeholds, a1 and d3
             self.base = [ in_strands[0].th(0), in_strands[1].th(2) ]
@@ -313,10 +313,10 @@ class ReactGate(Gate):
             # First toe of first strand,
             # second toe of second strand do not interact with flux
             self.toe_nointeract_map = dict(
-                zip([ in_strands[x].th(x) for x in [0,1]],
-                    [self.top_strands[:], self.top_strands[:]]))
+                list(zip([ in_strands[x].th(x) for x in [0,1]],
+                    [self.top_strands[:], self.top_strands[:]])))
         else:
-            print 'PROBLEM!!!'
+            print('PROBLEM!!!')
 
 class ProduceGate(Gate):
     def __init__(self, rxn_name, in_strands, out_strands, degree, params):
@@ -328,7 +328,7 @@ class ProduceGate(Gate):
         self.out_strands = out_strands
         ############
         l = params[0]
-        self.top_s_dict = dict(zip(self.top_strands,[range(1+l*2, 1+l*3+4)]))
+        self.top_s_dict = dict(list(zip(self.top_strands,[list(range(1+l*2, 1+l*3+4))])))
         # Degree refers to number of reactants, dicating whether the
         # translate gate takes in a Flux or a Signal Strand
         if degree == 1:
@@ -419,13 +419,13 @@ def process_rxns(rxns, species, d_params):
                 products = [strand.make_strand_instance(p_instance)]
                 np = 1
             else:
-                print 'unexpected stoichiometry!'
+                print('unexpected stoichiometry!')
                 sys.exit('Unexpected product stoichiometry in reaction ' + I)
             gates.append(ProduceGate(produce_name, reactants, products, nr, d_params))
         else:
             # No products! Null output produce gates 
-            print 'unexpected stoichiometry!'
+            print('unexpected stoichiometry!')
             sys.exit('Unexpected product stoichiometry in reaction ' + I)
     
-    strands = species_instances.values()
+    strands = list(species_instances.values())
     return (gates, strands)

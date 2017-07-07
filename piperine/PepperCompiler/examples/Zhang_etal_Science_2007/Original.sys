@@ -1,7 +1,0 @@
-declare system Original:  -> 
-
-import Catalyst
-import Reporter
-
-component catalyst = Catalyst(10, 24, 4, 16, 6, 16): C + F -> SB + OB
-component reporter = Reporter(16, 6, 12): OB ->

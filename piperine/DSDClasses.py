@@ -68,7 +68,7 @@ def F(ordered_species, rxn_name):
     domains = format_list(specific_names, rxn_name)
     strands = format_list(nicknames, rxn_name)
     species_names = [ x.species for x in ordered_species ]
-    species_indices = dict(zip(species_names, range(len(species_names))))
+    species_indices = dict(list(zip(species_names, list(range(len(species_names))))))
     toehold_splits_map = {}
     for i, spec in enumerate(ordered_species):
         spec_first_th = spec.th(0)
@@ -115,14 +115,14 @@ class SignalStrand(object):
         return base_str.format(self.species, ' '.join(self.sequences[:]))
     
     def set_identity_domains(self, degree, rxn_name, gate='r'):
-        self.pepper_names = dict(zip(pepper_keys, 
+        self.pepper_names = dict(list(zip(pepper_keys, 
                                 format_list(pepper_values[degree], 
-                                            rxn_name)))
+                                            rxn_name))))
     
     def add_instance(self, degree, rxn_name):
-        pepper_names = dict(zip(pepper_keys, 
+        pepper_names = dict(list(zip(pepper_keys, 
                                 format_list(pepper_values[degree], 
-                                            rxn_name)))
+                                            rxn_name))))
         hd = flatten(pepper_names['history domains'])
         self.pepper_names['history domains'].extend(hd)
         self.sequences.append(pepper_names['sequence'])
@@ -185,11 +185,11 @@ class Bimrxn(object):
                     [ in_strands[1].th(1)])
         # Hard-coded splitting of top-strand domains for toehold occlusion calculation
         self.toe_nointeract_map = F(in_strands + out_strands, rxn_name)
-        self.top_s_dict = dict(zip(self.top_strands,
-                                    [range(1+bm, 1+bm+t+4),
-                                     range(1+bm+t-2, 1+bm+2*t),
-                                     range(1+bm, 1+bm+t+4),
-                                     range(1+bm, 1+bm+t+4)]))
+        self.top_s_dict = dict(list(zip(self.top_strands,
+                                    [list(range(1+bm, 1+bm+t+4)),
+                                     list(range(1+bm+t-2, 1+bm+2*t)),
+                                     list(range(1+bm, 1+bm+t+4)),
+                                     list(range(1+bm, 1+bm+t+4))])))
     
     def __repr__(self):
         return self.get_reaction_line()
@@ -218,9 +218,9 @@ class Bimrxn(object):
         for in_strand in in_strands:
             for seq in in_strand.get_top_strands():
                 if seq[-2:] in ["-a", "-b"]:
-                    self.top_s_dict.update({seq : range(1, 1+t+3)})
+                    self.top_s_dict.update({seq : list(range(1, 1+t+3))})
                 else:
-                    self.top_s_dict.update({seq : range(1+bm, 1+bm+t+3)})
+                    self.top_s_dict.update({seq : list(range(1+bm, 1+bm+t+3))})
         return self.top_s_dict.copy()
     
     def get_base_domains(self):
@@ -274,7 +274,7 @@ def process_rxns(rxns, species, d_params):
         rxn_name = 'r' + I
         nr = sum(rxn['stoich_r'])
         if nr not in [0, 1, 2] :
-            print "Unexpected stoichiometry!"
+            print("Unexpected stoichiometry!")
             raise Exception("Incorrect reactant stochiometry {} for reaction {}. Must be 0, 1, 2".format(nr, I))
         for reactant_idx in range(nr,2):
             nr += 1
@@ -298,7 +298,7 @@ def process_rxns(rxns, species, d_params):
         
         np = sum(rxn['stoich_p'])
         if np not in [0, 1, 2] :
-            print "Unexpected stoichiometry!"
+            print("Unexpected stoichiometry!")
             raise Exception("Incorrect product stochiometry {} for reaction {}. Must be 0, 1, 2".format(np, I))
         for product_idx in range(np,2):
             np += 1
@@ -323,5 +323,5 @@ def process_rxns(rxns, species, d_params):
                 products.append(strand)
                 strand.add_instance(3, rxn_name)
         gates.append(Bimrxn(rxn_name, reactants, products, d_params))
-    strands = species_dict.values()
+    strands = list(species_dict.values())
     return (gates, strands)

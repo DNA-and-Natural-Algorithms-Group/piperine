@@ -1,13 +1,9 @@
-# Just building a script for makin' toeholds
-
-from __future__ import division
-
 import numpy as np
 import re
 import logging
 
 import stickydesign as sd
-import energyfuncs_james as energetics
+from . import energyfuncs_james as energetics
 
 # The purpose of the following test is to produce a landscape depicting the ave
 # rage number of toeholds produced by stickydesign as a function of the maximum 

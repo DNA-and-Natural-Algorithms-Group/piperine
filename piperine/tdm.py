@@ -1,5 +1,3 @@
-from __future__ import division
-
 import os
 import sys
 
@@ -24,7 +22,7 @@ class MyProgress(object):
         self.clockmax = clockmax
         self.update = 0.1 * self.clockmax
         if clockmax < 1:
-            print 'Input to constructor < 1'
+            print('Input to constructor < 1')
             raise self.ImproperInput()
         print('Begin')
     
@@ -39,7 +37,7 @@ class MyProgress(object):
             print('DONE')
 
 def read_design(filename):
-  from .PepperCompiler.nupack_out_grammar import document
+  from peppercompiler.nupack_out_grammar import document
   """Extracts the designed sequences and the mfe structures"""
   if not os.path.isfile(filename):
     error("Cannot load design. No such file '%s'." % filename)
@@ -79,7 +77,7 @@ def Read_Finished(filename):
 
 def make_pepper_seq_dict(pepperlist, seq_dict, update=False):
     Strandseq_dict = {}
-    s_keys = seq_dict.keys()
+    s_keys = list(seq_dict.keys())
     s_keys.sort(reverse=True)
     for pname in pepperlist:
         pswap = pname[:]
@@ -115,7 +113,7 @@ def compare_sequence_notoe(s1, s2, toeholds):
 def get_seq_lists(seqsfile, mfefile, gates, strands):
     # Read in sequences
     pep_sequences, pep_strands = Read_Finished(seqsfile)
-    domains_list = pep_sequences.keys()
+    domains_list = list(pep_sequences.keys())
     mfe_dict, cmplx_dict = read_design(mfefile)
     seq_dict = mfe_dict.copy()
     seq_dict.update(pep_sequences)
@@ -147,10 +145,10 @@ def get_seq_lists(seqsfile, mfefile, gates, strands):
         TopStranddict.update(gate.get_top_strand_dict())
     
     allpepperlist = list()
-    for l in [TopStrandlist, complex_names, seq_dict.keys(), BMlist]:
+    for l in [TopStrandlist, complex_names, list(seq_dict.keys()), BMlist]:
         allpepperlist.extend(l)
     
-    for l in NotToInteract.values():
+    for l in list(NotToInteract.values()):
         allpepperlist.extend(l)
     
     allpepperlist.extend([ s[:-1] for s in BaseStrandlist] )
@@ -182,7 +180,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
          NotToInteract, seq_dict, cmplx_dict, domains_list) = \
             get_seq_lists(seqs_file, mfe_file, gates, strands)
     
-    print 'Start WSI computation'
+    print('Start WSI computation')
     if quick:
         ssm_scores = np.random.rand(6)
     else:
@@ -191,10 +189,10 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     ssm_names = ['WSI-Intra', 'WSI-Inter', \
                  'WSI-Intra-1', 'WSI-Inter-1', \
                  'Verboten', 'WSI']
-    print ''
+    print('')
     
     # Score cross-strand spurious interactions
-    print 'Start Cross-Strand spurious interactions computation'
+    print('Start Cross-Strand spurious interactions computation')
     if quick:
         css_scores = np.random.rand(4)
     else:
@@ -203,9 +201,9 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
              shouldclean=1, quiet=1)
     css_names = ['TSI avg', 'TSI max', \
                  'TO avg', 'TO max']
-    print ''
+    print('')
     
-    print 'Start tube ensemble defect computation'
+    print('Start tube ensemble defect computation')
     if quick:
         ted_scores = [np.random.rand(), 'BAD', np.random.rand()]
     else:
@@ -213,7 +211,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
             prefix='tube_ensemble')
     ted_names = ['Max Bad Nucleotide %', 'Max Defect Component', 
                  'Mean Bad Nucleotide %']
-    print ''
+    print('')
     
     # Retrieve toeholds for BM score calculation
     if not quick:
@@ -222,22 +220,22 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     th_names = ['TH energy avg', 'TH energy range']
     
     # Score weighted spurious interactions
-    print 'Start BM score computation'
+    print('Start BM score computation')
     if quick:
         bm_scores = np.random.rand(2)
     else:
         bm_scores = BM_Eval(seq_dict, BMlist, toeholds)
     bm_names = ['BM Score', 'Largest Match']
-    print ''
+    print('')
     
     # Score intra-strand spurious interactions and toehold availability
-    print 'Start Single-Strand spurious score computation'
+    print('Start Single-Strand spurious score computation')
     if quick:
         ss_scores = np.random.rand(4)
     else:
         ss_scores = SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna')
     ss_names = ['SSU Min', 'SSU Avg', 'SSTU Min', 'SSTU Avg']
-    print ''
+    print('')
     
     if quick:
         th_scores = np.random.random((2,))
@@ -314,7 +312,7 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
     
     TopSpuriousPairwise = np.zeros([numstrands, numstrands]);
     
-    print 'Calculating Top Strand Pairwise interactions'
+    print('Calculating Top Strand Pairwise interactions')
     countmax = (numstrands**2 + numstrands)/2
     prog = MyProgress(countmax)
     for i in range(numstrands):
@@ -329,8 +327,8 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
     
     BaseSpurious = np.zeros([numbase, 1]);
     
-    print 'Calculating Toehold occupation'
-    countmax = sum(map(len, NotToInteract.values()))
+    print('Calculating Toehold occupation')
+    countmax = sum(map(len, list(NotToInteract.values())))
     prog = MyProgress(countmax)
     for i in range(numbase):
         thisstrand = BaseStrandlist[i]
@@ -348,7 +346,7 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
  
     
 def SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna'):
-    TopStrandlist = TopStranddict.keys()
+    TopStrandlist = list(TopStranddict.keys())
     numstrands = len(TopStrandlist)
     
     MinProbs = []
@@ -468,7 +466,7 @@ def Spurious_Weighted_Score(basename,
     # Commented code generates MFE file
     spur_exc = 'spuriousSSM score=automatic template=%s wc=%s eq=%s %s> %s'
     command = spur_exc % (stname, wcname, eqname, ssm_params, spurious_output)
-    print "Command : {}".format(command)
+    print("Command : {}".format(command))
     os.system(command)
     #subprocess.check_call(spur_exc)
     
