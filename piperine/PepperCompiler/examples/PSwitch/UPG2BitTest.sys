@@ -1,5 +1,0 @@
-declare system UPG2BitTest: in -> out
-
-import UPG2Bit
-
-component s1 = UPG2Bit: in -> out

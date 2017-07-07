@@ -1,5 +1,0 @@
-declare component Input_Strand(seq, length): -> self(SELF)
-
-sequence  self = "<seq>" : <length>
-strand    Self = self : <length>
-structure SELF = Self : domain .

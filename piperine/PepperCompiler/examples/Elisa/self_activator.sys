@@ -1,5 +1,0 @@
-declare system self_activator: ->
-
-import activate_trans
-
-component Self = activate_trans(22, 7, 5, 36): transcript -> transcript

@@ -1,5 +1,0 @@
-declare system SplitPSwitchTest: in -> out1 + out2
-
-import SplitPSwitch
-
-component s1 = SplitPSwitch: in -> out1 + out2
