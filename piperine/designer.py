@@ -46,7 +46,7 @@ def call_design(basename,
                 infilename=None, 
                 outfilename=None, 
                 cleanup=True, 
-                verbose=True, 
+                verbose=False, 
                 reuse=False, 
                 just_files=False, 
                 struct_orient=False, 
@@ -467,7 +467,7 @@ def generate_seqs(basename,
         raise(e)
     
     # Now do the sequence makin' 
-    call_design(basename, pil_file, mfe_file, verbose=True, 
+    call_design(basename, pil_file, mfe_file, verbose=False, 
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
@@ -763,7 +763,7 @@ def score_fixed(fixed_file,
     #    print e
     
     # Now do the sequence makin' 
-    call_design(basename, pil_file, mfe_file, verbose=True, 
+    call_design(basename, pil_file, mfe_file, verbose=False, 
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
