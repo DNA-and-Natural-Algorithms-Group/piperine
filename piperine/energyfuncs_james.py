@@ -17,15 +17,14 @@ class energyfuncs:
         import os
         try:
             #dsb = pkg_resources.resource_stream(__name__, os.path.join('params','dnastackingbig.csv'))
-            dsb = resource_stream(Requirement('stickydesign'), 'stickydesign/params/dnastackingbig.csv')
+            dsb = resource_stream('stickydesign', 'stickydesign/params/dnastackingbig.csv')
         except:
             try:
-                this_dir, this_filename = os.path.split(__file__)
-                dsb = open( os.path.join(this_dir, "params", "dnastackingbig.csv") )
+                dsb = resource_stream('stickydesign', 'params/dnastackingbig.csv')
             except IOError:
                 raise IOError("Error loading dnastackingbig.csv")
         try:
-            dgl = resource_stream('peppersuite.piperine', 'data/dnadangle.csv')
+            dgl = resource_stream('piperine', 'data/dnadangle.csv')
         except:
             try:
                 this_dir, this_filename = os.path.split(__file__)
