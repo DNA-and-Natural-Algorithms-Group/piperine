@@ -53,7 +53,7 @@ def call_design(basename,
                 old_output=False, 
                 tempname=None, 
                 extra_pars="", 
-                findmfe=True, 
+                findmfe=False, 
                 spuriousbinary="spuriousSSM"):
     """ Generates an MFE file from a .pil file. (peppercompiler wrapper)
     
