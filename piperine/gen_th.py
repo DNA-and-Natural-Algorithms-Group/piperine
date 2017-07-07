@@ -1,10 +1,10 @@
-from __future__ import division
+
 
 import numpy as np
 import re
 from time import time
 import stickydesign as sd
-import energyfuncs_james as efj
+from . import energyfuncs_james as efj
 
 def flatten(x):
     if type(x) in [list, tuple]:
@@ -116,15 +116,15 @@ def generate_pairs(n_ths=3, thold_l=int(7), thold_e=7.7, e_dev=0.5, m_spurious=0
             ends_all, scores = output
         else:
             if output == 1:
-                print 'Not enough appropriate first toeholds found. Trying again.'
+                print('Not enough appropriate first toeholds found. Trying again.')
             if output == 2:
-                print 'First-second toehold pairing failed. Trying again.'
+                print('First-second toehold pairing failed. Trying again.')
             if output == 3:
-                print "Dunno"
+                print("Dunno")
     ends_list = ends_all.tolist()
     first_ths = ends_list[0::2]
     second_ths = ends_list[1::2]
-    return zip(first_ths, second_ths), scores
+    return list(zip(first_ths, second_ths)), scores
 
 if __name__ == "__main__":
     import argparse
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     # Set toehold length in base pairs
     if args.length:
         thold_l = int(args.length)
-        print 'Using length {0}'.format(thold_l)
+        print('Using length {0}'.format(thold_l))
     else:
         thold_l = int(7)
     
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     if args.energetics:
         eval('import ' + args.energetics + 'as ef')
     else:
-        import energyfuncs_james as energetics
+        from . import energyfuncs_james as energetics
     
     # Set user-specified barplot image file name
     if args.barplot:
@@ -212,13 +212,13 @@ if __name__ == "__main__":
         ends_all = new_toeholds(ef, n_ths, thold_l, thold_e, e_dev, m_spurious)
         if type(ends_all) == int:
             if ends_all == 1:
-                print 'Not enough appropriate first toeholds found. Trying again.'
+                print('Not enough appropriate first toeholds found. Trying again.')
             if ends_all == 2:
-                print 'First-second toehold pairing failed. Trying again.'
+                print('First-second toehold pairing failed. Trying again.')
             if ends_all == 3:
-                print "dunno"
+                print("dunno")
         
     # Plot energy array
     e_array = sd.energy_array_uniform(ends_all, ef)
     
-    print 'Done!'
+    print('Done!')

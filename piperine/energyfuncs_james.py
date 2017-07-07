@@ -189,7 +189,7 @@ class energyfuncs:
                 r[xi] = gm
                 i+=1
                 if not i%1000:
-                    print "%d/%d" % (i,im)
+                    print("%d/%d" % (i,im))
         else:
             from stickydesign import _stickyext
             x = m

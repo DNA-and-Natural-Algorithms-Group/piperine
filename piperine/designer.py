@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import division
+
 import sys
 import pkg_resources
 import numpy as np
@@ -189,8 +189,8 @@ def read_crn(in_file):
         rxn_eq = re.split('->',line)
         try:
             assert len(rxn_eq)==2
-        except AssertionError, e:
-            print 'Check reaction arrow use.'
+        except AssertionError as e:
+            print('Check reaction arrow use.')
             raise
             
         stoich = 1
@@ -207,8 +207,8 @@ def read_crn(in_file):
                     coeff_string = num_pattern.search(token).group(0)
                     try:
                         stoich = eval(coeff_string)
-                    except SyntaxError, e:
-                        print 'improper coefficient syntax!'
+                    except SyntaxError as e:
+                        print('improper coefficient syntax!')
                         raise
                     token = token.replace(coeff_string, '')
                 else:
@@ -256,7 +256,7 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
     line = 'sequence {} = {} # species {}\n'
     f = open(toehold_file, 'w')
     if type(toeholds[0]) is str:
-        for i, th in zip(range(len(toeholds)), toeholds):
+        for i, th in zip(list(range(len(toeholds))), toeholds):
             strand = strands[ int(floor((i - modulo(i, n_th)) / n_th)) ]
             constraint = line.format(strand.th(modulo(i, n_th)), toeholds[i].upper(), 
                                      strand.name)
@@ -288,7 +288,7 @@ def toehold_wrapper(n_ths,
         ths: Toeholds, listed as tupled-pairs
         th_score: average toehold dG and the range of dG's
     """
-    from gen_th import get_toeholds
+    from .gen_th import get_toeholds
     # Grab parameters from the dictionary or set defaults
     # Toehold length (basepairs)
     thold_l = int(thold_l)
@@ -357,7 +357,7 @@ def generate_scheme(basename,
         strands: A list of strand objects
     """
     if trans_module is None:
-        import DSDClasses as trans_module
+        from . import DSDClasses as trans_module
     
     if crn_file is None:
         crn_file = basename + ".crn"
@@ -463,7 +463,7 @@ def generate_seqs(basename,
     try:
         call_compiler(basename, args=design_params, fixed_file=fixed_file, 
                       outputname=pil_file, savename=save_file)
-    except KeyError, e:
+    except KeyError as e:
         raise(e)
     
     # Now do the sequence makin' 
@@ -475,7 +475,7 @@ def generate_seqs(basename,
     return toeholds
 
 def selection(scores):
-    columns = zip(*scores)
+    columns = list(zip(*scores))
     ranks = []
     fractions = []
     percents = []
@@ -495,58 +495,58 @@ def selection(scores):
         fractions.append((array - array.min())/abs(array.min() + (array.min()==0) ))
         percents.append((array - array.min())/(array.max() - array.min()))
     temp=ranks
-    ranks=zip(*temp)
+    ranks=list(zip(*temp))
     temp=fractions
-    fractions=zip(*temp)
+    fractions=list(zip(*temp))
     temp=percents
-    percents=zip(*temp)
+    percents=list(zip(*temp))
     
-    print "\nRank array:"
-    print "                         ",
+    print("\nRank array:")
+    print("                         ")
     for title in scores[0]:
         if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
             continue
-        print "{:>6s}".format(title[0:6]),
-    print
+        print("{:>6s}".format(title[0:6]))
+    print()
     i=0
     for r in ranks:
-        print "design {:2d}: {:6d} = sum [".format(i,sum(r)),
+        print("design {:2d}: {:6d} = sum [".format(i,sum(r)))
         for v in r:
-            print "{:6d}".format(v),
-        print "]"
+            print("{:6d}".format(v))
+        print("]")
         i=i+1
     
-    print "\nFractional excess array:"
-    print "                         ",
+    print("\nFractional excess array:")
+    print("                         ")
     for title in scores[0]:
         if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
             continue
-        print "{:>6s}".format(title[0:6]),
-    print
+        print("{:>6s}".format(title[0:6]))
+    print()
     i=0
     for f in fractions:
-        print "design {:2d}: {:6.2f} = sum [".format(i,sum(f)),
+        print("design {:2d}: {:6.2f} = sum [".format(i,sum(f)))
         for v in f:
-            print "{:6.2f}".format(v),
-        print "]"
+            print("{:6.2f}".format(v))
+        print("]")
         i=i+1
     
-    print "\nPercent badness (best to worst) array:"
-    print "                         ",
+    print("\nPercent badness (best to worst) array:")
+    print("                         ")
     for title in scores[0]:
         if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
             continue
-        print "{:>6s}".format(title[0:6]),
-    print
+        print("{:>6s}".format(title[0:6]))
+    print()
     i=0
     for p in percents:
-        print "design {:2d}: {:6.2f} = sum [".format(i,100*sum(p)),
+        print("design {:2d}: {:6.2f} = sum [".format(i,100*sum(p)))
         for v in p:
-            print "{:6.2f}".format(100*v),
-        print "]"
+            print("{:6.2f}".format(100*v))
+        print("]")
         i=i+1
     
-    print " "
+    print(" ")
     worst_rank = 0
     while 1:
         ok_seqs = [i for i in range(len(ranks)) if max(ranks[i])<=worst_rank]
@@ -560,27 +560,27 @@ def selection(scores):
     # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI
     weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8] 
         
-    print "Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)
-    print "  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])
-    print "  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs])
-    print "  Sum of fractional excess over best score:   " + str([sum(fractions[i]) for i in ok_seqs])
-    print "  Sum of weighted fractional excess:          " + str([sum(np.array(fractions[i])*weights/100.0) for i in ok_seqs])
-    print "  Sum of percent badness scores:              " + str([100*sum(percents[i]) for i in ok_seqs])
-    print "  Sum of weighted percent badness scores:     " + str([sum(np.array(percents[i])*weights) for i in ok_seqs])
+    print("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs))
+    print("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs]))
+    print("  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs]))
+    print("  Sum of fractional excess over best score:   " + str([sum(fractions[i]) for i in ok_seqs]))
+    print("  Sum of weighted fractional excess:          " + str([sum(np.array(fractions[i])*weights/100.0) for i in ok_seqs]))
+    print("  Sum of percent badness scores:              " + str([100*sum(percents[i]) for i in ok_seqs]))
+    print("  Sum of weighted percent badness scores:     " + str([sum(np.array(percents[i])*weights) for i in ok_seqs]))
     temp = [sum(r) for r in ranks]
-    print "Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    print("Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     winner = np.argmin(temp)
     temp = [sum(np.array(r)*weights/100.0) for r in ranks]
-    print "Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    print("Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(f) for f in fractions]
-    print "Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    print("Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(np.array(f)*weights/100.0) for f in fractions]
-    print "Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    print("Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [100*sum(p) for p in percents]
-    print "Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
+    print("Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(np.array(p)*weights) for p in percents]
-    print "Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) )
-    print
+    print("Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print()
     return winner
 
 def selection_wrapper(scores, reportfile = 'score_report.txt'):
@@ -589,11 +589,11 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
     try:
         sys.stdout = open(reportfile, 'w')
         winner = selection(scores)
-    except Exception, e:
+    except Exception as e:
         sys.stdout.close()
         sys.stdout = stdout
-        print e
-        print sys.exc_info()[0]
+        print(e)
+        print(sys.exc_info()[0])
         raise
         return 'bad'
     else:
@@ -651,7 +651,7 @@ def run_designer(basename=small_crn[:-4],
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"
     
-    import tdm
+    from . import tdm
     fixed_file = basename + ".fixed"
     system_file = basename + ".sys"
     pil_file = basename + ".pil"
@@ -686,8 +686,8 @@ def run_designer(basename=small_crn[:-4],
                 scores = [i] + scores
                 scoreslist.append(scores)
             except KeyError as e:
-                print 'Error!'
-                print e
+                print('Error!')
+                print(e)
                 return (gates, strands, e)
         score_names = ['Set Index'] + score_names
         scores = [score_names] + scoreslist
@@ -735,7 +735,7 @@ def score_fixed(fixed_file,
         scores: A list containing the scores generated by EvalCurrent
         score_names: A list of strings describing the scores
     """
-    import tdm
+    from . import tdm
     if crn_file is None:
         crn_file = basename + '.crn'
     if sys_file is None:
@@ -849,7 +849,7 @@ if __name__ == "__main__":
     if args.module:
         exec('import {} as trans_module'.format(args.module))
     else:
-        import DSDClasses as trans_module
+        from . import DSDClasses as trans_module
     
     # Set user-specified spurious interaction heatmap image file name
     if args.systemparams:
@@ -857,9 +857,9 @@ if __name__ == "__main__":
     else:
         try:
             design_params = trans_module.default_params
-        except Exception, e:
-            print e
-            print 'Cannot guess default .sys parameters without a module'
+        except Exception as e:
+            print(e)
+            print('Cannot guess default .sys parameters without a module')
             raise
     
     if args.extrapars:
@@ -872,4 +872,4 @@ if __name__ == "__main__":
     
     gates, strands, winner = run_designer(basename, reps, th_params, design_params, trans_module, 
                                     extra_pars=extra_pars, quick=args.quick)
-    print 'Winning sequence set is index {}'.format(winner)
+    print('Winning sequence set is index {}'.format(winner))
