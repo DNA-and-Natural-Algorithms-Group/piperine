@@ -1,5 +1,3 @@
-
-
 import os
 import sys
 
@@ -39,7 +37,7 @@ class MyProgress(object):
             print('DONE')
 
 def read_design(filename):
-  from .PepperCompiler.nupack_out_grammar import document
+  from peppercompiler.nupack_out_grammar import document
   """Extracts the designed sequences and the mfe structures"""
   if not os.path.isfile(filename):
     error("Cannot load design. No such file '%s'." % filename)

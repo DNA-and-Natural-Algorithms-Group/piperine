@@ -1,6 +1,0 @@
-declare system Or(toe, base): in + in -> out
-
-import Seesaw
-
-component s = Seesaw(<toe>, <base>): in -> out
-

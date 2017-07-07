@@ -22,7 +22,7 @@ def call_compiler(basename,
                     synth=True, 
                     includes=
                       [data_dir]):
-    """ Generates a PIL file from a .sys. (PepperCompiler wrapper)
+    """ Generates a PIL file from a .sys. (peppercompiler wrapper)
     
     Args:
         basename: The default name of filetypes to be produced and accessed.
@@ -35,7 +35,7 @@ def call_compiler(basename,
     Returns:
         Nothing
     """
-    from .PepperCompiler.compiler import compiler
+    from peppercompiler.compiler import compiler
     if outputname is None:
         outputname = '{}.pil'.format(basename)
     if savename is None:
@@ -55,7 +55,7 @@ def call_design(basename,
                 extra_pars="", 
                 findmfe=True, 
                 spuriousbinary="spuriousSSM"):
-    """ Generates an MFE file from a .pil file. (PepperCompiler wrapper)
+    """ Generates an MFE file from a .pil file. (peppercompiler wrapper)
     
     Args:
         basename: The default name of filetypes to be produced and accessed.
@@ -74,7 +74,7 @@ def call_design(basename,
     Returns:
         Nothing
     """
-    from .PepperCompiler.design.spurious_design import design
+    from peppercompiler.design.spurious_design import design
     if not infilename:
         infilename = '{}.pil'.format(basename)
     if not outfilename:
@@ -98,7 +98,7 @@ def call_finish(basename,
                 conc=1,
                 spurious=False,
                 spurious_time=10.0):
-    """ Generates a .seqs file from an .mfe file. (PepperCompiler wrapper)
+    """ Generates a .seqs file from an .mfe file. (peppercompiler wrapper)
     
     Args:
         basename: The default name of all files produced and accessed.
@@ -117,7 +117,7 @@ def call_finish(basename,
     Returns:
         Nothing
     """
-    from .PepperCompiler.finish import finish
+    from peppercompiler.finish import finish
     if not savename:
         savename = '{}.save'.format(basename)
     if not designname:
@@ -395,7 +395,7 @@ def generate_seqs(basename,
     
     This function accepts a base file name, a list of gate objects, a list of 
     strand objects, and toehold parameters and calls StickyDesign, the 
-    PepperCompiler, and SpuriousSSM to generate a DNA sequence.     
+    peppercompiler, and SpuriousSSM to generate a DNA sequence.     
     
     Args:
         basename: Default name for files accessed and written
@@ -410,13 +410,13 @@ def generate_seqs(basename,
         e_module: Thermodynamics used by stickydesign (energyfuncs_james)
         outname: Optional name for files produced as a result of this call (basename + .mfe)
         extra_pars: Options sent to spurious designer. ("")
-        system_file: Filename of the PepperCompiler system file (basename + .sys)
-        pil_file: Filename of the PepperCompiler (basename + .pil)
-        mfe_file: Filename of the PepperCompiler MFE file (basename + .mfe)
-        seq_file: Filename of the PepperCompiler sequence file (basename + .seqs)
-        fixed_file: Filename of the PepperCompiler fixed file (basename + .fixed)
-        save_file: Filename of the PepperCompiler save file (basename + .save)
-        strands_file: Filename of the PepperCompiler strands file (basename + _strands.txt)
+        system_file: Filename of the peppercompiler system file (basename + .sys)
+        pil_file: Filename of the peppercompiler (basename + .pil)
+        mfe_file: Filename of the peppercompiler MFE file (basename + .mfe)
+        seq_file: Filename of the peppercompiler sequence file (basename + .seqs)
+        fixed_file: Filename of the peppercompiler fixed file (basename + .fixed)
+        save_file: Filename of the peppercompiler save file (basename + .save)
+        strands_file: Filename of the peppercompiler strands file (basename + _strands.txt)
     Returns:
         toeholds: 
     """
@@ -723,11 +723,11 @@ def score_fixed(fixed_file,
         fixed_file: Filename pointing to the seqeunce set
         basename: Default name for files accessed and written
         crn_file: Filename of text file specifying the CRN (basename + .crn)
-        sys_file: Filename of the PepperCompiler system file (basename + .sys)
-        pil_file: Filename of the PepperCompiler PIL file (basename + .pil)
-        save_file: Filename of the PepperCompiler save file (basename + .save)
-        mfe_file: Filename of the PepperCompiler MFE file (basename + .mfe)
-        seq_file: Filename of the PepperCompiler output seq file (basename + .seq)
+        sys_file: Filename of the peppercompiler system file (basename + .sys)
+        pil_file: Filename of the peppercompiler PIL file (basename + .pil)
+        save_file: Filename of the peppercompiler save file (basename + .save)
+        mfe_file: Filename of the peppercompiler MFE file (basename + .mfe)
+        seq_file: Filename of the peppercompiler output seq file (basename + .seq)
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
         trans_module: Module containing scheme variables and classes (DSDClasses)
         quick: Skip time-consuming steps of minimizing sequence symetry and scoring (False)

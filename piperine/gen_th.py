@@ -1,5 +1,3 @@
-
-
 import numpy as np
 import re
 from time import time

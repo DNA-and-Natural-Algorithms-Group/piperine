@@ -1,7 +1,3 @@
-# Just building a script for makin' toeholds
-
-
-
 import numpy as np
 import re
 import logging

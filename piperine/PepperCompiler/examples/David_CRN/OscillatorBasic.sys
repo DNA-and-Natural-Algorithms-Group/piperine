@@ -1,7 +1,0 @@
-declare system Oscillator(t, bm): ->
-
-import rxn2_2
-
-component r1 = rxn2_2(<t>, <bm>): A + B -> B + B
-component r2 = rxn2_2(<t>, <bm>): B + C -> C + C
-component r3 = rxn2_2(<t>, <bm>): C + A -> A + A

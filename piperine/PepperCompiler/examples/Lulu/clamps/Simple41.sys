@@ -1,8 +1,0 @@
-declare system Simple41(toe, rec, clamp, ext): x1 + x2 + x3 + x4 -> y
-
-import And21
-import Or21
-
-component and1 = And21(<toe>, <rec>, <clamp>, <ext>): x1 + x2 -> i1
-component and2 = And21(<toe>, <rec>, <clamp>, <ext>): x3 + x4 -> i2
-component or   = Or21(<toe>, <rec>, <clamp>, <ext>):  i1 + i2 -> y
