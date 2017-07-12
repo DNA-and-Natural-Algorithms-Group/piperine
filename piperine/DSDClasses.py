@@ -131,6 +131,9 @@ class SignalStrand(object):
     def th(self, i):
         return self.pepper_names['toeholds'][i]
     
+    def get_ths(self):
+        return self.pepper_names['toeholds'][:]
+    
     def get_bms(self):
         return self.pepper_names['bm domains'] + self.pepper_names['history domains']
     
