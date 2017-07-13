@@ -215,7 +215,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     
     # Retrieve toeholds for BM score calculation
     if not quick:
-        th_strs = [ s.get_ths for s in strands ]
+        th_strs = [ s.get_ths() for s in strands ]
         toeholds = [seq_dict[i] for ths in th_strs for i in ths]
     th_names = ['TH energy avg', 'TH energy range']
     
