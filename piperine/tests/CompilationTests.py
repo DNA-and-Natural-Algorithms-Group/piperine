@@ -1,9 +1,9 @@
-
 import os
 import unittest
 import sys
 import os
 from tempfile import mkstemp
+import pkg_resources
 
 import filecmp
 
@@ -12,6 +12,9 @@ from io import StringIO
 
 from .. import designer
 from .. import DSDClasses as trans_mod
+
+# Grab package data
+correct_sys_file = pkg_resources.resource_filename('piperine', 'tests/test_data/correct.sys')
 
 class Capturing(list):
     def __enter__(self):
@@ -50,7 +53,6 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
                  'stoich_r':1,
                     }])
 
-    correct_sys_file = os.path.join(os.path.dirname(__file__), 'test_data', 'correct.sys')
     fid = open(correct_sys_file)
     correct_sys = fid.readlines()
     fid.close()
@@ -86,6 +88,7 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
 
     def tearDown(self):
         for f in self.filelist:
+            continue
             os.remove(f)
 
     def runTest(self):
@@ -110,7 +113,7 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
         rxns, spcs = designer.read_crn(self.crn_file)
         gates, strands = trans_mod.process_rxns(rxns, spcs, self.design_params)
         designer.write_sys_file(self.basename, gates, self.sys_file, trans_mod)
-        self.assertTrue(filecmp.cmp(self.sys_file, self.correct_sys_file))
+        self.assertTrue(filecmp.cmp(self.sys_file, correct_sys_file))
 
 class Test_readcrn(unittest.TestCase):
     crn = 'A -> B + B\nB + B -> A\nD -> A\n'

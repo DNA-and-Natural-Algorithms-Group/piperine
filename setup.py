@@ -8,7 +8,7 @@ setup(name='piperine',
     include_package_data=True,
     
     package_data={
-         'piperine':['piperine/data/*', 'piperine/tests/testdata/*']
+         'piperine':['piperine/data/*', 'piperine/tests/test_data/*']
     },
     dependency_links=["http://www.nupack.org", "http://dna.caltech.edu/DNA_Sequence_Design_Tools/"],
     exclude_package_data={'': ['*.pyc', '*config_choi*']},

@@ -1,4 +1,3 @@
-
 import unittest
 import sys
 from tempfile import mkstemp
