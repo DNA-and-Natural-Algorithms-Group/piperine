@@ -1,4 +1,4 @@
-from __future__ import division
+
 import os
 import unittest
 import sys
@@ -8,7 +8,10 @@ from tempfile import mkstemp
 import filecmp
 
 # From a stackoverflow, 16571150
-from cStringIO import StringIO
+from io import StringIO
+
+from .. import designer
+from .. import DSDClasses as trans_mod
 
 class Capturing(list):
     def __enter__(self):
@@ -90,25 +93,20 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
 
     def test_crn_file(self):
         import logging
-        from .context import designer
         rxns, spcs = designer.read_crn(self.crn_file)
         for i in range(len(rxns)):
-            for key in rxns[i].keys():
+            for key in list(rxns[i].keys()):
                 true_rxn = self.true_crn[i]
                 test_rxn = rxns[i]
                 self.assertEqual(test_rxn[key], test_rxn[key])
     
     def test_process_rxns(self):
-        from .context import designer
-        from .context import DSDClasses as trans_mod
         design_params = trans_mod.default_params
         abstract_rxns, spcs = designer.read_crn(self.crn_file)
         rxn_list, signals = trans_mod.process_rxns(abstract_rxns, spcs, design_params)
 
     def test_sys_file(self):
         import logging
-        from .context import designer
-        from .context import DSDClasses as trans_mod
         rxns, spcs = designer.read_crn(self.crn_file)
         gates, strands = trans_mod.process_rxns(rxns, spcs, self.design_params)
         designer.write_sys_file(self.basename, gates, self.sys_file, trans_mod)
@@ -156,11 +154,10 @@ class Test_readcrn(unittest.TestCase):
 
     def test_compilation(self):
         import logging
-        from .context import designer
         logging.captureWarnings(False)
         with Capturing() as output:
             crn = designer.read_crn(self.crn_file)
 
 def suite():
     tests = ['test_crn_file', 'test_sys_file']
-    return unittest.TestSuite(map(TestMakePepperCompilerInputs, tests))
+    return unittest.TestSuite(list(map(TestMakePepperCompilerInputs, tests)))

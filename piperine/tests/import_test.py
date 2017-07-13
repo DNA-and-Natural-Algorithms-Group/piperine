@@ -1,10 +1,10 @@
-from __future__ import division
+
 import unittest
 import sys
 from tempfile import mkstemp
 import os
 
-from .context import designer
+from .. import designer
 
 class TestCRNImport(unittest.TestCase):
     # Some 
@@ -106,4 +106,4 @@ class TestCRNImport(unittest.TestCase):
 
 def suite():
     tests = ['test_integer_coefficients', 'test_noninteger_stoichiometry', 'test_reaction_rate']
-    return unittest.TestSuite(map(TestCRNImport, tests))
+    return unittest.TestSuite(list(map(TestCRNImport, tests)))

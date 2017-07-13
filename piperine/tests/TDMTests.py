@@ -1,12 +1,12 @@
-from __future__ import division
+
 import os
 import unittest
 import sys
 from tempfile import mkstemp
 import os
-from test_data import fixed_file
+from .test_data import fixed_file
 
-from .context import designer, tdm, DSDClasses
+from .. import designer, tdm, DSDClasses
 
 class TestTDM(unittest.TestCase):
     crn = 'A -> B + A\n'
@@ -87,7 +87,7 @@ class TestTDM(unittest.TestCase):
                  seq_file=self.seq_file,
                  design_params=(7, 15, 2),
                  trans_module=DSDClasses)
-        iterate_list = zip(self.scores, self.true_val, self.fmts, names)
+        iterate_list = list(zip(self.scores, self.true_val, self.fmts, names))
         for score, tru, fmt, name in iterate_list:
             score_str = fmt.format(score)
             truth_str = fmt.format(tru)
@@ -95,4 +95,4 @@ class TestTDM(unittest.TestCase):
 
 def suite():
     tests = ['test_tdm']
-    return unittest.TestSuite(map(TestTDM, tests))
+    return unittest.TestSuite(list(map(TestTDM, tests)))

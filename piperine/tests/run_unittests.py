@@ -1,10 +1,10 @@
 import unittest
 
-import import_test
-import TDMTests
-import CompilationTests
-import RunDesignerTest
-import DSDClassesTests
+from . import import_test
+from . import TDMTests
+from . import CompilationTests
+from . import RunDesignerTest
+from . import DSDClassesTests
 
 def runem():
     suite = import_test.suite()

@@ -1,10 +1,10 @@
-from __future__ import division
+
 import os
 import unittest
 import sys
 import os
 
-from .context import designer, tdm
+from .. import designer, tdm
 
 class TestSPW(unittest.TestCase):
     cwd = os.getcwd()
@@ -24,7 +24,7 @@ class TestSPW(unittest.TestCase):
         designer.generate_seqs(self.basename)
         
         self.seq_dict = tdm.Read_Finished('{0}.seqs'.format(self.basename))
-        self.domains_list = self.seq_dict.keys()
+        self.domains_list = list(self.seq_dict.keys())
     
     def tearDown(self):
         filelist = os.listdir(os.getcwd())
@@ -42,4 +42,4 @@ class TestSPW(unittest.TestCase):
 
 def suite():
     tests = ['test_spw']
-    return unittest.TestSuite(map(TestSPW, tests))
+    return unittest.TestSuite(list(map(TestSPW, tests)))

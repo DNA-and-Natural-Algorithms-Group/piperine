@@ -1,16 +1,16 @@
-from __future__ import division
+
 import os
 import subprocess
 import unittest
 import sys
 from tempfile import mkstemp
-from test_data import fixed_file
+from .test_data import fixed_file
 from time import time
 
-from .context import designer, tdm, energyfuncs_james, gen_th, DSDClasses
+from .. import designer, tdm, energyfuncs_james, gen_th, DSDClasses
 
 # From a stackoverflow, 16571150
-from cStringIO import StringIO
+from io import StringIO
 
 class Capturing(list):
     def __enter__(self):
@@ -65,10 +65,10 @@ class Test_run_designer(unittest.TestCase):
             mod = argsplit[1]
             att = argsplit[3]
             if mod == 'str':
-                print e
+                print(e)
                 self.fail("Failed to import module from string")
             if self.trans_str in mod or self.ef_str in mod:
-                print e
+                print(e)
                 self.fail("Piperine found module {} but it had no attribute {}".format(mod,att))
             raise(e)
         except ImportError as e:
@@ -96,4 +96,4 @@ class Test_run_designer(unittest.TestCase):
 def suite():
     tests = ['test_run_designer_accepts_string_modules', 'test_run_designer_noargs',
              'test_run_designer_alerts_unfound_modules']
-    return unittest.TestSuite(map(Test_run_designer, tests))
+    return unittest.TestSuite(list(map(Test_run_designer, tests)))
