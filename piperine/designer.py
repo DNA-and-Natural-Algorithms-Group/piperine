@@ -331,6 +331,42 @@ def write_sys_file(basename,
         for rxn in reactions:
             f.write(rxn.get_reaction_line())
 
+def process_crn(basename=None,  
+                design_params=(7, 15, 2), 
+                trans_module=None,
+                crn_file=None,
+                system_file=None):
+    """ Generate objects describing DNA implementation
+    
+    Gate and strand objects tell the scoring modules, write_sys_file, and 
+    write_toehold_files which names in the .PIL file refer to the DNA sequence 
+    domains these functions need to access.  This function, making use of 
+    other methods, reads in a text file describing an abstract CRN and determines 
+    the strands and gates necessary to implement the CRN.        
+    Args:
+        basename: Default name for files accessed and written
+        design_params: A tuple of parameters to the system file ( (7, 15, 2) )
+        trans_module: module containing scheme variables and classes (DSDClasses)
+        crn_file: name of the text file specifying the CRN (basename + .crn)
+        system_file: name of the system file (basename + .sys)
+    Returns:
+        gates: A list of gate objects
+        strands: A list of strand objects
+    """
+    if trans_module is None:
+        from . import DSDClasses as trans_module
+    
+    if crn_file is None:
+        crn_file = basename + ".crn"
+    
+    reactions, species = read_crn(crn_file)
+    
+    output = trans_module.process_rxns(reactions, species, design_params)
+    (gates, strands) = output
+    
+    return (gates, strands)
+    
+
 def generate_scheme(basename,  
                     design_params=(7, 15, 2), 
                     trans_module=None,
@@ -359,15 +395,10 @@ def generate_scheme(basename,
     if trans_module is None:
         from . import DSDClasses as trans_module
     
-    if crn_file is None:
-        crn_file = basename + ".crn"
     if system_file is None:
         system_file = basename + ".sys"
     
-    reactions, species = read_crn(crn_file)
-    
-    output = trans_module.process_rxns(reactions, species, design_params)
-    (gates, strands) = output
+    (gates, strands) = process_crn(basename, design_params, trans_module)
     
     write_sys_file(basename, gates, system_file, trans_module)
     return (gates, strands)

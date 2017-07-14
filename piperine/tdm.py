@@ -1,3 +1,5 @@
+from __future__ import division
+
 import os
 import sys
 
@@ -110,8 +112,9 @@ def compare_sequence_notoe(s1, s2, toeholds):
                          ismaxmatch = "TRUE";           
      return [ismaxmatch, maxmatchsize, mm_i, mm_j]
 
-def get_seq_lists(seqsfile, mfefile, gates, strands):
-    # Read in sequences
+def get_seq_dicts(basename, heuristics_inputs):
+    mfefile = basename + ".mfe"
+    seqsfile = basename + ".seqs"
     pep_sequences, pep_strands = Read_Finished(seqsfile)
     domains_list = list(pep_sequences.keys())
     mfe_dict, cmplx_dict = read_design(mfefile)
@@ -119,6 +122,23 @@ def get_seq_lists(seqsfile, mfefile, gates, strands):
     seq_dict.update(pep_sequences)
     seq_dict.update(pep_strands)
     
+    TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist, \
+    NotToInteract = heuristics_inputs
+    
+    allpepperlist = list()
+    for l in [TopStrandlist, complex_names, list(seq_dict.keys()), BMlist]:
+        allpepperlist.extend(l)
+    
+    for l in list(NotToInteract.values()):
+        allpepperlist.extend(l)
+    
+    allpepperlist.extend([ s[:-1] for s in BaseStrandlist] )
+    
+    seq_dict = make_pepper_seq_dict(allpepperlist, seq_dict, update=True)
+    
+    return seq_dict, cmplx_dict, domains_list
+    
+def get_heuristics_inputs(basename, gates, strands):
     # Generate pepper-lists
     TopStrandlist = []
     complex_names = []
@@ -134,28 +154,28 @@ def get_seq_lists(seqsfile, mfefile, gates, strands):
         bases = gate.get_base_domains()
         for th in bases:
             th_c = th+'*'
-            if th_c not in NotToInteract:
-                NotToInteract[th_c] = gate.get_noninteracting_peppernames(th)
-            else:
-                NotToInteract[th_c].extend(gate.get_noninteracting_peppernames(th))
             if th_c not in BaseStrandlist:
                 BaseStrandlist.append(th_c)
         TopStrandlist.extend(gate.get_top_strands())
         complex_names.extend(gate.get_complexes())
         TopStranddict.update(gate.get_top_strand_dict())
     
-    allpepperlist = list()
-    for l in [TopStrandlist, complex_names, list(seq_dict.keys()), BMlist]:
-        allpepperlist.extend(l)
+    for gate in gates:
+        for th_c in BaseStrandlist:
+            if th_c not in NotToInteract:
+                NotToInteract[th_c] = gate.get_noninteracting_peppernames(th_c[:-1])
+            else:
+                NotToInteract[th_c].extend(gate.get_noninteracting_peppernames(th_c[:-1]))
     
-    for l in list(NotToInteract.values()):
-        allpepperlist.extend(l)
+    for strand in strands:
+        for th_c in BaseStrandlist:
+            if th_c not in NotToInteract:
+                NotToInteract[th_c] = strand.get_noninteracting_peppernames(th_c[:-1])
+            else:
+                NotToInteract[th_c].extend(strand.get_noninteracting_peppernames(th_c[:-1]))
     
-    allpepperlist.extend([ s[:-1] for s in BaseStrandlist] )
-    
-    seq_dict = make_pepper_seq_dict(allpepperlist, seq_dict, update=True)
     return (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
-            NotToInteract, seq_dict, cmplx_dict, domains_list)
+            NotToInteract)
 
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
                 header=True, testname=None, seqs_file=None, mfe_file=None,
@@ -175,10 +195,13 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     if not mfe_file:
         mfe_file = basename + '.mfe'
     
-    if not quick:
+    if not quick: 
+        heuristics_inputs = get_heuristics_inputs(basename, gates, strands) 
         (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
-         NotToInteract, seq_dict, cmplx_dict, domains_list) = \
-            get_seq_lists(seqs_file, mfe_file, gates, strands)
+         NotToInteract) = heuristics_inputs
+        
+        seq_dict, cmplx_dict, domains_list = get_seq_dicts(basename, heuristics_inputs)
+
     
     print('Start WSI computation')
     if quick:
