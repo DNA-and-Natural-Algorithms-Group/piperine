@@ -1,0 +1,7 @@
+declare system test_tdm(t, bm, c):  -> 
+
+import bimrxn
+
+component r0 = bimrxn(<t>, <bm>, <c>): A + B -> C + D
+component r1 = bimrxn(<t>, <bm>, <c>): C + D -> A + B
+component r2 = bimrxn(<t>, <bm>, <c>): C + E -> A + A

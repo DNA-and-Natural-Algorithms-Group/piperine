@@ -1,0 +1,202 @@
+## Specification for /home/jmp/git/piperine/piperine/tests/test_data/test_tdm compiled at: Thu Jul 13 16:06:36 2017
+#
+## Top System
+#
+## Component r0
+sequence r0-toe-fa = HHHHHHH : 7
+sequence r0-toe-sa = HHHHHHH : 7
+sequence r0-toe-fb-suffix = HHHHHH : 6
+sequence r0-toe-fb-prefix = H : 1
+sequence r0-toe-sb = HHHHHHH : 7
+sequence r0-toe-fc = HHHHHHH : 7
+sequence r0-toe-sc = HHHHHHH : 7
+sequence r0-toe-fd = HHHHHHH : 7
+sequence r0-toe-sd = HHHHHHH : 7
+sequence r0-am = HHHHHHHHHHHHH : 13
+sequence r0-bm = HHHHHHHHHHHHH : 13
+sequence r0-cm = HHHHHHHHHHHHH : 13
+sequence r0-ch = CHHHHHHHHHHHH : 13
+sequence r0-dm = HHHHHHHHHHHHH : 13
+sequence r0-dh = CHHHHHHHHHHHH : 13
+sequence r0-cam = WC : 2
+sequence r0-cbm = WC : 2
+sequence r0-ccm = WC : 2
+sequence r0-cch = CW : 2
+sequence r0-cdm = WC : 2
+sequence r0-cdh = CW : 2
+sup-sequence r0-toe-fb = r0-toe-fb-suffix r0-toe-fb-prefix : 7
+sup-sequence r0-A = r0-toe-sa r0-am r0-cam r0-toe-fa : 29
+sup-sequence r0-B = r0-toe-sb r0-bm r0-cbm r0-toe-fb-suffix r0-toe-fb-prefix : 29
+sup-sequence r0-C = r0-toe-sc r0-cm r0-ccm r0-toe-fc : 29
+sup-sequence r0-D = r0-toe-sd r0-dm r0-cdm r0-toe-fd : 29
+strand r0-a = r0-toe-sa r0-am r0-cam r0-toe-fa : 29
+strand r0-b = r0-toe-sb r0-bm r0-cbm r0-toe-fb-suffix r0-toe-fb-prefix : 29
+strand r0-c = r0-toe-sc r0-cm r0-ccm r0-toe-fc r0-ch r0-cch : 44
+strand r0-d = r0-toe-sd r0-dm r0-cdm r0-toe-fd r0-dh r0-cdh : 44
+strand r0-backward = r0-toe-fb-suffix r0-toe-sa r0-am r0-cam : 28
+strand r0-gate_base = r0-toe-fa* r0-cam* r0-am* r0-toe-sa* r0-toe-fb-suffix* r0-cbm* r0-bm* r0-toe-sb* r0-cch* : 59
+strand r0-out = r0-ch r0-cch r0-toe-sb r0-bm r0-cbm : 37
+strand r0-helper = r0-toe-fd r0-dh r0-cdh r0-toe-fc : 29
+strand r0-cat_helper = r0-toe-fd r0-dh r0-cdh r0-toe-fc r0-ch r0-cch : 44
+strand r0-trans_base = r0-toe-sb* r0-cch* r0-ch* r0-toe-fc* r0-cdh* r0-dh* r0-toe-fd* r0-cdm* : 53
+structure [1nt] r0-A_struct = r0-a : .............................
+structure [1nt] r0-B_struct = r0-b : .............................
+structure [1nt] r0-C_struct = r0-c : ............................................
+structure [1nt] r0-D_struct = r0-d : ............................................
+structure [1nt] r0-Backward = r0-backward : ............................
+structure [1nt] r0-Out = r0-out : .....................................
+structure [1nt] r0-Helper = r0-helper : .............................
+structure [1nt] r0-Cat_Helper = r0-cat_helper : ............................................
+structure [1nt] r0-Gate = r0-gate_base + r0-out + r0-backward : .......((((((((((((((((((((((((((((((((((((((((((((((((((((+.............))))))))))))))))))))))))+))))))))))))))))))))))))))))
+structure [1nt] r0-Trans = r0-trans_base + r0-d + r0-c : .......((((((((((((((((((((((((((((((((((((((((((((((+....................))))))))))))))))))))))))+......................))))))))))))))))))))))
+structure [1nt] r0-Gate_int = r0-gate_base + r0-out + r0-a : (((((((((((((((((((((((((((((......((((((((((((((((((((((((+.............))))))))))))))))))))))))+)))))))))))))))))))))))))))))
+structure [1nt] r0-Trans_int = r0-trans_base + r0-d + r0-out : ((((((((((((((((((((((.......((((((((((((((((((((((((+....................))))))))))))))))))))))))+))))))))))))))))))))))...............
+structure [1nt] r0-Gate_waste = r0-gate_base + r0-b + r0-a : (((((((((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))).+)))))))))))))))))))))))))))))
+structure [1nt] r0-Trans_waste = r0-trans_base + r0-helper + r0-out : (((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))+))))))))))))))))))))))...............
+structure [1nt] r0-Trans_cat_waste = r0-trans_base + r0-cat_helper : .......((((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))))
+kinetic [0.000000 /M/s < k < inf /M/s] r0-A_struct + r0-Gate -> r0-Gate_int + r0-Backward
+kinetic [0.000000 /M/s < k < inf /M/s] r0-Gate_int + r0-Backward -> r0-A_struct + r0-Gate
+kinetic [0.000000 /M/s < k < inf /M/s] r0-B_struct + r0-Gate_int -> r0-Gate_waste + r0-Out
+kinetic [0.000000 /M/s < k < inf /M/s] r0-Out + r0-Trans -> r0-Trans_int + r0-C_struct
+kinetic [0.000000 /M/s < k < inf /M/s] r0-Helper + r0-Trans_int -> r0-Trans_waste + r0-D_struct
+kinetic [0.000000 /M/s < k < inf /M/s] r0-Cat_Helper + r0-Trans_int -> r0-Trans_cat_waste + r0-D_struct + r0-Out
+#
+## Component r1
+sequence r1-toe-fa = HHHHHHH : 7
+sequence r1-toe-sa = HHHHHHH : 7
+sequence r1-toe-fb-suffix = HHHHHH : 6
+sequence r1-toe-fb-prefix = H : 1
+sequence r1-toe-sb = HHHHHHH : 7
+sequence r1-toe-fc = HHHHHHH : 7
+sequence r1-toe-sc = HHHHHHH : 7
+sequence r1-toe-fd = HHHHHHH : 7
+sequence r1-toe-sd = HHHHHHH : 7
+sequence r1-am = HHHHHHHHHHHHH : 13
+sequence r1-bm = HHHHHHHHHHHHH : 13
+sequence r1-cm = HHHHHHHHHHHHH : 13
+sequence r1-ch = CHHHHHHHHHHHH : 13
+sequence r1-dm = HHHHHHHHHHHHH : 13
+sequence r1-dh = CHHHHHHHHHHHH : 13
+sequence r1-cam = WC : 2
+sequence r1-cbm = WC : 2
+sequence r1-ccm = WC : 2
+sequence r1-cch = CW : 2
+sequence r1-cdm = WC : 2
+sequence r1-cdh = CW : 2
+sup-sequence r1-toe-fb = r1-toe-fb-suffix r1-toe-fb-prefix : 7
+sup-sequence r1-A = r1-toe-sa r1-am r1-cam r1-toe-fa : 29
+sup-sequence r1-B = r1-toe-sb r1-bm r1-cbm r1-toe-fb-suffix r1-toe-fb-prefix : 29
+sup-sequence r1-C = r1-toe-sc r1-cm r1-ccm r1-toe-fc : 29
+sup-sequence r1-D = r1-toe-sd r1-dm r1-cdm r1-toe-fd : 29
+strand r1-a = r1-toe-sa r1-am r1-cam r1-toe-fa : 29
+strand r1-b = r1-toe-sb r1-bm r1-cbm r1-toe-fb-suffix r1-toe-fb-prefix : 29
+strand r1-c = r1-toe-sc r1-cm r1-ccm r1-toe-fc r1-ch r1-cch : 44
+strand r1-d = r1-toe-sd r1-dm r1-cdm r1-toe-fd r1-dh r1-cdh : 44
+strand r1-backward = r1-toe-fb-suffix r1-toe-sa r1-am r1-cam : 28
+strand r1-gate_base = r1-toe-fa* r1-cam* r1-am* r1-toe-sa* r1-toe-fb-suffix* r1-cbm* r1-bm* r1-toe-sb* r1-cch* : 59
+strand r1-out = r1-ch r1-cch r1-toe-sb r1-bm r1-cbm : 37
+strand r1-helper = r1-toe-fd r1-dh r1-cdh r1-toe-fc : 29
+strand r1-cat_helper = r1-toe-fd r1-dh r1-cdh r1-toe-fc r1-ch r1-cch : 44
+strand r1-trans_base = r1-toe-sb* r1-cch* r1-ch* r1-toe-fc* r1-cdh* r1-dh* r1-toe-fd* r1-cdm* : 53
+structure [1nt] r1-A_struct = r1-a : .............................
+structure [1nt] r1-B_struct = r1-b : .............................
+structure [1nt] r1-C_struct = r1-c : ............................................
+structure [1nt] r1-D_struct = r1-d : ............................................
+structure [1nt] r1-Backward = r1-backward : ............................
+structure [1nt] r1-Out = r1-out : .....................................
+structure [1nt] r1-Helper = r1-helper : .............................
+structure [1nt] r1-Cat_Helper = r1-cat_helper : ............................................
+structure [1nt] r1-Gate = r1-gate_base + r1-out + r1-backward : .......((((((((((((((((((((((((((((((((((((((((((((((((((((+.............))))))))))))))))))))))))+))))))))))))))))))))))))))))
+structure [1nt] r1-Trans = r1-trans_base + r1-d + r1-c : .......((((((((((((((((((((((((((((((((((((((((((((((+....................))))))))))))))))))))))))+......................))))))))))))))))))))))
+structure [1nt] r1-Gate_int = r1-gate_base + r1-out + r1-a : (((((((((((((((((((((((((((((......((((((((((((((((((((((((+.............))))))))))))))))))))))))+)))))))))))))))))))))))))))))
+structure [1nt] r1-Trans_int = r1-trans_base + r1-d + r1-out : ((((((((((((((((((((((.......((((((((((((((((((((((((+....................))))))))))))))))))))))))+))))))))))))))))))))))...............
+structure [1nt] r1-Gate_waste = r1-gate_base + r1-b + r1-a : (((((((((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))).+)))))))))))))))))))))))))))))
+structure [1nt] r1-Trans_waste = r1-trans_base + r1-helper + r1-out : (((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))+))))))))))))))))))))))...............
+structure [1nt] r1-Trans_cat_waste = r1-trans_base + r1-cat_helper : .......((((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))))
+kinetic [0.000000 /M/s < k < inf /M/s] r1-A_struct + r1-Gate -> r1-Gate_int + r1-Backward
+kinetic [0.000000 /M/s < k < inf /M/s] r1-Gate_int + r1-Backward -> r1-A_struct + r1-Gate
+kinetic [0.000000 /M/s < k < inf /M/s] r1-B_struct + r1-Gate_int -> r1-Gate_waste + r1-Out
+kinetic [0.000000 /M/s < k < inf /M/s] r1-Out + r1-Trans -> r1-Trans_int + r1-C_struct
+kinetic [0.000000 /M/s < k < inf /M/s] r1-Helper + r1-Trans_int -> r1-Trans_waste + r1-D_struct
+kinetic [0.000000 /M/s < k < inf /M/s] r1-Cat_Helper + r1-Trans_int -> r1-Trans_cat_waste + r1-D_struct + r1-Out
+#
+## Component r2
+sequence r2-toe-fa = HHHHHHH : 7
+sequence r2-toe-sa = HHHHHHH : 7
+sequence r2-toe-fb-suffix = HHHHHH : 6
+sequence r2-toe-fb-prefix = H : 1
+sequence r2-toe-sb = HHHHHHH : 7
+sequence r2-toe-fc = HHHHHHH : 7
+sequence r2-toe-sc = HHHHHHH : 7
+sequence r2-toe-fd = HHHHHHH : 7
+sequence r2-toe-sd = HHHHHHH : 7
+sequence r2-am = HHHHHHHHHHHHH : 13
+sequence r2-bm = HHHHHHHHHHHHH : 13
+sequence r2-cm = HHHHHHHHHHHHH : 13
+sequence r2-ch = CHHHHHHHHHHHH : 13
+sequence r2-dm = HHHHHHHHHHHHH : 13
+sequence r2-dh = CHHHHHHHHHHHH : 13
+sequence r2-cam = WC : 2
+sequence r2-cbm = WC : 2
+sequence r2-ccm = WC : 2
+sequence r2-cch = CW : 2
+sequence r2-cdm = WC : 2
+sequence r2-cdh = CW : 2
+sup-sequence r2-toe-fb = r2-toe-fb-suffix r2-toe-fb-prefix : 7
+sup-sequence r2-A = r2-toe-sa r2-am r2-cam r2-toe-fa : 29
+sup-sequence r2-B = r2-toe-sb r2-bm r2-cbm r2-toe-fb-suffix r2-toe-fb-prefix : 29
+sup-sequence r2-C = r2-toe-sc r2-cm r2-ccm r2-toe-fc : 29
+sup-sequence r2-D = r2-toe-sd r2-dm r2-cdm r2-toe-fd : 29
+strand r2-a = r2-toe-sa r2-am r2-cam r2-toe-fa : 29
+strand r2-b = r2-toe-sb r2-bm r2-cbm r2-toe-fb-suffix r2-toe-fb-prefix : 29
+strand r2-c = r2-toe-sc r2-cm r2-ccm r2-toe-fc r2-ch r2-cch : 44
+strand r2-d = r2-toe-sd r2-dm r2-cdm r2-toe-fd r2-dh r2-cdh : 44
+strand r2-backward = r2-toe-fb-suffix r2-toe-sa r2-am r2-cam : 28
+strand r2-gate_base = r2-toe-fa* r2-cam* r2-am* r2-toe-sa* r2-toe-fb-suffix* r2-cbm* r2-bm* r2-toe-sb* r2-cch* : 59
+strand r2-out = r2-ch r2-cch r2-toe-sb r2-bm r2-cbm : 37
+strand r2-helper = r2-toe-fd r2-dh r2-cdh r2-toe-fc : 29
+strand r2-cat_helper = r2-toe-fd r2-dh r2-cdh r2-toe-fc r2-ch r2-cch : 44
+strand r2-trans_base = r2-toe-sb* r2-cch* r2-ch* r2-toe-fc* r2-cdh* r2-dh* r2-toe-fd* r2-cdm* : 53
+structure [1nt] r2-A_struct = r2-a : .............................
+structure [1nt] r2-B_struct = r2-b : .............................
+structure [1nt] r2-C_struct = r2-c : ............................................
+structure [1nt] r2-D_struct = r2-d : ............................................
+structure [1nt] r2-Backward = r2-backward : ............................
+structure [1nt] r2-Out = r2-out : .....................................
+structure [1nt] r2-Helper = r2-helper : .............................
+structure [1nt] r2-Cat_Helper = r2-cat_helper : ............................................
+structure [1nt] r2-Gate = r2-gate_base + r2-out + r2-backward : .......((((((((((((((((((((((((((((((((((((((((((((((((((((+.............))))))))))))))))))))))))+))))))))))))))))))))))))))))
+structure [1nt] r2-Trans = r2-trans_base + r2-d + r2-c : .......((((((((((((((((((((((((((((((((((((((((((((((+....................))))))))))))))))))))))))+......................))))))))))))))))))))))
+structure [1nt] r2-Gate_int = r2-gate_base + r2-out + r2-a : (((((((((((((((((((((((((((((......((((((((((((((((((((((((+.............))))))))))))))))))))))))+)))))))))))))))))))))))))))))
+structure [1nt] r2-Trans_int = r2-trans_base + r2-d + r2-out : ((((((((((((((((((((((.......((((((((((((((((((((((((+....................))))))))))))))))))))))))+))))))))))))))))))))))...............
+structure [1nt] r2-Gate_waste = r2-gate_base + r2-b + r2-a : (((((((((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))).+)))))))))))))))))))))))))))))
+structure [1nt] r2-Trans_waste = r2-trans_base + r2-helper + r2-out : (((((((((((((((((((((((((((((((((((((((((((((((((((..+)))))))))))))))))))))))))))))+))))))))))))))))))))))...............
+structure [1nt] r2-Trans_cat_waste = r2-trans_base + r2-cat_helper : .......((((((((((((((((((((((((((((((((((((((((((((..+))))))))))))))))))))))))))))))))))))))))))))
+kinetic [0.000000 /M/s < k < inf /M/s] r2-A_struct + r2-Gate -> r2-Gate_int + r2-Backward
+kinetic [0.000000 /M/s < k < inf /M/s] r2-Gate_int + r2-Backward -> r2-A_struct + r2-Gate
+kinetic [0.000000 /M/s < k < inf /M/s] r2-B_struct + r2-Gate_int -> r2-Gate_waste + r2-Out
+kinetic [0.000000 /M/s < k < inf /M/s] r2-Out + r2-Trans -> r2-Trans_int + r2-C_struct
+kinetic [0.000000 /M/s < k < inf /M/s] r2-Helper + r2-Trans_int -> r2-Trans_waste + r2-D_struct
+kinetic [0.000000 /M/s < k < inf /M/s] r2-Cat_Helper + r2-Trans_int -> r2-Trans_cat_waste + r2-D_struct + r2-Out
+#
+## Top System Connectors
+#
+## Signal A
+sequence A = NNNNNNNNNNNNNNNNNNNNNNNNNNNNN : 29
+equal A r0-A r1-C r2-C r2-D 
+#
+## Signal B
+sequence B = NNNNNNNNNNNNNNNNNNNNNNNNNNNNN : 29
+equal B r0-B r1-D 
+#
+## Signal C
+sequence C = NNNNNNNNNNNNNNNNNNNNNNNNNNNNN : 29
+equal C r0-C r1-A r2-A 
+#
+## Signal D
+sequence D = NNNNNNNNNNNNNNNNNNNNNNNNNNNNN : 29
+equal D r0-D r1-B 
+#
+## Signal E
+sequence E = NNNNNNNNNNNNNNNNNNNNNNNNNNNNN : 29
+equal E r2-B 

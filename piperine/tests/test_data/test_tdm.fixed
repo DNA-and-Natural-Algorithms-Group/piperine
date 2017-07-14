@@ -1,0 +1,8 @@
+sequence r0-toe-fa = ACTCTTT # species A
+sequence r0-toe-sa = CATTCTT # species A
+sequence r0-toe-fb = AATCCTT # species B
+sequence r0-toe-sb = TTCCATT # species B
+sequence r0-toe-fc = CTCATTT # species C
+sequence r0-toe-sc = TCAACTT # species C
+sequence r0-toe-fd = AACAAAC # species D
+sequence r0-toe-sd = CTACATC # species D
