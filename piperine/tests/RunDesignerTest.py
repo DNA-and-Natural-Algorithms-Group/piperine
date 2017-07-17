@@ -1,16 +1,15 @@
-from __future__ import division
 import os
 import subprocess
 import unittest
 import sys
 from tempfile import mkstemp
-from test_data import fixed_file
+from .test_data import fixed_file
 from time import time
 
-from .context import designer, tdm, energyfuncs_james, gen_th, DSDClasses
+from .. import designer, tdm, energyfuncs_james, gen_th, DSDClasses
 
 # From a stackoverflow, 16571150
-from cStringIO import StringIO
+from io import StringIO
 
 class Capturing(list):
     def __enter__(self):
@@ -65,10 +64,10 @@ class Test_run_designer(unittest.TestCase):
             mod = argsplit[1]
             att = argsplit[3]
             if mod == 'str':
-                print e
+                print(e)
                 self.fail("Failed to import module from string")
             if self.trans_str in mod or self.ef_str in mod:
-                print e
+                print(e)
                 self.fail("Piperine found module {} but it had no attribute {}".format(mod,att))
             raise(e)
         except ImportError as e:
@@ -79,21 +78,13 @@ class Test_run_designer(unittest.TestCase):
     def test_run_designer_alerts_unfound_modules(self):
         fakemod1 = "notAmodule"
         fakemod2 = "notAmodule"
-        try:
-            with Capturing() as output:
-                out = designer.run_designer(basename=self.basename,
-                                         e_module=fakemod1,
-                                         trans_module=fakemod2,
-                                         quick=True)
-        except ImportError as e:
-            argsplit = e.args[0].split(" ")
-            mod = argsplit[-1]
-            if mod in [fakemod1, fakemod2]:
-                self.assertIs(type(e), ImportError)
-            else:
-                raise(e)
+        with self.assertRaises(ModuleNotFoundError):
+            out = designer.run_designer(basename=self.basename,
+                                     e_module=fakemod1,
+                                     trans_module=fakemod2,
+                                     quick=True)
 
 def suite():
     tests = ['test_run_designer_accepts_string_modules', 'test_run_designer_noargs',
              'test_run_designer_alerts_unfound_modules']
-    return unittest.TestSuite(map(Test_run_designer, tests))
+    return unittest.TestSuite(list(map(Test_run_designer, tests)))

@@ -2,6 +2,7 @@ from __future__ import division
 
 import os
 import sys
+from tempfile import mkstemp, mkdtemp
 
 nupackpath = os.environ['NUPACKHOME']+'/bin/'
 
@@ -112,15 +113,35 @@ def compare_sequence_notoe(s1, s2, toeholds):
                          ismaxmatch = "TRUE";           
      return [ismaxmatch, maxmatchsize, mm_i, mm_j]
 
-def get_seq_lists(seqsfile, mfefile, gates, strands):
-    # Read in sequences
-    pep_sequences, pep_strands = Read_Finished(seqsfile)
+def get_seq_dicts(basename, heuristics_inputs, mfe_file=None, seq_file=None):
+    if mfe_file is None:
+        mfe_file = basename + ".mfe"
+    if seq_file is None:
+        seq_file = basename + ".seq"
+    pep_sequences, pep_strands = Read_Finished(seq_file)
     domains_list = list(pep_sequences.keys())
-    mfe_dict, cmplx_dict = read_design(mfefile)
+    mfe_dict, cmplx_dict = read_design(mfe_file)
     seq_dict = mfe_dict.copy()
     seq_dict.update(pep_sequences)
     seq_dict.update(pep_strands)
     
+    TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist, \
+    NotToInteract = heuristics_inputs
+    
+    allpepperlist = list()
+    for l in [TopStrandlist, complex_names, list(seq_dict.keys()), BMlist]:
+        allpepperlist.extend(l)
+    
+    for l in list(NotToInteract.values()):
+        allpepperlist.extend(l)
+    
+    allpepperlist.extend([ s[:-1] for s in BaseStrandlist] )
+    
+    seq_dict = make_pepper_seq_dict(allpepperlist, seq_dict, update=True)
+    
+    return seq_dict, cmplx_dict, domains_list
+    
+def get_heuristics_inputs(gates, strands):
     # Generate pepper-lists
     TopStrandlist = []
     complex_names = []
@@ -136,32 +157,32 @@ def get_seq_lists(seqsfile, mfefile, gates, strands):
         bases = gate.get_base_domains()
         for th in bases:
             th_c = th+'*'
-            if th_c not in NotToInteract:
-                NotToInteract[th_c] = gate.get_noninteracting_peppernames(th)
-            else:
-                NotToInteract[th_c].extend(gate.get_noninteracting_peppernames(th))
             if th_c not in BaseStrandlist:
                 BaseStrandlist.append(th_c)
         TopStrandlist.extend(gate.get_top_strands())
         complex_names.extend(gate.get_complexes())
         TopStranddict.update(gate.get_top_strand_dict())
     
-    allpepperlist = list()
-    for l in [TopStrandlist, complex_names, list(seq_dict.keys()), BMlist]:
-        allpepperlist.extend(l)
+    for gate in gates:
+        for th_c in BaseStrandlist:
+            if th_c not in NotToInteract:
+                NotToInteract[th_c] = gate.get_noninteracting_peppernames(th_c[:-1])
+            else:
+                NotToInteract[th_c].extend(gate.get_noninteracting_peppernames(th_c[:-1]))
     
-    for l in list(NotToInteract.values()):
-        allpepperlist.extend(l)
+    for strand in strands:
+        for th_c in BaseStrandlist:
+            if th_c not in NotToInteract:
+                NotToInteract[th_c] = strand.get_noninteracting_peppernames(th_c[:-1])
+            else:
+                NotToInteract[th_c].extend(strand.get_noninteracting_peppernames(th_c[:-1]))
     
-    allpepperlist.extend([ s[:-1] for s in BaseStrandlist] )
-    
-    seq_dict = make_pepper_seq_dict(allpepperlist, seq_dict, update=True)
     return (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
-            NotToInteract, seq_dict, cmplx_dict, domains_list)
+            NotToInteract)
 
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
-                header=True, testname=None, seqs_file=None, mfe_file=None,
-                quick=False, targetdG=7.7):
+                header=True, testname=None, seq_file=None, mfe_file=None,
+                quick=False, targetdG=7.7, includes=None, clean=True):
     #import tolds_utils as tu
     # basename
     # Plan:
@@ -172,22 +193,27 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     
     if not testname:
         testname = basename
-    if not seqs_file:
-        seqs_file = basename + '.seqs'
+    if not seq_file:
+        seq_file = basename + '.seq'
     if not mfe_file:
         mfe_file = basename + '.mfe'
     
-    if not quick:
+    if not quick: 
+        heuristics_inputs = get_heuristics_inputs(gates, strands) 
         (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
-         NotToInteract, seq_dict, cmplx_dict, domains_list) = \
-            get_seq_lists(seqs_file, mfe_file, gates, strands)
+         NotToInteract) = heuristics_inputs
+        
+        seq_dict, cmplx_dict, domains_list = get_seq_dicts(basename, heuristics_inputs, 
+                                                           mfe_file, seq_file)
+
     
     print('Start WSI computation')
     if quick:
         ssm_scores = np.random.rand(6)
     else:
         ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict, 
-                                             compile_params=compile_params)
+                                             compile_params=compile_params, 
+                                             includes=includes, clean=clean)
     ssm_names = ['WSI-Intra', 'WSI-Inter', \
                  'WSI-Intra-1', 'WSI-Inter-1', \
                  'Verboten', 'WSI']
@@ -200,7 +226,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     else:
         css_scores  = NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, \
             NotToInteract, ComplexSize = 2, T = 25.0, material = 'dna',\
-             shouldclean=1, quiet=1)
+             clean=clean, quiet=True)
     css_names = ['TSI avg', 'TSI max', \
                  'TO avg', 'TO max']
     print('')
@@ -210,7 +236,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
         ted_scores = [np.random.rand(), 'BAD', np.random.rand()]
     else:
         ted_scores = NUPACK_Eval_tube_defect(seq_dict, cmplx_dict, complex_names,\
-            prefix='tube_ensemble')
+            prefix='tube_ensemble', clean=clean)
     ted_names = ['Max Bad Nucleotide %', 'Max Defect Component', 
                  'Mean Bad Nucleotide %']
     print('')
@@ -235,7 +261,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     if quick:
         ss_scores = np.random.rand(4)
     else:
-        ss_scores = SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna')
+        ss_scores = SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna', clean=clean)
     ss_names = ['SSU Min', 'SSU Avg', 'SSTU Min', 'SSTU Avg']
     print('')
     
@@ -260,7 +286,8 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
 
 def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
                             ComplexSize=3, T=25.0, material='dna', \
-                            shouldclean=1, quiet=1, prefix='ted_calc'):
+                            clean=True, quiet=True, prefix='ted_calc',
+                            tmpdir=None):
     # This function takes in the design's sequences and intended interaction 
     # structures and returns the tube ensemble defect, the concentration of incorr
     # ectly base-paired nucleotides in a tube. I think this is best prepared and t
@@ -290,8 +317,8 @@ def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
         struct = ideal_structs[cmpx_name]
         bp = len(re.findall('[()]', struct))
         # Retrieve the estimated complex concentration
-        est_conc = NUPACK_Cmpx_Conc(seq_list, params)
-        cmpx_defect = NUPACK_Cmpx_Defect(seq_list, struct, params)
+        est_conc = NUPACK_Cmpx_Conc(seq_list, params, clean=clean, tmpdir=tmpdir)
+        cmpx_defect = NUPACK_Cmpx_Defect(seq_list, struct, params, clean=clean, tmpdir=tmpdir)
         ted = cmpx_defect * min(est_conc, target_conc) + \
                len(seq) * max(target_conc - est_conc, 0)
         ted_vec[counter] = ted
@@ -309,7 +336,7 @@ def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
 
 def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
                 ComplexSize = 2, T = 25.0, material = 'dna', \
-                shouldclean=1, quiet=1):
+                clean=True, quiet=True):
     numstrands = len(TopStrandlist)
     
     TopSpuriousPairwise = np.zeros([numstrands, numstrands]);
@@ -320,7 +347,7 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
     for i in range(numstrands):
         for j in range(i,numstrands):
             intij = NUPACKIntScore(TopStrandlist[i], TopStrandlist[j], 
-                                   seq_dict, ComplexSize, T, material, quiet)
+                                   seq_dict, ComplexSize, T, material, quiet, clean=clean)
             TopSpuriousPairwise[i, j] = intij
             TopSpuriousPairwise[j, i] = intij
             prog.inc()
@@ -338,7 +365,7 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
         nonintnum = len(notinteract)
         for j in range(nonintnum):
             intij = NUPACKIntScore(thisstrand, notinteract[j], seq_dict, 
-                                   ComplexSize, T, material, quiet)
+                                   ComplexSize, T, material, quiet, clean=clean)
             BaseSpurious[i] = BaseSpurious[i] + intij
             prog.inc()
     
@@ -347,7 +374,7 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
             BaseSpurious.max()]
  
     
-def SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna'):
+def SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna', clean=True):
     TopStrandlist = list(TopStranddict.keys())
     numstrands = len(TopStrandlist)
     
@@ -363,7 +390,7 @@ def SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna'):
             toe_regions = TopStranddict[strand]
             [min_Unpaired, sum_Unpaired, min_Unpaired_toe, sum_Unpaired_toe,\
              NumBases] = \
-                NUPACKSSScore(strand, seq_dict, T, material, toe_regions)
+                NUPACKSSScore(strand, seq_dict, T, material, toe_regions, clean=clean)
             # Grow the minimum unpaired probability lists
             MinProbs.append(min_Unpaired)
             MinProbs_toe.append(min_Unpaired_toe)
@@ -411,7 +438,9 @@ def Spurious_Weighted_Score(basename,
                             tmax=15,
                             spurious_range=10,
                             beta=5,
-                            clean=False):
+                            clean=False,
+                            includes=None,
+                            tmpdir=None):
     # This function calculates Niranjan's weighted spurious interaction score, for i
     # nteractions between k and km nucleotides long. It takes the following steps:
     #   * Read in sequences from mfe file
@@ -424,23 +453,27 @@ def Spurious_Weighted_Score(basename,
     import subprocess
     import re
     import os
-    from tempfile import mkstemp
     import numpy as np
     
     from .designer import call_compiler, call_design
     
     # Command parameters
+    if tmpdir is None:
+        fid, prefix = mkstemp()
+    else:
+        tdir = mkdtemp(dir=tmpdir)
+        fid, prefix = mkstemp(dir=tdir)
     ssm_params = "bored=%s tmax=%s spurious_range=%s" % (bored, tmax, spurious_range)
     
-    fid, fixed_file = mkstemp(suffix='.fixed')
+    fid, fixed_file = mkstemp(suffix='.fixed', dir=tmpdir)
     os.close(fid)
-    fid, compiled_file = mkstemp(suffix='.pil')
+    fid, compiled_file = mkstemp(suffix='.pil', dir=tmpdir)
     os.close(fid)
-    fid, save_file = mkstemp(suffix='.save')
+    fid, save_file = mkstemp(suffix='.save', dir=tmpdir)
     os.close(fid)
-    fid, out_file = mkstemp(suffix='.mfe')
+    fid, out_file = mkstemp(suffix='.mfe', dir=tmpdir)
     os.close(fid)
-    fid, spurious_output = mkstemp(suffix='.txt')
+    fid, spurious_output = mkstemp(suffix='.txt', dir=tmpdir)
     os.close(fid)
     
     # Write sequences to fixed file
@@ -454,10 +487,11 @@ def Spurious_Weighted_Score(basename,
                     args=compile_params, 
                     outputname=compiled_file, 
                     savename=save_file, 
-                    fixed_file=fixed_file)
+                    fixed_file=fixed_file,
+                    includes=includes)
     
     # Make constraint files
-    fid, design_tmp = mkstemp()
+    fid, design_tmp = mkstemp(dir=tmpdir)
     os.close(fid)
     call_design(basename, infilename=compiled_file, outfilename=out_file, 
                 just_files=True, tempname=design_tmp)
@@ -468,46 +502,47 @@ def Spurious_Weighted_Score(basename,
     # Commented code generates MFE file
     spur_exc = 'spuriousSSM score=automatic template=%s wc=%s eq=%s %s> %s'
     command = spur_exc % (stname, wcname, eqname, ssm_params, spurious_output)
-    print("Command : {}".format(command))
     os.system(command)
     #subprocess.check_call(spur_exc)
     
-    w_lin = np.concatenate([np.zeros((beta-3, )), np.arange(8), 7*np.ones((2,))])
+    w_lin = np.concatenate([np.zeros((beta, )), np.arange(12-beta)+1, 7*np.ones((2,))])
     
     f = open(stname)
     st = f.readline()[:-1]
     f.close()
-    num_strands = len(re.findall('\s+', st))
+    num_strands = len(re.findall('\s+', st))+1
     
     # re string for decimal/integer scraping
     num = "\d+\.?\d*"
     
     # Read in entire file, search for instances of "spurious1"
     spc_text = open(spurious_output).read()
-    vec_str = spc_text[spc_text.rfind('spurious1'):].split('\n')[2]
-    vec = np.array([ np.float(x) for x in re.findall(num, vec_str)])
-    score_vec = vec * w_lin[2:]
+    lines = spc_text[spc_text.rfind('spurious1'):].split('\n')
+    i, j = [ int(x) for x in re.findall(num, lines[0])[1:]]
+    w = w_lin[i-1:j]
+    vec = np.array([ np.float(x) for x in re.findall(num, lines[2])])
+    score_vec = vec * w
     mis_intra_score = score_vec.sum() / num_strands
     
-    vec_str = spc_text[spc_text.rfind('spurious1'):].split('\n')[4]
-    vec = np.array([ np.float(x) for x in re.findall(num, vec_str)])
-    score_vec = vec * w_lin[2:]
+    vec = np.array([ np.float(x) for x in re.findall(num, lines[4])])
+    score_vec = vec * w
     mis_inter_score = score_vec.sum() / num_strands
     
-    vec_str = spc_text[spc_text.rfind('spurious('):].split('\n')[2]
-    vec = np.array([ np.float(x) for x in re.findall(num, vec_str)])
-    score_vec = vec * w_lin[:10]
+    lines = spc_text[spc_text.rfind('spurious('):].split('\n')
+    i, j = [ int(x) for x in re.findall(num, lines[0])]
+    w = w_lin[i-1:j]
+    vec = np.array([ np.float(x) for x in re.findall(num, lines[2])])
+    score_vec = vec * w
     spc_intra_score = score_vec.sum() / num_strands
     
-    vec_str = spc_text[spc_text.rfind('spurious('):].split('\n')[4]
-    vec = np.array([ np.float(x) for x in re.findall(num, vec_str)])
-    score_vec = vec * w_lin[:10]
+    vec = np.array([ np.float(x) for x in re.findall(num, lines[4])])
+    score_vec = vec * w
     spc_inter_score = score_vec.sum() / num_strands
     
     vec_str = spc_text[spc_text.rfind('** score_verboten'):]
     verboten_score = np.float(re.findall(num, vec_str)[0]) / num_strands
     
-    vec_str = spc_text[spc_text.rfind('-weighted score = '):]
+    vec_str = spc_text[spc_text.rfind('-weighted score = '):].split('\n')[0]
     wsi_score = np.float(re.findall(num, vec_str)[-1]) / num_strands
     
     if clean:
@@ -519,26 +554,32 @@ def Spurious_Weighted_Score(basename,
             mis_intra_score, mis_inter_score, \
             verboten_score, wsi_score]
 
-def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc']):
+def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc'], clean=True, tmpdir=None):
     # This function calls the NUPACK methods 'complexes' and 'concentrations' to 
     # calculate the expected concentration of the desired complex. Note that the
     # output of 'concentrations' will contain the expected concentrations of all
     # possible complexes, but this function returns only that of the desired com
     # plex, which is always 1 1 1.
     # Retrieve parameters
-    from tempfile import mkstemp
-    import os
-    
-    ComplexSize, T, material, quiet, prefix = params
+    ComplexSize, T, material, quiet, f_prefix = params
     # Setup input files to nupack commands
     intsc = 0;
-    fid, prefix = mkstemp()
+    if tmpdir is None:
+        fid, prefix = mkstemp()
+    else:
+        tdir = mkdtemp(dir=tmpdir)
+        fid, prefix = mkstemp(dir=tdir)
     os.close(fid)
     ofile = prefix + '.out'
     cfile = prefix + '.con'
     ifile = prefix + '.in'
     efile = prefix + '.eq'
-    file_list = [ofile, cfile, ifile, efile, prefix]
+    xfile = prefix + '.osx'
+    file_list = [ofile, cfile, ifile, efile, xfile, prefix]
+    #for fn in file_list:
+    #    with open(fn, 'w') as f:
+    #        f.write('')
+    #        f.close()
     
     # Complexes input file 
     n_seqs = len(seqs)
@@ -578,36 +619,43 @@ def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc']):
     lines = f.readlines()
     f.close()
     
+    if clean:
+        for f in file_list:
+            if os.path.isfile(f):
+                os.remove(f)
+    
     # Count the number of commented lines
     ctr = 0;
     while (lines[ctr][0] == '%'):
         ctr = ctr + 1
     
     # Scrape the concentrations from the output file
+    out = 0.0
     for count in range(ctr, len(lines)):
         lineData = whiteSpaceSearch.split(lines[count])
-        if lineData[1:len(seqs)+2] == (1 + len(seqs) ) * ['1'] :
-            return float(lineData[-2])
+        if lineData[2:(len(seqs)+2)] == (len(seqs) ) * ['1'] :
+            trial_out = float(lineData[-2])
+            if trial_out > out:
+                out = trial_out
     
-    for f in file_list:
-        if os.path.isfile(f):
-            os.remove(f)
-    
-    return 0
+    return out
 
 
-def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc']):
+def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc'], clean=True,
+                       tmpdir=None):
     '''
     This function calls the NUPACK methods 'defects' and reports the average num
     ber of basepairs that do not match their intended state.
     '''
-    from tempfile import mkstemp
-    import os
     # Retrieve parameters
     ComplexSize, T, material, quiet, prefix = params
     # Setup input files to nupack commands
     intsc = 0;
-    fid, prefix = mkstemp()
+    if tmpdir is None:
+        fid, prefix = mkstemp()
+    else:
+        tdir = mkdtemp(dir=tmpdir)
+        fid, prefix = mkstemp(dir=tdir)
     os.close(fid)
     ofile = prefix + '.out'
     ifile = prefix + '.in'
@@ -635,10 +683,10 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc']):
     lines = f.readlines()
     f.close()
     
-    # Clean
-    for f in file_list:
-        if os.path.isfile(f):
-            os.remove(f)
+    if clean:
+        for f in file_list:
+            if os.path.isfile(f):
+                os.remove(f)
     
     # Count the number of commented lines
     ctr = 0
@@ -647,13 +695,22 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc']):
     return float(lines[ctr])
 
 
-def NUPACKIntScore(str1, str2, seq_dict, ComplexSize, T, material, quiet):
+def NUPACKIntScore(str1, str2, seq_dict, 
+                   ComplexSize=2, 
+                   T=25.0, 
+                   material='dna', 
+                   quiet=True, 
+                   clean=True,
+                   tmpdir=None):
     # Formerly IntScore
-    from tempfile import mkstemp
     import os
     
     intsc = 0;
-    fid, fname = mkstemp()
+    if tmpdir is None:
+        fid, fname = mkstemp()
+    else:
+        tdir = mkdtemp(dir=tmpdir)
+        fid, fname = mkstemp(dir=tdir)
     os.close(fid)
     ofile = fname + '.out'
     cfile = fname + '.con'
@@ -696,10 +753,10 @@ def NUPACKIntScore(str1, str2, seq_dict, ComplexSize, T, material, quiet):
         ctr = ctr + 1
     ctr = ctr + 2;
     
-    # Clean
-    for f in file_list:
-        if os.path.isfile(f):
-            os.remove(f)
+    if clean:
+        for f in file_list:
+            if os.path.isfile(f):
+                os.remove(f)
 
     for count in range(ctr, len(lines)):
         lineData = whiteSpaceSearch.split(lines[count])
@@ -708,11 +765,10 @@ def NUPACKIntScore(str1, str2, seq_dict, ComplexSize, T, material, quiet):
     
     return intsc
 
-def NUPACKSSScore(str1, seq_dict, T, material, toe_region=[None]):
+def NUPACKSSScore(str1, seq_dict, T=25.0, material='dna', toe_region=[None], clean=True, tmpdir=None):
     # This function calls NUPACK's complexes and concentrations functions, which
     # allows one to calculate the unpaired probabilities of each nucleotide across
     # the most common secondary structures.
-    from tempfile import mkstemp
     import os
     ComplexSize = 1
     min_Unpaired = 1;
@@ -726,7 +782,11 @@ def NUPACKSSScore(str1, seq_dict, T, material, toe_region=[None]):
     UnpairedIndex = len(seq) + 1
     
     # Prepare filenames
-    fid, fname = mkstemp()
+    if tmpdir is None:
+        fid, fname = mkstemp()
+    else:
+        tdir = mkdtemp(dir=tmpdir)
+        fid, fname = mkstemp(dir=tdir)
     os.close(fid)
     ofile = fname + '.out'
     ofile2 = fname + '.con.out'
@@ -761,10 +821,10 @@ def NUPACKSSScore(str1, seq_dict, T, material, toe_region=[None]):
     lines = f.readlines()
     f.close()
     
-    # Clean
-    for f in file_list:
-        if os.path.isfile(f):
-            os.remove(f)
+    if clean:
+        for f in file_list:
+            if os.path.isfile(f):
+                os.remove(f)
     
     ctr = 0
     while (lines[ctr][0] == '%'):

@@ -6,3 +6,4 @@ from . import SPWTests
 from . import TDMTests
 from . import THTests
 from . import test_data
+from . import TDM_NUPACK_tests
