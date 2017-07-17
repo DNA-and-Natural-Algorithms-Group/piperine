@@ -51,7 +51,7 @@ class TestTDM(unittest.TestCase):
         self.gates, self.strands = designer.process_crn(crn_file = self.crn_file,
                                                         trans_module = DSDClasses,
                                                         design_params = (7, 15, 2))
-        self.h_inputs = tdm.get_heuristics_inputs(self.basename, self.gates, self.strands)
+        self.h_inputs = tdm.get_heuristics_inputs(self.gates, self.strands)
         self.seq_dict, self.cmplx_dict, self.domains_list = \
             tdm.get_seq_dicts(self.basename, self.h_inputs)
         

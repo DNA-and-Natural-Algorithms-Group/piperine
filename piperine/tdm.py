@@ -141,7 +141,7 @@ def get_seq_dicts(basename, heuristics_inputs, mfe_file=None, seq_file=None):
     
     return seq_dict, cmplx_dict, domains_list
     
-def get_heuristics_inputs(basename, gates, strands):
+def get_heuristics_inputs(gates, strands):
     # Generate pepper-lists
     TopStrandlist = []
     complex_names = []
@@ -199,7 +199,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
         mfe_file = basename + '.mfe'
     
     if not quick: 
-        heuristics_inputs = get_heuristics_inputs(basename, gates, strands) 
+        heuristics_inputs = get_heuristics_inputs(gates, strands) 
         (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
          NotToInteract) = heuristics_inputs
         
