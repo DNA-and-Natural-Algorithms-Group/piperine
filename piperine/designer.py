@@ -751,6 +751,7 @@ def score_fixed(fixed_file,
                  save_file=None, 
                  mfe_file=None, 
                  seq_file=None,
+                 score_file=None,
                  design_params=(7, 15, 2),
                  trans_module=DSDClasses,
                  includes=None,
@@ -801,6 +802,8 @@ def score_fixed(fixed_file,
         seq_file = basename + '.seq'
     else:
         bn = seq_file[:-4]
+    if score_file is None:
+        score_file = fixed_file[:-6] + '.score'
     if basename is None:
         basename = bn
     extra_pars = ""
@@ -829,7 +832,7 @@ def score_fixed(fixed_file,
                                       seq_file=seq_file, mfe_file=mfe_file,
                                       quick=quick,
                                       includes=includes)
-    with open(fixed_file[:-6]+'_scores.csv', 'w') as f:
+    with open(score_file, 'w') as f:
         f.write(','.join(score_names))
         f.write('\n')
         f.writelines( [ ','.join(map(str, l)) + '\n' for l in [scores] ])
