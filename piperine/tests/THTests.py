@@ -1,16 +1,15 @@
-from __future__ import division
 import os
 import subprocess
 import unittest
 import sys
 from tempfile import mkstemp
-from test_data import fixed_file
+from .test_data import fixed_file
 from time import time
 
-from .context import designer, tdm, energyfuncs_james, gen_th
+from .. import designer, tdm, energyfuncs_james, gen_th
 
 # From a stackoverflow, 16571150
-from cStringIO import StringIO
+from io import StringIO
 
 class Capturing(list):
     def __enter__(self):
@@ -49,4 +48,4 @@ class Test_gen_th(unittest.TestCase):
 
 def suite():
     tests = ['test_tdm']
-    return unittest.TestSuite(map(TestTDM, tests))
+    return unittest.TestSuite(list(map(TestTDM, tests)))

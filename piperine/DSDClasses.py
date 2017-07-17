@@ -124,7 +124,8 @@ class SignalStrand(object):
                                 format_list(pepper_values[degree], 
                                             rxn_name))))
         hd = flatten(pepper_names['history domains'])
-        self.pepper_names['history domains'].extend(hd)
+        if hd[0] not in self.pepper_names['history domains']:
+            self.pepper_names['history domains'].extend(hd)
         self.sequences.append(pepper_names['sequence'])
         self.rxns.append(rxn_name)
     
@@ -184,15 +185,18 @@ class Bimrxn(object):
         t, bm, c = params
         self.params = params
         # Grab all first toeholds, second toehold of second input
-        self.base = flatten([[ in_strands[x].th(y), out_strands[x].th(y)] for x in [0,1] for y in [0,1]] +
+        self.base = flatten([[ in_strands[x].th(y), out_strands[x].th(y)] for x in [0,1] for y in [0]] +
                     [ in_strands[1].th(1)])
+        # self.base = flatten([ out_strands[x].th(y) for x in [0,1] for y in [0]] +
+        #                     [ in_strands[0].th(0), in_strands[1].th(0) + "-suffix"] +
+        #                       [ in_strands[1].th(1)])
         # Hard-coded splitting of top-strand domains for toehold occlusion calculation
         self.toe_nointeract_map = F(in_strands + out_strands, rxn_name)
         self.top_s_dict = dict(list(zip(self.top_strands,
-                                    [list(range(1+bm, 1+bm+t+4)),
-                                     list(range(1+bm+t-2, 1+bm+2*t)),
-                                     list(range(1+bm, 1+bm+t+4)),
-                                     list(range(1+bm, 1+bm+t+4))])))
+                                    [list(range(bm-2, bm+t+1)),
+                                     list(range(1, t+3)), # Shorter due to truncated toehold
+                                     list(range(t+bm-2, t*2+bm+4)),
+                                     list(range(t+bm-2, t*2+bm+1))])))
     
     def __repr__(self):
         return self.get_reaction_line()
@@ -218,13 +222,19 @@ class Bimrxn(object):
     def get_top_strand_dict(self):
         t, bm, c = self.params
         in_strands = self.in_strands
-        for in_strand in in_strands:
-            for seq in in_strand.get_top_strands():
-                if seq[-2:] in ["-a", "-b"]:
-                    self.top_s_dict.update({seq : list(range(1, 1+t+3))})
-                else:
-                    self.top_s_dict.update({seq : list(range(1+bm, 1+bm+t+3))})
-        return self.top_s_dict.copy()
+        out_dict = self.top_s_dict.copy()
+        t_regi = list(range(t+bm-2, t*2 +bm+1))
+        out_dict.update(
+            dict(
+                [ (y, t_regi) for x in self.in_strands for y in x.get_top_strands()]
+            ))
+        # for in_strand in in_strands:
+        #     for seq in in_strand.get_top_strands():
+        #         if seq[-2:] in ["-a", "-b"]:
+        #             self.top_s_dict.update({seq : list(range(bm+t-2, 1+bm+2*t))})
+        #         else:
+        #             self.top_s_dict.update({seq : list(range(bm+t-2, 1+bm+2*t))})
+        return out_dict
     
     def get_base_domains(self):
         return self.base[:]

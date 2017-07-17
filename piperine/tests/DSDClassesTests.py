@@ -1,10 +1,9 @@
-from __future__ import division
 import unittest
 import sys
 from tempfile import mkstemp
 import os
 
-from .context import designer, DSDClasses
+from .. import designer, DSDClasses
 
 def format_list(templates, word):
     if type(templates) is list:
@@ -175,4 +174,4 @@ class TestTranslation(unittest.TestCase):
 
 def suite():
     tests = ['test_F_all_identical', 'test_F_all_different']
-    return unittest.TestSuite(map(TestTranslation, tests))
+    return unittest.TestSuite(list(map(TestTranslation, tests)))
