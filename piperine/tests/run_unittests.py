@@ -5,8 +5,13 @@ from . import TDMTests
 from . import CompilationTests
 from . import RunDesignerTest
 from . import DSDClassesTests
+from . import TDM_NUPACK_tests
 
 def runem():
+    suite = import_test.suite()
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
+def run_import_test():
     suite = import_test.suite()
     unittest.TextTestRunner(verbosity=2).run(suite)
 
@@ -26,10 +31,14 @@ def run_translation():
     suite = DSDClassesTests.suite()
     unittest.TextTestRunner(verbosity=2).run(suite)
 
+def run_nupack():
+    suite = TDM_NUPACK_tests.suite()
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
 def run_all():
     alltests = unittest.TestSuite(
         [
             x.suite() for x in 
-                [import_test, TDMTests, CompilationTests, RunDesignerTest]
+                [import_test, TDMTests, CompilationTests, RunDesignerTest, DSDClassesTests, TDM_NUPACK_tests]
         ])
     unittest.TextTestRunner(verbosity=2).run(alltests)

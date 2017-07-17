@@ -1,0 +1,7 @@
+declare system tmpcasiiils(t, bm, c):  -> 
+
+import bimrxn
+
+component r0 = bimrxn(<t>, <bm>, <c>): B + A -> B + B
+component r1 = bimrxn(<t>, <bm>, <c>): C + B -> C + C
+component r2 = bimrxn(<t>, <bm>, <c>): A + C -> A + A

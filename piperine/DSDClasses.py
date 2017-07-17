@@ -187,6 +187,9 @@ class Bimrxn(object):
         # Grab all first toeholds, second toehold of second input
         self.base = flatten([[ in_strands[x].th(y), out_strands[x].th(y)] for x in [0,1] for y in [0]] +
                     [ in_strands[1].th(1)])
+        # self.base = flatten([ out_strands[x].th(y) for x in [0,1] for y in [0]] +
+        #                     [ in_strands[0].th(0), in_strands[1].th(0) + "-suffix"] +
+        #                       [ in_strands[1].th(1)])
         # Hard-coded splitting of top-strand domains for toehold occlusion calculation
         self.toe_nointeract_map = F(in_strands + out_strands, rxn_name)
         self.top_s_dict = dict(list(zip(self.top_strands,
@@ -220,9 +223,11 @@ class Bimrxn(object):
         t, bm, c = self.params
         in_strands = self.in_strands
         out_dict = self.top_s_dict.copy()
-        out_dict.update(dict(list(zip([ x.get_top_strands()[0] for x in self.in_strands],
-                                             [list(range(bm+t-2, 1+bm+2*t)),
-                                              list(range(bm+t-2, 1+bm+2*t))]))))
+        t_regi = list(range(t+bm-2, t*2 +bm+1))
+        out_dict.update(
+            dict(
+                [ (y, t_regi) for x in self.in_strands for y in x.get_top_strands()]
+            ))
         # for in_strand in in_strands:
         #     for seq in in_strand.get_top_strands():
         #         if seq[-2:] in ["-a", "-b"]:

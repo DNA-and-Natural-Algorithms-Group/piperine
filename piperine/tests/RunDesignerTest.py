@@ -78,19 +78,11 @@ class Test_run_designer(unittest.TestCase):
     def test_run_designer_alerts_unfound_modules(self):
         fakemod1 = "notAmodule"
         fakemod2 = "notAmodule"
-        try:
-            with Capturing() as output:
-                out = designer.run_designer(basename=self.basename,
-                                         e_module=fakemod1,
-                                         trans_module=fakemod2,
-                                         quick=True)
-        except ImportError as e:
-            argsplit = e.args[0].split(" ")
-            mod = argsplit[-1]
-            if mod in [fakemod1, fakemod2]:
-                self.assertIs(type(e), ImportError)
-            else:
-                raise(e)
+        with self.assertRaises(ModuleNotFoundError):
+            out = designer.run_designer(basename=self.basename,
+                                     e_module=fakemod1,
+                                     trans_module=fakemod2,
+                                     quick=True)
 
 def suite():
     tests = ['test_run_designer_accepts_string_modules', 'test_run_designer_noargs',

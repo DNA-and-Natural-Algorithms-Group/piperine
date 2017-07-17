@@ -2,17 +2,24 @@ declare component gate_bim_react(t, bm, c): A + B -> C + D
 
 ### Domains
 # Toeholds:
-sequence toe-fa = "<t>H"
+sequence toe-fa-suffix = "<t - 1>H"
+sequence toe-fa-prefix = "H"
 sequence toe-sa = "<t>H"
 sequence toe-fb-suffix = "<t - 1>H"
 sequence toe-fb-prefix = "H"
 sequence toe-sb = "<t>H"
-# For clarity, full fb toehold
-sequence toe-fb = toe-fb-suffix toe-fb-prefix
-sequence toe-fc = "<t>H"
+sequence toe-fc-suffix = "<t - 1>H"
+sequence toe-fc-prefix = "H"
 sequence toe-sc = "<t>H"
-sequence toe-fd = "<t>H"
+sequence toe-fd-suffix = "<t - 1>H"
+sequence toe-fd-prefix = "H"
 sequence toe-sd = "<t>H"
+
+# For clarity, concatenate sub-divided toeholds
+sequence toe-fa = toe-fa-suffix toe-fa-prefix
+sequence toe-fb = toe-fb-suffix toe-fb-prefix
+sequence toe-fc = toe-fc-suffix toe-fc-prefix
+sequence toe-fd = toe-fd-suffix toe-fd-prefix
 
 # Branch migration domains:
 sequence am  = "<bm - c>H"

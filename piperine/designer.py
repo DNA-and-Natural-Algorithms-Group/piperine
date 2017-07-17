@@ -20,8 +20,7 @@ def call_compiler(basename,
                     savename=None, 
                     fixed_file=None, 
                     synth=True, 
-                    includes=
-                      [data_dir]):
+                    includes=None):
     """ Generates a PIL file from a .sys. (peppercompiler wrapper)
     
     Args:
@@ -40,6 +39,9 @@ def call_compiler(basename,
         outputname = '{}.pil'.format(basename)
     if savename is None:
         savename = '{}.save'.format(basename)
+    if includes is None:    
+        includes = []
+    includes.append(data_dir)
     compiler(basename, args, outputname, savename, fixed_file, synth, includes)
 
 def call_design(basename, 
@@ -98,13 +100,13 @@ def call_finish(basename,
                 conc=1,
                 spurious=False,
                 spurious_time=10.0):
-    """ Generates a .seqs file from an .mfe file. (peppercompiler wrapper)
+    """ Generates a .seq file from an .mfe file. (peppercompiler wrapper)
     
     Args:
         basename: The default name of all files produced and accessed.
         savename: File storing process states. (basename.save)
         designname: MFE file, read for sequences (basename.mfe)
-        seqsname: Output file containing all sequences (basename.seqs)
+        seqsname: Output file containing all sequences (basename.seq)
         strandsname: Output file containing all strand sequences (None)
         run_kin: Run spurious kinetic tests on sequences (False)
         cleanup: Delete temporary files (True)
@@ -123,7 +125,7 @@ def call_finish(basename,
     if not designname:
         designname = '{}.mfe'.format(basename)
     if not seqsname:
-        seqsname = '{}.seqs'.format(basename)
+        seqsname = '{}.seq'.format(basename)
     
     finish(savename, designname, seqsname, strandsname, run_kin, 
                   cleanup, trials, time, temp, conc, spurious, spurious_time)
@@ -296,17 +298,17 @@ def toehold_wrapper(n_ths,
     return ths
 
 def write_sys_file(basename, 
-                   reactions=None,
+                   gates=None,
                    sys_file=None,
                    trans_module=DSDClasses):
-    """ Write system file from reactions list
+    """ Write system file from gates list
 
     This function takes in filenames and a CRN specification and writes a system
     file, which outlines the overall DNA implementation.
     
     Args:
         basename: Default name for files accessed and written
-        reactions: List of dictionaries describing the input abstract CRN (None)
+        gates: List of gate objects
         sys_file: System file filename (basename + .sys)
         trans_module: module containing scheme variables and classes (DSDClasses)
     Returns:
@@ -328,14 +330,13 @@ def write_sys_file(basename,
         for comp in trans_module.comps:
             f.write("import {0}\n".format(comp))
         f.write("\n")
-        for rxn in reactions:
+        for rxn in gates:
             f.write(rxn.get_reaction_line())
 
 def process_crn(basename=None,  
                 design_params=(7, 15, 2), 
                 trans_module=None,
-                crn_file=None,
-                system_file=None):
+                crn_file=None):
     """ Generate objects describing DNA implementation
     
     Gate and strand objects tell the scoring modules, write_sys_file, and 
@@ -398,7 +399,7 @@ def generate_scheme(basename,
     if system_file is None:
         system_file = basename + ".sys"
     
-    (gates, strands) = process_crn(basename, design_params, trans_module)
+    (gates, strands) = process_crn(basename, design_params, trans_module, crn_file)
     
     write_sys_file(basename, gates, system_file, trans_module)
     return (gates, strands)
@@ -444,7 +445,7 @@ def generate_seqs(basename,
         system_file: Filename of the peppercompiler system file (basename + .sys)
         pil_file: Filename of the peppercompiler (basename + .pil)
         mfe_file: Filename of the peppercompiler MFE file (basename + .mfe)
-        seq_file: Filename of the peppercompiler sequence file (basename + .seqs)
+        seq_file: Filename of the peppercompiler sequence file (basename + .seq)
         fixed_file: Filename of the peppercompiler fixed file (basename + .fixed)
         save_file: Filename of the peppercompiler save file (basename + .save)
         strands_file: Filename of the peppercompiler strands file (basename + _strands.txt)
@@ -466,9 +467,9 @@ def generate_seqs(basename,
             mfe_file = basename + ".mfe"
     if seq_file is None:
         if outname:
-            seq_file = outname + ".seqs"
+            seq_file = outname + ".seq"
         else:
-            seq_file = basename + ".seqs"
+            seq_file = basename + ".seq"
     if strands_file is None:
         if outname:
             strands_file = outname + "_strands.txt"
@@ -506,6 +507,12 @@ def generate_seqs(basename,
     return toeholds
 
 def selection(scores):
+    
+    if sys.version_info >= (3,1):
+        print_fn = lambda x : print(x, end='')
+    else:
+        print_fn = lambda x : print(x)
+    
     columns = list(zip(*scores))
     ranks = []
     fractions = []
@@ -532,52 +539,52 @@ def selection(scores):
     temp=percents
     percents=list(zip(*temp))
     
-    print("\nRank array:")
-    print("                         ")
+    print_fn("\nRank array:")
+    print_fn("\n                         ")
     for title in scores[0]:
         if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
             continue
-        print("{:>6s}".format(title[0:6]))
-    print()
+        print_fn("{:>6s}".format(title[0:6]))
+    print_fn("\n")
     i=0
     for r in ranks:
-        print("design {:2d}: {:6d} = sum [".format(i,sum(r)))
+        print_fn("design {:2d}: {:6d} = sum [".format(i,sum(r)))
         for v in r:
-            print("{:6d}".format(v))
-        print("]")
+            print_fn("{:6d}".format(v))
+        print_fn("]\n")
         i=i+1
     
-    print("\nFractional excess array:")
-    print("                         ")
+    print_fn("\nFractional excess array:")
+    print_fn("\n                         ")
     for title in scores[0]:
         if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
             continue
-        print("{:>6s}".format(title[0:6]))
-    print()
+        print_fn("{:>6s}".format(title[0:6]))
+    print_fn("\n")
     i=0
     for f in fractions:
-        print("design {:2d}: {:6.2f} = sum [".format(i,sum(f)))
+        print_fn("design {:2d}: {:6.2f} = sum [".format(i,sum(f)))
         for v in f:
-            print("{:6.2f}".format(v))
-        print("]")
+            print_fn("{:6.2f}".format(v))
+        print_fn("]\n")
         i=i+1
     
-    print("\nPercent badness (best to worst) array:")
-    print("                         ")
+    print_fn("\nPercent badness (best to worst) array:")
+    print_fn("\n                         ")
     for title in scores[0]:
         if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
             continue
-        print("{:>6s}".format(title[0:6]))
-    print()
+        print_fn("{:>6s}".format(title[0:6]))
+    print_fn("\n")
     i=0
     for p in percents:
-        print("design {:2d}: {:6.2f} = sum [".format(i,100*sum(p)))
+        print_fn("design {:2d}: {:6.2f} = sum [".format(i,100*sum(p)))
         for v in p:
-            print("{:6.2f}".format(100*v))
-        print("]")
+            print_fn("{:6.2f}".format(100*v))
+        print_fn("]\n")
         i=i+1
     
-    print(" ")
+    print_fn("\n")
     worst_rank = 0
     while 1:
         ok_seqs = [i for i in range(len(ranks)) if max(ranks[i])<=worst_rank]
@@ -591,27 +598,27 @@ def selection(scores):
     # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI
     weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8] 
         
-    print("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs))
-    print("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs]))
-    print("  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs]))
-    print("  Sum of fractional excess over best score:   " + str([sum(fractions[i]) for i in ok_seqs]))
-    print("  Sum of weighted fractional excess:          " + str([sum(np.array(fractions[i])*weights/100.0) for i in ok_seqs]))
-    print("  Sum of percent badness scores:              " + str([100*sum(percents[i]) for i in ok_seqs]))
-    print("  Sum of weighted percent badness scores:     " + str([sum(np.array(percents[i])*weights) for i in ok_seqs]))
+    print_fn("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)+"\n")
+    print_fn("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])+"\n")
+    print_fn("  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs])+"\n")
+    print_fn("  Sum of fractional excess over best score:   " + str([sum(fractions[i]) for i in ok_seqs])+"\n")
+    print_fn("  Sum of weighted fractional excess:          " + str([sum(np.array(fractions[i])*weights/100.0) for i in ok_seqs])+"\n")
+    print_fn("  Sum of percent badness scores:              " + str([100*sum(percents[i]) for i in ok_seqs])+"\n")
+    print_fn("  Sum of weighted percent badness scores:     " + str([sum(np.array(percents[i])*weights) for i in ok_seqs])+"\n")
     temp = [sum(r) for r in ranks]
-    print("Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print_fn("Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     winner = np.argmin(temp)
     temp = [sum(np.array(r)*weights/100.0) for r in ranks]
-    print("Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print_fn("Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(f) for f in fractions]
-    print("Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print_fn("Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(np.array(f)*weights/100.0) for f in fractions]
-    print("Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print_fn("Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [100*sum(p) for p in percents]
-    print("Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print_fn("Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(np.array(p)*weights) for p in percents]
-    print("Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
-    print()
+    print_fn("Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print_fn("\n")
     return winner
 
 def selection_wrapper(scores, reportfile = 'score_report.txt'):
@@ -643,7 +650,8 @@ def run_designer(basename=small_crn[:-4],
                  trans_module=DSDClasses,
                  extra_pars="",
                  temp_files=True,
-                 quick=False
+                 quick=False,
+                 includes=None
                 ):
     """ Generate and score sequences
     
@@ -670,14 +678,14 @@ def run_designer(basename=small_crn[:-4],
     Returns:
         Nothing, but writes many basename + extension files, such as:
             system file (.sys)
-            sequences (.seqs)
+            sequences (.seq)
             scores (_scores.csv)
     """
     # If module inputs are strings, import them
     if type(trans_module) is str:
-        trans_module = importlib.import_module('.' + trans_module, 'piperine.piperine')
+        trans_module = importlib.import_module('.' + trans_module, 'piperine')
     if type(e_module) is str:
-        e_module = importlib.import_module('.' + e_module, 'piperine.piperine')
+        e_module = importlib.import_module('.' + e_module, 'piperine')
     # 
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"
@@ -713,7 +721,8 @@ def run_designer(basename=small_crn[:-4],
                                                       strands, 
                                                       testname=testname, 
                                                       compile_params=design_params,
-                                                      quick=quick)
+                                                      quick=quick,
+                                                      includes=includes)
                 scores = [i] + scores
                 scoreslist.append(scores)
             except KeyError as e:
@@ -744,6 +753,7 @@ def score_fixed(fixed_file,
                  seq_file=None,
                  design_params=(7, 15, 2),
                  trans_module=DSDClasses,
+                 includes=None,
                  quick=False):
     """ Score a sequence set
     
@@ -769,24 +779,39 @@ def score_fixed(fixed_file,
     from . import tdm
     if crn_file is None:
         crn_file = basename + '.crn'
+    else:
+        bn = crn_file[:-4]
     if sys_file is None:
         sys_file  = basename + '.sys'
+    else:
+        bn = sys_file[:-4]
     if pil_file is None:
         pil_file = basename + '.pil'
+    else:
+        bn = pil_file[:-4]
     if save_file is None:
         save_file = basename + '.save'
+    else:
+        bn = save_file[:-5]
     if mfe_file is None:
         mfe_file = basename + '.mfe'
+    else:
+        bn = mfe_file[:-4]
     if seq_file is None:
         seq_file = basename + '.seq'
+    else:
+        bn = seq_file[:-4]
+    if basename is None:
+        basename = bn
     extra_pars = ""
     
     gates, strands = generate_scheme(basename,  
                                    design_params, 
                                    crn_file=crn_file, 
-                                   system_file=sys_file)
+                                   system_file=sys_file,
+                                   trans_module=trans_module)
     call_compiler(basename, args=design_params, fixed_file=fixed_file, 
-                  outputname=pil_file, savename=save_file)
+                  outputname=pil_file, savename=save_file, includes=includes)
     #try:
     #    call_compiler(basename, args=design_params, fixed_file=fixed_file, 
     #                  outputname=pil_file, savename=save_file)
@@ -801,8 +826,13 @@ def score_fixed(fixed_file,
                 seqsname=seq_file, run_kin=False)
     scores, score_names = tdm.EvalCurrent(basename, gates, strands, 
                                       compile_params=design_params, 
-                                      seqs_file=seq_file, mfe_file=mfe_file,
-                                      quick=quick)
+                                      seq_file=seq_file, mfe_file=mfe_file,
+                                      quick=quick,
+                                      includes=includes)
+    with open(fixed_file[:-6]+'_scores.csv', 'w') as f:
+        f.write(','.join(score_names))
+        f.write('\n')
+        f.writelines( [ ','.join(map(str, l)) + '\n' for l in [scores] ])
     return (scores, score_names)
 
 if __name__ == "__main__":
