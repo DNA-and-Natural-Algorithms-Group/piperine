@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 
 import sys
 import pkg_resources
@@ -90,7 +91,7 @@ def call_design(basename,
 def call_finish(basename,
                 savename=None,
                 designname=None,
-                seqsname=None,
+                seqname=None,
                 strandsname=None,
                 run_kin=False,
                 cleanup=True,
@@ -106,7 +107,7 @@ def call_finish(basename,
         basename: The default name of all files produced and accessed.
         savename: File storing process states. (basename.save)
         designname: MFE file, read for sequences (basename.mfe)
-        seqsname: Output file containing all sequences (basename.seq)
+        seqname: Output file containing all sequences (basename.seq)
         strandsname: Output file containing all strand sequences (None)
         run_kin: Run spurious kinetic tests on sequences (False)
         cleanup: Delete temporary files (True)
@@ -124,10 +125,10 @@ def call_finish(basename,
         savename = '{}.save'.format(basename)
     if not designname:
         designname = '{}.mfe'.format(basename)
-    if not seqsname:
-        seqsname = '{}.seq'.format(basename)
+    if not seqname:
+        seqname = '{}.seq'.format(basename)
     
-    finish(savename, designname, seqsname, strandsname, run_kin, 
+    finish(savename, designname, seqname, strandsname, run_kin, 
                   cleanup, trials, time, temp, conc, spurious, spurious_time)
 
 def read_crn(in_file):
@@ -503,7 +504,7 @@ def generate_seqs(basename,
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
-                seqsname=seq_file, strandsname=strands_file, run_kin=False)
+                seqname=seq_file, strandsname=strands_file, run_kin=False)
     return toeholds
 
 def selection(scores):
@@ -518,7 +519,6 @@ def selection(scores):
     fractions = []
     percents = []
     for col in columns:
-        # print col
         if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
             continue
         if 'SSU' in col[0] or 'SSTU' in col[0]:    # for these scores, higher is better
@@ -708,10 +708,10 @@ def run_designer(basename=small_crn[:-4],
                                          strands, 
                                          design_params,
                                          n_th=trans_module.n_th, 
-                                         thold_l=7,
-                                         thold_e=7.7,
-                                         e_dev=1,
-                                         m_spurious=0.5,
+                                         thold_l=thold_l,
+                                         thold_e=thold_e,
+                                         e_dev=e_dev,
+                                         m_spurious=m_spurious,
                                          e_module=energyfuncs_james,
                                          strands_file=testname, 
                                          extra_pars=extra_pars)
@@ -826,7 +826,7 @@ def score_fixed(fixed_file,
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
-                seqsname=seq_file, run_kin=False)
+                seqname=seq_file, run_kin=False)
     scores, score_names = tdm.EvalCurrent(basename, gates, strands, 
                                       compile_params=design_params, 
                                       seq_file=seq_file, mfe_file=mfe_file,

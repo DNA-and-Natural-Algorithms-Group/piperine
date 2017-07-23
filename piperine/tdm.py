@@ -183,14 +183,6 @@ def get_heuristics_inputs(gates, strands):
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
                 header=True, testname=None, seq_file=None, mfe_file=None,
                 quick=False, targetdG=7.7, includes=None, clean=True):
-    #import tolds_utils as tu
-    # basename
-    # Plan:
-    #   * read MFE and SEQS file, combine?
-    #   * generate pepper-name lists from species and gate objects
-    #   * use these pepper-lists to make a name:sequence dictionary
-    #   * pass these into necessary scoring functions...or make global?
-    
     if not testname:
         testname = basename
     if not seq_file:
@@ -600,8 +592,7 @@ def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc'], clean=True, tmp
     
     # Run NUPACK's complexes function
     cmd = nupackpath + 'complexes -T %.1f '+\
-          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.05 '+\
-          '-magnesium 0.0125 %s > %s'
+          '-material %s -ordered -pairs -mfe -dangles some -sodium 1.0 %s > %s'
     cmd = cmd % (T,material,prefix,ofile)
     os.system(cmd)
     
@@ -674,7 +665,7 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc'], clean
     
     # Run NUPACK's defect function
     cmd = nupackpath + 'defect -T %.1f '+\
-          '-material %s -dangles some -multi %s > %s'
+          '-material %s -dangles some -multi -sodium 1.0 %s > %s'
     cmd = cmd % (T,material,prefix,ofile) 
     os.system(cmd)
     
@@ -731,8 +722,7 @@ def NUPACKIntScore(str1, str2, seq_dict,
     f.close()
 
     cmd = nupackpath + 'complexes -T %.1f '+\
-          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.05 '+\
-          '-magnesium 0.0125 %s > %s' 
+          '-material %s -ordered -pairs -mfe -dangles some -sodium 1.0 %s > %s' 
     cmd = cmd % (T,material,fname,ofile)
     os.system(cmd)
     #cmd = '/home/juic/Downloads/PROGS/nupack3.0.4/bin/concentrations  
@@ -808,8 +798,7 @@ def NUPACKSSScore(str1, seq_dict, T=25.0, material='dna', toe_region=[None], cle
     f.close()
     
     cmd = nupackpath + 'complexes -T %.1f '+\
-          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.05 '+\
-          '-magnesium 0.0125 %s > %s' 
+          '-material %s -ordered -pairs -mfe -dangles some -sodium 1.0 %s > %s' 
     cmd = cmd % (T,material,fname,ofile)
     os.system(cmd)
     cmd = nupackpath + 'concentrations  '+\

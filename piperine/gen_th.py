@@ -11,7 +11,7 @@ def flatten(x):
         return [x]
     
     
-def get_toeholds(n_ths=6, thold_l=int(7.7), thold_e=7.7, e_dev=0.5, m_spurious=0.4, 
+def get_toeholds(n_ths=6, thold_l=int(7.0), thold_e=7.7, e_dev=0.5, m_spurious=0.4, 
                  e_module=efj, timeout=8):
     """ Generate specified stickyends for the Soloveichik DSD approach
     
@@ -44,7 +44,7 @@ def get_toeholds(n_ths=6, thold_l=int(7.7), thold_e=7.7, e_dev=0.5, m_spurious=0
     startime = time()
     while notoes:
         try:
-            ends = sd.easyends('TD', thold_l, interaction=thold_e,
+            ends = sd.easyends('TD', thold_l, interaction=thold_e, number=n_ths,
                                fdev=e_dev/thold_e, alphabet='h', adjs=['c','g'],
                                maxspurious=m_spurious, energetics=ef,
                                oldends=avoid_list)
