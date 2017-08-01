@@ -519,16 +519,25 @@ def selection(scores):
     fractions = []
     percents = []
     for col in columns:
-        if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
+        # if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
+        if 'Index' in col[0] or 'Defect' in col[0]:# or 'WSI' == col[0]:
             continue
         if 'SSU' in col[0] or 'SSTU' in col[0]:    # for these scores, higher is better
             col = [-float(x) for x in col[1:]]
         else:
             col = [float(x) for x in col[1:]]
         array = np.array(col)
+        array_uni = np.unique(array)
+        array_ord = array_uni.argsort()
+        rank_dict = dict(zip(array_uni, array_ord))
+        temp_ranks = np.array([rank_dict[x] for x in array])
         temp = array.argsort()
-        colranks = np.empty(len(array), int)
-        colranks[temp] = np.arange(len(array))
+        colranks = np.array([rank_dict[x] for x in array])
+        #colranks[temp] = numpy.arange(len(array))
+        #array = np.array(col)
+        #temp = array.argsort()
+        #colranks = np.empty(len(array), int)
+        #colranks[temp] = np.arange(len(array))
         ranks.append(colranks)                     # low rank is better
         fractions.append((array - array.min())/abs(array.min() + (array.min()==0) ))
         percents.append((array - array.min())/(array.max() - array.min()))
@@ -542,7 +551,8 @@ def selection(scores):
     print_fn("\nRank array:")
     print_fn("\n                         ")
     for title in scores[0]:
-        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect': # in title or 'WSI' == col[0]:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -557,7 +567,8 @@ def selection(scores):
     print_fn("\nFractional excess array:")
     print_fn("\n                         ")
     for title in scores[0]:
-        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect':# in title or 'WSI' == col[0]:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -572,7 +583,8 @@ def selection(scores):
     print_fn("\nPercent badness (best to worst) array:")
     print_fn("\n                         ")
     for title in scores[0]:
-        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect':# in title or 'WSI' == col[0]:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -596,7 +608,7 @@ def selection(scores):
     
     # scores used:
     # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI
-    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8] 
+    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8, 20]#, 20] 
         
     print_fn("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)+"\n")
     print_fn("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])+"\n")

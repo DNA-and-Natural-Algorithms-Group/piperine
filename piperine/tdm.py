@@ -514,28 +514,28 @@ def Spurious_Weighted_Score(basename,
     w = w_lin[i-1:j]
     vec = np.array([ np.float(x) for x in re.findall(num, lines[2])])
     score_vec = vec * w
-    mis_intra_score = score_vec.sum() / num_strands
+    mis_intra_score = score_vec.sum()  #/ num_strands
     
     vec = np.array([ np.float(x) for x in re.findall(num, lines[4])])
     score_vec = vec * w
-    mis_inter_score = score_vec.sum() / num_strands
+    mis_inter_score = score_vec.sum()  #/ num_strands
     
     lines = spc_text[spc_text.rfind('spurious('):].split('\n')
     i, j = [ int(x) for x in re.findall(num, lines[0])]
     w = w_lin[i-1:j]
     vec = np.array([ np.float(x) for x in re.findall(num, lines[2])])
     score_vec = vec * w
-    spc_intra_score = score_vec.sum() / num_strands
+    spc_intra_score = score_vec.sum()  #/ num_strands
     
     vec = np.array([ np.float(x) for x in re.findall(num, lines[4])])
     score_vec = vec * w
-    spc_inter_score = score_vec.sum() / num_strands
+    spc_inter_score = score_vec.sum()  #/ num_strands
     
     vec_str = spc_text[spc_text.rfind('** score_verboten'):]
-    verboten_score = np.float(re.findall(num, vec_str)[0]) / num_strands
+    verboten_score = np.float(re.findall(num, vec_str)[0])  #/ num_strands
     
     vec_str = spc_text[spc_text.rfind('-weighted score = '):].split('\n')[0]
-    wsi_score = np.float(re.findall(num, vec_str)[-1]) / num_strands
+    wsi_score = np.float(re.findall(num, vec_str)[-1])  #/ num_strands
     
     if clean:
         for f in [fixed_file, compiled_file, save_file, out_file, 
@@ -592,7 +592,7 @@ def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc'], clean=True, tmp
     
     # Run NUPACK's complexes function
     cmd = nupackpath + 'complexes -T %.1f '+\
-          '-material %s -ordered -pairs -mfe -dangles some -sodium 1.0 %s > %s'
+          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.5 %s > %s'
     cmd = cmd % (T,material,prefix,ofile)
     os.system(cmd)
     
@@ -665,7 +665,7 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc'], clean
     
     # Run NUPACK's defect function
     cmd = nupackpath + 'defect -T %.1f '+\
-          '-material %s -dangles some -multi -sodium 1.0 %s > %s'
+          '-material %s -dangles some -multi -sodium 0.5 %s > %s'
     cmd = cmd % (T,material,prefix,ofile) 
     os.system(cmd)
     
@@ -722,7 +722,7 @@ def NUPACKIntScore(str1, str2, seq_dict,
     f.close()
 
     cmd = nupackpath + 'complexes -T %.1f '+\
-          '-material %s -ordered -pairs -mfe -dangles some -sodium 1.0 %s > %s' 
+          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.5 %s > %s' 
     cmd = cmd % (T,material,fname,ofile)
     os.system(cmd)
     #cmd = '/home/juic/Downloads/PROGS/nupack3.0.4/bin/concentrations  
@@ -798,7 +798,7 @@ def NUPACKSSScore(str1, seq_dict, T=25.0, material='dna', toe_region=[None], cle
     f.close()
     
     cmd = nupackpath + 'complexes -T %.1f '+\
-          '-material %s -ordered -pairs -mfe -dangles some -sodium 1.0 %s > %s' 
+          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.5 %s > %s' 
     cmd = cmd % (T,material,fname,ofile)
     os.system(cmd)
     cmd = nupackpath + 'concentrations  '+\
