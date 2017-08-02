@@ -499,7 +499,7 @@ def generate_seqs(basename,
     except KeyError as e:
         raise(e)
     
-    # Now do the sequence makin' 
+    # Generate sequences
     call_design(basename, pil_file, mfe_file, verbose=False, 
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
@@ -762,11 +762,11 @@ def score_fixed(fixed_file,
                  pil_file=None, 
                  save_file=None, 
                  mfe_file=None, 
-                 seq_file=None,
-                 score_file=None,
-                 design_params=(7, 15, 2),
-                 trans_module=DSDClasses,
-                 includes=None,
+                 seq_file=None, 
+                 score_file=None, 
+                 design_params=(7, 15, 2), 
+                 trans_module=DSDClasses, 
+                 includes=None, 
                  quick=False):
     """ Score a sequence set
     
@@ -827,13 +827,8 @@ def score_fixed(fixed_file,
                                    trans_module=trans_module)
     call_compiler(basename, args=design_params, fixed_file=fixed_file, 
                   outputname=pil_file, savename=save_file, includes=includes)
-    #try:
-    #    call_compiler(basename, args=design_params, fixed_file=fixed_file, 
-    #                  outputname=pil_file, savename=save_file)
-    #except Exception, e:
-    #    print e
     
-    # Now do the sequence makin' 
+    # Generate MFE
     call_design(basename, pil_file, mfe_file, verbose=False, 
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation

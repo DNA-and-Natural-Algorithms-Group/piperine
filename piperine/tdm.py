@@ -6,9 +6,7 @@ from tempfile import mkstemp, mkdtemp
 
 nupackpath = os.environ['NUPACKHOME']+'/bin/'
 
-from numpy import array, hstack
 import numpy as np
-#from scipy import zeros
 import re
 import random
 whiteSpaceSearch = re.compile('\s+')
@@ -223,11 +221,11 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
                  'TO avg', 'TO max']
     print('')
     
-    print('Start tube ensemble defect computation')
+    print('Start bad nucleotide percent computation')
     if quick:
         ted_scores = [np.random.rand(), 'BAD', np.random.rand()]
     else:
-        ted_scores = NUPACK_Eval_tube_defect(seq_dict, cmplx_dict, complex_names,\
+        ted_scores = NUPACK_Eval_bad_nucleotide(seq_dict, cmplx_dict, complex_names,\
             prefix='tube_ensemble', clean=clean)
     ted_names = ['Max Bad Nucleotide %', 'Max Defect Component', 
                  'Mean Bad Nucleotide %']
@@ -276,7 +274,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
         output = scores
     return output
 
-def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
+def NUPACK_Eval_bad_nucleotide(mfe_seqs, ideal_structs, complex_names, \
                             ComplexSize=3, T=25.0, material='dna', \
                             clean=True, quiet=True, prefix='ted_calc',
                             tmpdir=None):
@@ -294,10 +292,7 @@ def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
     bp_vec = np.empty(len(complex_names))
     # Set parameters
     target_conc = 1e-06
-    ted_max = ComplexSize * target_conc
-    max_iden = 'None'
     counter = 0
-    params = [ComplexSize, T, material, quiet, prefix]
     
     prog = MyProgress(len(complex_names))
     for cmpx in complex_names:
@@ -306,6 +301,7 @@ def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
         seq_list = mfe_seqs[cmpx_name].split('+')
         seq = mfe_seqs[cmpx_name].replace('+', '')
         nseq = len(seq_list)
+        params = [nseq, T, material, quiet, prefix]
         struct = ideal_structs[cmpx_name]
         bp = len(re.findall('[()]', struct))
         # Retrieve the estimated complex concentration
@@ -624,7 +620,7 @@ def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc'], clean=True, tmp
     out = 0.0
     for count in range(ctr, len(lines)):
         lineData = whiteSpaceSearch.split(lines[count])
-        if lineData[2:(len(seqs)+2)] == (len(seqs) ) * ['1'] :
+        if lineData[2:(ComplexSize+2)] == (ComplexSize ) * ['1'] :
             trial_out = float(lineData[-2])
             if trial_out > out:
                 out = trial_out
@@ -638,8 +634,10 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc'], clean
     This function calls the NUPACK methods 'defects' and reports the average num
     ber of basepairs that do not match their intended state.
     '''
+    ## TODO : Add error for when complex size is less than the number of provided sequences
     # Retrieve parameters
     ComplexSize, T, material, quiet, prefix = params
+    cmpx_string = ' '.join(["{}".format(x+1) for x in range(ComplexSize)]) + '\n'
     # Setup input files to nupack commands
     intsc = 0;
     if tmpdir is None:
@@ -659,7 +657,8 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc'], clean
     for seq in seqs:
       f.write(seq + '\n')
     
-    f.write('1 2 3\n')
+    # f.write('1 2 3\n')
+    f.write(cmpx_string)
     f.write(struct)
     f.close()
     
