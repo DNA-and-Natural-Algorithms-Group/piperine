@@ -22,7 +22,7 @@ class TestSPW(unittest.TestCase):
         designer.generate_scheme(self.basename, fixedfile=self.fixedfile)
         designer.generate_seqs(self.basename)
         
-        self.seq_dict = tdm.Read_Finished('{0}.seqs'.format(self.basename))
+        self.seq_dict = tdm.Read_Finished('{0}.seq'.format(self.basename))
         self.domains_list = list(self.seq_dict.keys())
     
     def tearDown(self):

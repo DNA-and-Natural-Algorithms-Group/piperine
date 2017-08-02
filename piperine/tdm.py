@@ -6,9 +6,7 @@ from tempfile import mkstemp, mkdtemp
 
 nupackpath = os.environ['NUPACKHOME']+'/bin/'
 
-from numpy import array, hstack
 import numpy as np
-#from scipy import zeros
 import re
 import random
 whiteSpaceSearch = re.compile('\s+')
@@ -183,14 +181,6 @@ def get_heuristics_inputs(gates, strands):
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
                 header=True, testname=None, seq_file=None, mfe_file=None,
                 quick=False, targetdG=7.7, includes=None, clean=True):
-    #import tolds_utils as tu
-    # basename
-    # Plan:
-    #   * read MFE and SEQS file, combine?
-    #   * generate pepper-name lists from species and gate objects
-    #   * use these pepper-lists to make a name:sequence dictionary
-    #   * pass these into necessary scoring functions...or make global?
-    
     if not testname:
         testname = basename
     if not seq_file:
@@ -231,11 +221,11 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
                  'TO avg', 'TO max']
     print('')
     
-    print('Start tube ensemble defect computation')
+    print('Start bad nucleotide percent computation')
     if quick:
         ted_scores = [np.random.rand(), 'BAD', np.random.rand()]
     else:
-        ted_scores = NUPACK_Eval_tube_defect(seq_dict, cmplx_dict, complex_names,\
+        ted_scores = NUPACK_Eval_bad_nucleotide(seq_dict, cmplx_dict, complex_names,\
             prefix='tube_ensemble', clean=clean)
     ted_names = ['Max Bad Nucleotide %', 'Max Defect Component', 
                  'Mean Bad Nucleotide %']
@@ -284,7 +274,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
         output = scores
     return output
 
-def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
+def NUPACK_Eval_bad_nucleotide(mfe_seqs, ideal_structs, complex_names, \
                             ComplexSize=3, T=25.0, material='dna', \
                             clean=True, quiet=True, prefix='ted_calc',
                             tmpdir=None):
@@ -302,10 +292,7 @@ def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
     bp_vec = np.empty(len(complex_names))
     # Set parameters
     target_conc = 1e-06
-    ted_max = ComplexSize * target_conc
-    max_iden = 'None'
     counter = 0
-    params = [ComplexSize, T, material, quiet, prefix]
     
     prog = MyProgress(len(complex_names))
     for cmpx in complex_names:
@@ -314,6 +301,7 @@ def NUPACK_Eval_tube_defect(mfe_seqs, ideal_structs, complex_names, \
         seq_list = mfe_seqs[cmpx_name].split('+')
         seq = mfe_seqs[cmpx_name].replace('+', '')
         nseq = len(seq_list)
+        params = [nseq, T, material, quiet, prefix]
         struct = ideal_structs[cmpx_name]
         bp = len(re.findall('[()]', struct))
         # Retrieve the estimated complex concentration
@@ -438,7 +426,7 @@ def Spurious_Weighted_Score(basename,
                             tmax=15,
                             spurious_range=10,
                             beta=5,
-                            clean=False,
+                            clean=True,
                             includes=None,
                             tmpdir=None):
     # This function calculates Niranjan's weighted spurious interaction score, for i
@@ -522,28 +510,28 @@ def Spurious_Weighted_Score(basename,
     w = w_lin[i-1:j]
     vec = np.array([ np.float(x) for x in re.findall(num, lines[2])])
     score_vec = vec * w
-    mis_intra_score = score_vec.sum() / num_strands
+    mis_intra_score = score_vec.sum()  #/ num_strands
     
     vec = np.array([ np.float(x) for x in re.findall(num, lines[4])])
     score_vec = vec * w
-    mis_inter_score = score_vec.sum() / num_strands
+    mis_inter_score = score_vec.sum()  #/ num_strands
     
     lines = spc_text[spc_text.rfind('spurious('):].split('\n')
     i, j = [ int(x) for x in re.findall(num, lines[0])]
     w = w_lin[i-1:j]
     vec = np.array([ np.float(x) for x in re.findall(num, lines[2])])
     score_vec = vec * w
-    spc_intra_score = score_vec.sum() / num_strands
+    spc_intra_score = score_vec.sum()  #/ num_strands
     
     vec = np.array([ np.float(x) for x in re.findall(num, lines[4])])
     score_vec = vec * w
-    spc_inter_score = score_vec.sum() / num_strands
+    spc_inter_score = score_vec.sum()  #/ num_strands
     
     vec_str = spc_text[spc_text.rfind('** score_verboten'):]
-    verboten_score = np.float(re.findall(num, vec_str)[0]) / num_strands
+    verboten_score = np.float(re.findall(num, vec_str)[0])  #/ num_strands
     
     vec_str = spc_text[spc_text.rfind('-weighted score = '):].split('\n')[0]
-    wsi_score = np.float(re.findall(num, vec_str)[-1]) / num_strands
+    wsi_score = np.float(re.findall(num, vec_str)[-1])  #/ num_strands
     
     if clean:
         for f in [fixed_file, compiled_file, save_file, out_file, 
@@ -600,8 +588,7 @@ def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc'], clean=True, tmp
     
     # Run NUPACK's complexes function
     cmd = nupackpath + 'complexes -T %.1f '+\
-          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.05 '+\
-          '-magnesium 0.0125 %s > %s'
+          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.5 %s > %s'
     cmd = cmd % (T,material,prefix,ofile)
     os.system(cmd)
     
@@ -633,7 +620,7 @@ def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc'], clean=True, tmp
     out = 0.0
     for count in range(ctr, len(lines)):
         lineData = whiteSpaceSearch.split(lines[count])
-        if lineData[2:(len(seqs)+2)] == (len(seqs) ) * ['1'] :
+        if lineData[2:(ComplexSize+2)] == (ComplexSize ) * ['1'] :
             trial_out = float(lineData[-2])
             if trial_out > out:
                 out = trial_out
@@ -647,8 +634,10 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc'], clean
     This function calls the NUPACK methods 'defects' and reports the average num
     ber of basepairs that do not match their intended state.
     '''
+    ## TODO : Add error for when complex size is less than the number of provided sequences
     # Retrieve parameters
     ComplexSize, T, material, quiet, prefix = params
+    cmpx_string = ' '.join(["{}".format(x+1) for x in range(ComplexSize)]) + '\n'
     # Setup input files to nupack commands
     intsc = 0;
     if tmpdir is None:
@@ -668,13 +657,14 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc'], clean
     for seq in seqs:
       f.write(seq + '\n')
     
-    f.write('1 2 3\n')
+    # f.write('1 2 3\n')
+    f.write(cmpx_string)
     f.write(struct)
     f.close()
     
     # Run NUPACK's defect function
     cmd = nupackpath + 'defect -T %.1f '+\
-          '-material %s -dangles some -multi %s > %s'
+          '-material %s -dangles some -multi -sodium 0.5 %s > %s'
     cmd = cmd % (T,material,prefix,ofile) 
     os.system(cmd)
     
@@ -731,8 +721,7 @@ def NUPACKIntScore(str1, str2, seq_dict,
     f.close()
 
     cmd = nupackpath + 'complexes -T %.1f '+\
-          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.05 '+\
-          '-magnesium 0.0125 %s > %s' 
+          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.5 %s > %s' 
     cmd = cmd % (T,material,fname,ofile)
     os.system(cmd)
     #cmd = '/home/juic/Downloads/PROGS/nupack3.0.4/bin/concentrations  
@@ -808,8 +797,7 @@ def NUPACKSSScore(str1, seq_dict, T=25.0, material='dna', toe_region=[None], cle
     f.close()
     
     cmd = nupackpath + 'complexes -T %.1f '+\
-          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.05 '+\
-          '-magnesium 0.0125 %s > %s' 
+          '-material %s -ordered -pairs -mfe -dangles some -sodium 0.5 %s > %s' 
     cmd = cmd % (T,material,fname,ofile)
     os.system(cmd)
     cmd = nupackpath + 'concentrations  '+\

@@ -91,7 +91,7 @@ def call_design(basename,
 def call_finish(basename,
                 savename=None,
                 designname=None,
-                seqsname=None,
+                seqname=None,
                 strandsname=None,
                 run_kin=False,
                 cleanup=True,
@@ -107,7 +107,7 @@ def call_finish(basename,
         basename: The default name of all files produced and accessed.
         savename: File storing process states. (basename.save)
         designname: MFE file, read for sequences (basename.mfe)
-        seqsname: Output file containing all sequences (basename.seq)
+        seqname: Output file containing all sequences (basename.seq)
         strandsname: Output file containing all strand sequences (None)
         run_kin: Run spurious kinetic tests on sequences (False)
         cleanup: Delete temporary files (True)
@@ -125,10 +125,10 @@ def call_finish(basename,
         savename = '{}.save'.format(basename)
     if not designname:
         designname = '{}.mfe'.format(basename)
-    if not seqsname:
-        seqsname = '{}.seq'.format(basename)
+    if not seqname:
+        seqname = '{}.seq'.format(basename)
     
-    finish(savename, designname, seqsname, strandsname, run_kin, 
+    finish(savename, designname, seqname, strandsname, run_kin, 
                   cleanup, trials, time, temp, conc, spurious, spurious_time)
 
 def read_crn(in_file):
@@ -499,12 +499,12 @@ def generate_seqs(basename,
     except KeyError as e:
         raise(e)
     
-    # Now do the sequence makin' 
+    # Generate sequences
     call_design(basename, pil_file, mfe_file, verbose=False, 
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
-                seqsname=seq_file, strandsname=strands_file, run_kin=False)
+                seqname=seq_file, strandsname=strands_file, run_kin=False)
     return toeholds
 
 def selection(scores):
@@ -519,17 +519,25 @@ def selection(scores):
     fractions = []
     percents = []
     for col in columns:
-        # print col
-        if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
+        # if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
+        if 'Index' in col[0] or 'Defect' in col[0]:# or 'WSI' == col[0]:
             continue
         if 'SSU' in col[0] or 'SSTU' in col[0]:    # for these scores, higher is better
             col = [-float(x) for x in col[1:]]
         else:
             col = [float(x) for x in col[1:]]
         array = np.array(col)
+        array_uni = np.unique(array)
+        array_ord = array_uni.argsort()
+        rank_dict = dict(zip(array_uni, array_ord))
+        temp_ranks = np.array([rank_dict[x] for x in array])
         temp = array.argsort()
-        colranks = np.empty(len(array), int)
-        colranks[temp] = np.arange(len(array))
+        colranks = np.array([rank_dict[x] for x in array])
+        #colranks[temp] = numpy.arange(len(array))
+        #array = np.array(col)
+        #temp = array.argsort()
+        #colranks = np.empty(len(array), int)
+        #colranks[temp] = np.arange(len(array))
         ranks.append(colranks)                     # low rank is better
         fractions.append((array - array.min())/abs(array.min() + (array.min()==0) ))
         percents.append((array - array.min())/(array.max() - array.min()))
@@ -543,7 +551,8 @@ def selection(scores):
     print_fn("\nRank array:")
     print_fn("\n                         ")
     for title in scores[0]:
-        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect': # in title or 'WSI' == col[0]:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -558,7 +567,8 @@ def selection(scores):
     print_fn("\nFractional excess array:")
     print_fn("\n                         ")
     for title in scores[0]:
-        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect':# in title or 'WSI' == col[0]:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -573,7 +583,8 @@ def selection(scores):
     print_fn("\nPercent badness (best to worst) array:")
     print_fn("\n                         ")
     for title in scores[0]:
-        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect':# in title or 'WSI' == col[0]:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -597,7 +608,7 @@ def selection(scores):
     
     # scores used:
     # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI
-    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8] 
+    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8, 20]#, 20] 
         
     print_fn("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)+"\n")
     print_fn("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])+"\n")
@@ -709,10 +720,10 @@ def run_designer(basename=small_crn[:-4],
                                          strands, 
                                          design_params,
                                          n_th=trans_module.n_th, 
-                                         thold_l=7,
-                                         thold_e=7.7,
-                                         e_dev=1,
-                                         m_spurious=0.5,
+                                         thold_l=thold_l,
+                                         thold_e=thold_e,
+                                         e_dev=e_dev,
+                                         m_spurious=m_spurious,
                                          e_module=energyfuncs_james,
                                          strands_file=testname, 
                                          extra_pars=extra_pars)
@@ -751,11 +762,11 @@ def score_fixed(fixed_file,
                  pil_file=None, 
                  save_file=None, 
                  mfe_file=None, 
-                 seq_file=None,
-                 score_file=None,
-                 design_params=(7, 15, 2),
-                 trans_module=DSDClasses,
-                 includes=None,
+                 seq_file=None, 
+                 score_file=None, 
+                 design_params=(7, 15, 2), 
+                 trans_module=DSDClasses, 
+                 includes=None, 
                  quick=False):
     """ Score a sequence set
     
@@ -816,18 +827,13 @@ def score_fixed(fixed_file,
                                    trans_module=trans_module)
     call_compiler(basename, args=design_params, fixed_file=fixed_file, 
                   outputname=pil_file, savename=save_file, includes=includes)
-    #try:
-    #    call_compiler(basename, args=design_params, fixed_file=fixed_file, 
-    #                  outputname=pil_file, savename=save_file)
-    #except Exception, e:
-    #    print e
     
-    # Now do the sequence makin' 
+    # Generate MFE
     call_design(basename, pil_file, mfe_file, verbose=False, 
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
-                seqsname=seq_file, run_kin=False)
+                seqname=seq_file, run_kin=False)
     scores, score_names = tdm.EvalCurrent(basename, gates, strands, 
                                       compile_params=design_params, 
                                       seq_file=seq_file, mfe_file=mfe_file,

@@ -1,4 +1,4 @@
-declare component gate_bim_react(t, bm, c): A + B -> C + D
+declare component bimrxn(t, bm, c): A + B -> C + D
 
 ### Domains
 # Toeholds:

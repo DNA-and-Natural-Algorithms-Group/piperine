@@ -70,7 +70,7 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
         os.close(fid)
         fid, self.mfe_file = mkstemp(suffix='.mfe')
         os.close(fid)
-        fid, self.seq_file = mkstemp(suffix='.seqs')
+        fid, self.seq_file = mkstemp(suffix='.seq')
         os.close(fid)
         self.filelist = [self.crn_file,
                          self.sys_file,

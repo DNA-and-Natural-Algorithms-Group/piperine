@@ -43,7 +43,7 @@ class TestTDM(unittest.TestCase):
         self.crn_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.crn')
         self.sys_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.sys')
         self.fixed_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.fixed')
-        self.seqs_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.seq')
+        self.seq_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.seq')
         self.pil_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.pil')
         self.mfe_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.mfe')
         

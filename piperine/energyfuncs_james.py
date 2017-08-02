@@ -122,7 +122,7 @@ class energyfuncs:
             pac1 = seqs2[:,0]*4+(3-seqs1[:,-1])
             ps2 = seqs2[:,::-1][:,1:-1]*4+seqs2[:,::-1][:,2:]
             pa2 = seqs2[:,-2]*4+seqs2[:,-1]
-            pac2 = (seqs1[:,-1])*4+(3-seqs2[:,-1])
+            pac2 = (seqs1[:,0])*4+(3-seqs2[:,-1])
 
         # Shift here is considering the first strand as fixed, and the second one as
         # shifting.  The shift is the offset of the bottom one in terms of pair
