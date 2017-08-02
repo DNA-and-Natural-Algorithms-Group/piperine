@@ -426,7 +426,7 @@ def Spurious_Weighted_Score(basename,
                             tmax=15,
                             spurious_range=10,
                             beta=5,
-                            clean=False,
+                            clean=True,
                             includes=None,
                             tmpdir=None):
     # This function calculates Niranjan's weighted spurious interaction score, for i

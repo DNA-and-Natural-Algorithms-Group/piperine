@@ -36,7 +36,7 @@ class TestTDMNUPACK(unittest.TestCase):
                            seq_names[0], 
                            seq_names[1], 
                            seq_dict,
-                           clean=False,
+                           clean=True,
                            quiet=True,
                            tmpdir=tmpdir
                           )
@@ -53,7 +53,7 @@ class TestTDMNUPACK(unittest.TestCase):
         true_score = 7.750862e-12
         out = tdm.NUPACK_Cmpx_Conc(seq_values, 
                                    params=[3, 25, 'dna', True, 'ted_calc'],
-                                   clean=False,
+                                   clean=True,
                                    tmpdir=tmpdir)
         self.assertEqual(out, true_score, 
                          msg="true:{}\ntest:{}\n".format(true_score, out))
@@ -68,7 +68,7 @@ class TestTDMNUPACK(unittest.TestCase):
         true_score = 7.547559e-07
         out = tdm.NUPACK_Cmpx_Conc(list(seq_dict.values()), 
                                    params=[4, 25, 'dna', True, 'ted_calc'],
-                                   clean=False,
+                                   clean=True,
                                    tmpdir=tmpdir)
         self.assertEqual(out, true_score, 
                          msg="true:{}\ntest:{}\n".format(true_score, out))
@@ -82,7 +82,7 @@ class TestTDMNUPACK(unittest.TestCase):
         out = tdm.NUPACK_Cmpx_Defect(seqs, 
                                      struct,
                                      params=[3, 25, 'dna', True, 'ted_calc'],
-                                     clean=False,
+                                     clean=True,
                                      tmpdir=tmpdir)
         self.assertEqual(out, true_score, 
                          msg="true:{}\ntest:{}\n".format(true_score, out))
@@ -97,7 +97,7 @@ class TestTDMNUPACK(unittest.TestCase):
         out = tdm.NUPACK_Cmpx_Defect(seq_dict.values(), 
                                      cmpx_ideal,
                                      params=[4, 25, 'dna', True, 'ted_calc'],
-                                     clean=False,
+                                     clean=True,
                                      tmpdir=tmpdir)
         self.assertEqual(out, true_score, 
                          msg="true:{}\ntest:{}\n".format(true_score, out))
@@ -119,7 +119,7 @@ class TestTDMNUPACK(unittest.TestCase):
                 self.basename,
                 self.sequence_dicts[2],
                 self.sequence_dicts[0],
-                clean=False,
+                clean=True,
                 tmpdir=tmpdir,
                 bored=1)
         true_scores = [true_intra_score, true_inter_score, true_mis_intra_score, true_mis_inter_score,
@@ -168,7 +168,7 @@ class TestTDMNUPACK(unittest.TestCase):
                                           ideal_structs, 
                                           cmpx_names, 
                                           tmpdir=tmpdir,
-                                          clean=False)
+                                          clean=True)
         for i in [0,2]:
             self.assertTrue(
                 np.isclose(out[i],trues[i], rtol=1e-3),
@@ -209,7 +209,7 @@ class TestTDMNUPACK(unittest.TestCase):
                                           ideal_structs, 
                                           cmpx_names, 
                                           tmpdir=tmpdir,
-                                          clean=False)
+                                          clean=True)
         for i in [0,2]:
             self.assertTrue(
                 np.isclose(out[i],trues[i], rtol=1e-3),
@@ -231,7 +231,7 @@ class TestTDMNUPACK(unittest.TestCase):
         out = tdm.NUPACKSSScore(strand, 
                                 self.sequence_dicts[0], 
                                 toe_region=t_regi,
-                                clean=False,
+                                clean=True,
                                 tmpdir=tmpdir)
         for i in range(4):
             self.assertTrue(np.isclose(out[i], trues[i]), 
