@@ -31,7 +31,7 @@ class TestTDMNUPACK(unittest.TestCase):
         
         seq_dict = dict(zip(seq_names, seq_values))
         
-        true_score = 100 * sum([8.242544e-13, 9.971278e-15, 1.338966e-12]) / 2e-6
+        true_score = 100 * sum([7.289922e-13, 1.146297e-14, 1.156180e-12]) / 2e-6
         out = tdm.NUPACKIntScore(
                            seq_names[0], 
                            seq_names[1], 
@@ -78,7 +78,7 @@ class TestTDMNUPACK(unittest.TestCase):
         seqs = self.sequence_dicts[0]['r0-Gate'].split("+")
         struct = self.sequence_dicts[1]['r0-Gate']
         
-        true_score = 2.148e+00
+        true_score = 2.329e+00
         out = tdm.NUPACK_Cmpx_Defect(seqs, 
                                      struct,
                                      params=[3, 25, 'dna', True, 'ted_calc'],
@@ -220,10 +220,10 @@ class TestTDMNUPACK(unittest.TestCase):
     def test_NUPACKSSScore(self, tmpdir=None):
         strand = self.h_inputs[0][5]
         t_regi = self.h_inputs[3][strand]
-        true_sstu = 0.9059
-        true_sstu_sum = 9.5847
-        true_ssu = 0.8579
-        true_ssu_sum = 42.1328
+        true_sstu = 0.9028 #0.9059
+        true_sstu_sum = 9.5695 # 9.5847
+        true_ssu = 0.8524 # 0.8579
+        true_ssu_sum = 42.0609 # 42.1328
         trues = [true_ssu, true_ssu_sum,
                  true_sstu, true_sstu_sum, 44]
         score_names = ["min_Unpaired", "sum_Unpaired", "min_Unpaired_toe", \
@@ -234,7 +234,8 @@ class TestTDMNUPACK(unittest.TestCase):
                                 clean=False,
                                 tmpdir=tmpdir)
         for i in range(4):
-            self.assertTrue(np.isclose(out[i], trues[i]), msg="Score {}".format(score_names[i]))
+            self.assertTrue(np.isclose(out[i], trues[i]), 
+                            msg="Score {} Test:{} True:{}".format(score_names[i], out[i], trues[i]))
     
     def test_BM_Eval(self):
         sd = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
@@ -285,6 +286,8 @@ class TestTDMNUPACK(unittest.TestCase):
 
 def suite():
     tests = ['test_NUPACKIntScore', 'test_NUPACK_Cmpx_Conc', 'test_NUPACK_Cmpx_Defect',
+             'test_NUPACK_Cmpx_Conc_c4', 'test_NUPACK_Cmpx_Defect_c4',
              'test_Spurious_Weighted_Score', 'test_NUPACK_Eval_bad_nucleotide', 
+             'test_NUPACK_Eval_bad_nucleotide_c4', 
              'test_NUPACKSSScore', 'test_BM_Eval']
     return unittest.TestSuite(list(map(TestTDMNUPACK, tests)))
