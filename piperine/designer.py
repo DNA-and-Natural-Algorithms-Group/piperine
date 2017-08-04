@@ -258,18 +258,26 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
     from numpy import floor 
     line = 'sequence {} = {} # species {}\n'
     f = open(toehold_file, 'w')
-    if type(toeholds[0]) is str:
-        for i, th in zip(list(range(len(toeholds))), toeholds):
-            strand = strands[ int(floor((i - modulo(i, n_th)) / n_th)) ]
-            constraint = line.format(strand.th(modulo(i, n_th)), toeholds[i].upper(), 
-                                     strand.name)
-            f.write(constraint)
-    else:
-        for strand, ths in zip(strands, toeholds):
-            for i in range(len(ths)):
-                constraint = line.format(strand.th(i), ths[i].upper(), 
-                                         strand.name)
-                f.write(constraint)
+    th_names = [th for strand in strands for th in strand.get_ths()]
+    th_names = sorted(list(set(th_names)))
+    th_data = [(th, ', '.join([strand.name for strand in strands if th in strand.get_ths()]))
+                    for th in th_names]
+    for data, seq in zip(th_data, toeholds):   
+        constraint = line.format(data[0], seq.upper(), data[1])
+        f.write(constraint)
+    
+    # if type(toeholds[0]) is str:
+    #     for i, th in zip(list(range(len(toeholds))), toeholds):
+    #         strand = strands[ int(floor((i - modulo(i, n_th)) / n_th)) ]
+    #         constraint = line.format(strand.th(modulo(i, n_th)), toeholds[i].upper(), 
+    #                                  strand.name)
+    #         f.write(constraint)
+    # else:
+    #     for strand, ths in zip(strands, toeholds):
+    #         for i in range(len(ths)):
+    #             constraint = line.format(strand.th(i), ths[i].upper(), 
+    #                                      strand.name)
+    #             f.write(constraint)
     f.close()
 
 def toehold_wrapper(n_ths, 
@@ -367,7 +375,6 @@ def process_crn(basename=None,
     (gates, strands) = output
     
     return (gates, strands)
-    
 
 def generate_scheme(basename,  
                     design_params=(7, 15, 2), 
@@ -482,15 +489,19 @@ def generate_seqs(basename,
     # Make toeholds
     n_species = len(strands)
     signal_names = [ s.name for s in strands ]
-    
-    toeholds = toehold_wrapper(n_species*n_th, 
+    tdomains = []
+    for strand in strands:
+        tdomains += strand.get_ths()
+    tdomains = list(set(tdomains))
+    n_toeholds = len(tdomains)
+ 
+    toeholds = toehold_wrapper(n_toeholds,
                                thold_l=thold_l,
                                thold_e=thold_e,
                                e_dev=e_dev,
                                m_spurious=m_spurious,
                                e_module=e_module)
     
-    toehold_sets = [ toeholds[i:(i+n_th)] for i in range(0,n_th*n_species,n_th)]
     # Write the fixed file for the toehold sequences and compile the sys file to PIL
     write_toehold_file(fixed_file, strands, toeholds, n_th)
     try:
