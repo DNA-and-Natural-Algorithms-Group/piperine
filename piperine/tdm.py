@@ -363,8 +363,7 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
  
     
 def SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna', clean=True):
-    TopStrandlist = list(TopStranddict.keys())
-    numstrands = len(TopStrandlist)
+    numstrands = len(TopStranddict)
     
     MinProbs = []
     avg_Unpaired = []
@@ -373,9 +372,7 @@ def SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna', clean=True):
     avg_Unpaired_toe = []
     
     prog = MyProgress(numstrands)
-    for i in range(numstrands):
-            strand = TopStrandlist[i]
-            toe_regions = TopStranddict[strand]
+    for strand, toe_regions in TopStranddict.items():
             [min_Unpaired, sum_Unpaired, min_Unpaired_toe, sum_Unpaired_toe,\
              NumBases] = \
                 NUPACKSSScore(strand, seq_dict, T, material, toe_regions, clean=clean)
@@ -837,4 +834,3 @@ def NUPACKSSScore(str1, seq_dict, T=25.0, material='dna', toe_region=[None], cle
     else:
         return [min_Unpaired, sum_Unpaired, min_Unpaired_toe, \
                 sum_Unpaired_toe, UnpairedIndex-1]
-        
