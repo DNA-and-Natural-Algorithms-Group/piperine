@@ -738,7 +738,7 @@ def run_designer(basename=small_crn[:-4],
         score_names = ['Set Index'] + score_names
         scores = [score_names] + scoreslist
         if reps > 2:
-            winner = selection_wrapper(scores)
+            winner = selection_wrapper(scores, reportfile=basename+'_score_report.txt')
         else:
             winner = None
         with open(basename+'_scores.csv', 'w') as f:
