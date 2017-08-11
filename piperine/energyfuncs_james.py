@@ -41,7 +41,7 @@ class energyfuncs:
         self.initdG = 0.0 # 1.96 DISABLED FOR NOW
         self.nndG = self.nndG_full[np.arange(0,16),15-np.arange(0,16)]
         # 30-01-15: The only dangle contexts we are interested in are 3' dangle
-        # s. Select those from the Santa Lucia table. We'll have to flip the 
+        # s. Select those from the Santa Lucia table. We'll have to flip the
         # order of the vector, though, to mach the 5->3 orientation of the gene
         # rated toeholds. To flip, we need to count up to 15 with the opposite-
         # endian order, in terms of quaternary representation
@@ -62,11 +62,11 @@ class energyfuncs:
             raise InputError("Mismatchtype {0} is not supported.".format(mismatchtype))
 
     def th_external_dG(self, seqs):
-        # Convert nearest-neighbor stacks to dG-table lookup indices. 
+        # Convert nearest-neighbor stacks to dG-table lookup indices.
         # Sum up the near-neighbor energy contributions
         # Add context-specific dG values, eg tail or dangle contributions
         seqs_len = np.size(seqs, 1)
-        # The external context involves a 3' dangle, so exclude the 3' flank 
+        # The external context involves a 3' dangle, so exclude the 3' flank
         # base.
         cols_external = np.arange(seqs_len-1)
         tops_external = tops(seqs[:, cols_external])
@@ -108,7 +108,7 @@ class energyfuncs:
         endlen = seqs1.endlen
         plen = endlen-1
 
-        # Run through the  
+        # Run through the
         # TODO: replace this with cleaner code
         if endtype=='DT':
             ps1 = seqs1[:,1:-1]*4+seqs1[:,2:]

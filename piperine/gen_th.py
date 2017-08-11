@@ -10,17 +10,17 @@ def flatten(x):
         return [ z for y in x for z in flatten(y)]
     else:
         return [x]
-    
-    
-def get_toeholds(n_ths=6, thold_l=int(7.0), thold_e=7.7, e_dev=0.5, m_spurious=0.4, 
+
+
+def get_toeholds(n_ths=6, thold_l=int(7.0), thold_e=7.7, e_dev=0.5, m_spurious=0.4,
                  e_module=efj, timeout=8):
     """ Generate specified stickyends for the Soloveichik DSD approach
-    
-    A given run of stickydesign may not generate toeholds that match the 
+
+    A given run of stickydesign may not generate toeholds that match the
     Soloveichik approach. This function reports whether the run was successful
-    or not. Otherwise, the toeholds are matched to respect the backwards 
-    strand back-to-back toeholds. 
-    
+    or not. Otherwise, the toeholds are matched to respect the backwards
+    strand back-to-back toeholds.
+
     Args:
         ef: Stickydesign easyends object
         n_ths: Number of signal strand species to generate toeholds for
@@ -39,7 +39,7 @@ def get_toeholds(n_ths=6, thold_l=int(7.0), thold_e=7.7, e_dev=0.5, m_spurious=0
     # Give StickyDesign a set of trivial, single-nucleotide toeholds to avoid poor
     # designs. I'm not sure if this helps now, but it did once.
     avoid_list = [i * int(thold_l + 2) for i in ['a', 'c', 't']]
-    
+
     # Generate toeholds
     notoes = True
     startime = time()
@@ -54,7 +54,7 @@ def get_toeholds(n_ths=6, thold_l=int(7.0), thold_e=7.7, e_dev=0.5, m_spurious=0
             if (time() - startime) > timeout:
                 return -1
             noetoes = True
-    
+
     th_cands = ends.tolist()
     # remove "avoid" sequences
     th_cands = th_cands[len(avoid_list):]
@@ -77,16 +77,16 @@ def score_toeholds(toeholds, targetdG=7.7, e_module=efj):
     e_avg = e_vec_all.mean()
     e_rng = e_vec_all.max() - e_vec_all.min()
     return (e_avg, e_rng)
-    
 
-def generate_pairs(n_ths=3, thold_l=int(7), thold_e=7.7, e_dev=0.5, m_spurious=0.4, 
+
+def generate_pairs(n_ths=3, thold_l=int(7), thold_e=7.7, e_dev=0.5, m_spurious=0.4,
                  e_module='energyfuncs_james', labels=None):
     """ Generate specified stickyends for the Soloveichik DSD approach
-    
-    A given run of stickydesign may not generate toeholds that match the 
+
+    A given run of stickydesign may not generate toeholds that match the
     Soloveichik approach. This function calls new_toeholds until appropriate
     toeholds are produced
-    
+
     Args:
         n_ths: Number of signal strand species to generate toeholds for
         thold_l: Nucleotides in the toeholds
@@ -104,9 +104,9 @@ def generate_pairs(n_ths=3, thold_l=int(7), thold_e=7.7, e_dev=0.5, m_spurious=0
     # Give the energetics instance the target energy
     ef = energetics.energyfuncs()
     ef.targetdG = thold_e
-    
-    # new_toeholds returns 1 when second toehold assignment fails. Use a while 
-    # loop to run the toehold generation until successful. 
+
+    # new_toeholds returns 1 when second toehold assignment fails. Use a while
+    # loop to run the toehold generation until successful.
     ends_all = None
     while type(ends_all) is not sd.endarray:
         output = new_toeholds(ef, n_ths, thold_l, thold_e, e_dev, \
@@ -145,7 +145,7 @@ if __name__ == "__main__":
                         ' spurious heatmap image file [spurious.png]', type=str)
     parser.add_argument("-n", "--number", help='Toeholds needed.[3]', type=int)
     args = parser.parse_args()
-    
+
     ############## Interpret arguments
     # Set toehold length in base pairs
     if args.length:
@@ -153,19 +153,19 @@ if __name__ == "__main__":
         print('Using length {0}'.format(thold_l))
     else:
         thold_l = int(7)
-    
+
     # Set target toehold binding energy, kcal/mol
     if args.energy:
         thold_e = args.energy
     else:
         thold_e = 7.7
-    
+
     # Set allowable toehold binding energy deviation, kcal/mol
     if args.deviation:
         e_dev = args.deviation
     else:
         e_dev = 0.5
-    
+
     # Set allowable spurious interactions, fraction of target energy.
     # The spurious interactions are calculated with standard SantaLucia parameters
     # and sticky-end contexts, not toehold contexts
@@ -173,39 +173,39 @@ if __name__ == "__main__":
         m_spurious = args.maxspurious
     else:
         m_spurious = 0.4
-    
+
     # Import desired energetics module as ef
     if args.energetics:
         eval('import ' + args.energetics + 'as ef')
     else:
         from . import energyfuncs_james as energetics
-    
+
     # Set user-specified barplot image file name
     if args.barplot:
         bplotfile = args.barplot
     else:
         bplotfile = 'binding_energy.png'
-    
+
     # Set user-specified spurious interaction heatmap image file name
     if args.barplot:
         hmfile = args.heatmap
     else:
         hmfile = 'spurious.png'
-    
+
     # Set user-specified spurious interaction heatmap image file name
     if args.number:
         n_ths = args.number
     else:
         n_ths = 3
-    
+
     ############## end Interpret arguments
-    
+
     # Give the energetics instance the target energy
     ef = energetics.energyfuncs()
     ef.targetdG = thold_e
-    
-    # new_toeholds returns 1 when second toehold assignment fails. Use a while 
-    # loop to run the toehold generation until successful. 
+
+    # new_toeholds returns 1 when second toehold assignment fails. Use a while
+    # loop to run the toehold generation until successful.
     ends_all = None
     while type(ends_all) is not sd.endarray:
         ends_all = new_toeholds(ef, n_ths, thold_l, thold_e, e_dev, m_spurious)
@@ -216,8 +216,8 @@ if __name__ == "__main__":
                 print('First-second toehold pairing failed. Trying again.')
             if ends_all == 3:
                 print("dunno")
-        
+
     # Plot energy array
     e_array = sd.energy_array_uniform(ends_all, ef)
-    
+
     print('Done!')

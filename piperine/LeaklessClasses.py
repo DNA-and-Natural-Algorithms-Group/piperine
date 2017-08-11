@@ -23,24 +23,24 @@ react = {1:[],
 
 # A dictionary mapping the number of reactants to information required
 # to specify a produce gate. In the leakless implementation, each reaction
-# may only produce one product, and two reactants implies AND logic. There is 
-# a consideration to make regarding the input to the translator component. 
+# may only produce one product, and two reactants implies AND logic. There is
+# a consideration to make regarding the input to the translator component.
 # An AND module releases a longer molecule than a signal strand. Even though
 # the design of DNA complexes does not need to consider the extra domains of
 # the flux molecule, Pepper requires two separate components to achieve
-# identical processing of different input strands. 
+# identical processing of different input strands.
 produ = { 1:
           ['leakless_translate',            # comp file
-          ['{0}-T1', '{0}-T1_Waste',        
+          ['{0}-T1', '{0}-T1_Waste',
            '{0}-T2', '{0}-T2_Waste'],       # Complexes
           ['{0}-t1_top']],                   # Top strands
           2:
           ['leakless_translate_flux',       # comp file
-          ['{0}-T1', '{0}-T1_Waste',        
+          ['{0}-T1', '{0}-T1_Waste',
            '{0}-T2', '{0}-T2_Waste'],       # Complexes
           ['{0}-t1_top']]}                   # Top strands
 
-# All strands have a pepper_names attribute, which holds a dictionary with 
+# All strands have a pepper_names attribute, which holds a dictionary with
 # the "pepper_keys" as keys and "pepper_values" as values. Generally, a key
 # should correspond to something that the Heuristics will reference ( such as
 # toeholds, branch migration regions...) or some detail that is rxn scheme
@@ -57,7 +57,7 @@ pepper_keys = ['sequence',
 
 pepper_values = {'r': [['{0}-AB', # Sequence
                         ['{0}-a1', '{0}-b1', '{0}-b3'], # Toeholds
-                        ['{0}-b3{0}-b2{0}-b1{0}-a3{0}-a2', 
+                        ['{0}-b3{0}-b2{0}-b1{0}-a3{0}-a2',
                          '{0}-b2{0}-b1{0}-a3{0}-a2{0}-a1'], # bm domains
                         [], # hisotry domain
                         ['{0}-b3{0}-b2'], #history reference
@@ -66,7 +66,7 @@ pepper_values = {'r': [['{0}-AB', # Sequence
                          '{0}-a2','{0}-a1']], # all domains
                        ['{0}-CD',  # Sequence
                         ['{0}-c1', '{0}-d1', '{0}-d3'], # Toeholds
-                        ['{0}-d3{0}-d2{0}-d1{0}-c3{0}-c2', 
+                        ['{0}-d3{0}-d2{0}-d1{0}-c3{0}-c2',
                          '{0}-d2{0}-d1{0}-c3{0}-c2{0}-c1'], # bm domains
                         [], # history domain
                         ['{0}-d3{0}-d2'], # history reference
@@ -74,16 +74,16 @@ pepper_values = {'r': [['{0}-AB', # Sequence
                          '{0}-c3', '{0}-c2', '{0}-c1']]], # all domains
                  'p': [['{0}-CD',  # Sequence
                         ['{0}-c1', '{0}-d1', '{0}-d3'],# Toeholds
-                        ['{0}-d3{0}-d2{0}-d1{0}-c3{0}-c2', 
-                         '{0}-d2{0}-d1{0}-c3{0}-c2{0}-c1', 
+                        ['{0}-d3{0}-d2{0}-d1{0}-c3{0}-c2',
+                         '{0}-d2{0}-d1{0}-c3{0}-c2{0}-c1',
                          '{0}-c3{0}-c2{0}-c1{0}-b3{0}-b2'],# bm domains
                         ['{0}-b3{0}-b2'],# hisotry domain
                         ['{0}-d3{0}-d2'],
                         ['{0}-d3','{0}-d2','{0}-d1','{0}-c3',
-                         '{0}-c2','{0}-c1','{0}-b3','{0}-b2']], 
-                       ['{0}-XY', 
+                         '{0}-c2','{0}-c1','{0}-b3','{0}-b2']],
+                       ['{0}-XY',
                         ['{0}-x1','{0}-y1','{0}-y3'],
-                        ['{0}-y3{0}-y2{0}-y1{0}-x3{0}-x2', 
+                        ['{0}-y3{0}-y2{0}-y1{0}-x3{0}-x2',
                          '{0}-y2{0}-y1{0}-x3{0}-x2{0}-x1'],
                         ['{0}-c3{0}-c2'],
                         ['{0}-y3{0}-y2'],
@@ -104,14 +104,14 @@ def format_list(templates, word):
         return templates.format(word)
 
 class SignalStrand(object):
-    
+
     def __init__(self, species):
         self.species = species
         self.history_domains = []
         self.names = []
         self.rxns = []
         self.sequences = []
-    
+
     def __repr__(self):
         base_str = 'species {0} family {1}'
         return base_str.format(self.species, ' '.join(self.names[:]))
@@ -121,17 +121,17 @@ class SignalStrand(object):
         species = self.species
         names.append(species)
         return names
-    
+
     def set_identity_domains(self, degree, rxn_name, side='r'):
         '''Associates signal identity domains to the object
-        
+
         The reaction processor assigns the first appropriate PIL name to a sequ
         ence. When si gnal strands are encountered, the processor either retrie
-        ves PIL names fr om its memory or generates and assigns new PIL names. 
+        ves PIL names fr om its memory or generates and assigns new PIL names.
         This function is used in the second case. This function relies on the v
-        ariables defined ahead of the Classes.py file to determine the reaction 
+        ariables defined ahead of the Classes.py file to determine the reaction
         name and .comp file, what the PIL names for each of the signal's domai
-        ns will be, and then assigns them to this fledgling species. 
+        ns will be, and then assigns them to this fledgling species.
 
         Args:
             degree: First or second (0 or 1) species in the equation half
@@ -139,18 +139,18 @@ class SignalStrand(object):
             side: ('r' or 'p') reactants or products half-equation ('r')
         '''
         self.pepper_names = dict(
-            list(zip(pepper_keys, 
+            list(zip(pepper_keys,
                 format_list(pepper_values[side][degree], rxn_name))))
-    
+
     def add_instance(self, name, degree, rxn_name, ref_strand):
         '''Associates a new history domain, sequence, name, and reaction name
-        
+
         When the reaction processor comes upon a signal product, it will
         typically have a unique history domain. This function copies and appends
         information in a reference strand to the history_domains attribute. It
         also saves all available information regarding its location in the sys
         file.
-        
+
         Args:
             name: Name appearing in the system file
             degree: Number of reactants, used to discriminate whether a flux
@@ -158,31 +158,31 @@ class SignalStrand(object):
             rxn_name: Reaction name appearing in the system file
             ref_strand: Reactant strand contributing the history domains
         '''
-        pepper_names = dict(list(zip(pepper_keys, 
+        pepper_names = dict(list(zip(pepper_keys,
                                 format_list(pepper_values['p'][degree], rxn_name))))
         self.history_domains.append(pepper_names['history reference'])
         self.sequences.append(pepper_names['sequence'])
         self.names.append(name)
         self.rxns.append(rxn_name)
-    
+
     def make_strand_instance(self, name):
         return StrandInstance(self, name)
-    
+
     def th(self, i):
         '''Return references to the requested toehold sequence
-        
+
         Signal strands may use three domains as toeholds. This function
         accepts an index and returns the requested toehold. A signal strand
         will have history domains, then a1 a2 a3 b1 b2 b3 domains, 5->3.
-        ['a1', 'b1', 'b3'] is the list drawn from, indexed from 0. 
+        ['a1', 'b1', 'b3'] is the list drawn from, indexed from 0.
         Returns:
             * A list of references to toehold sequences
         '''
         return self.pepper_names['toeholds'][i]
-    
+
     def get_bms(self):
         '''Return references to branch migration domains
-        
+
         A branch migration domain is a domain of a top strand that acts to
         attach to a complex "indefinitely", until strand displacement. This
         function returns the references to each branch migration region of the
@@ -191,23 +191,23 @@ class SignalStrand(object):
             * A list of references to branch migration domains.
         '''
         return self.pepper_names['bm domains']
-    
+
     def get_top_strands(self):
         '''Return references to each instance of this strand
-        
+
         A signal strand, with associated toeholds and branch migration regions,
         will also have associated history domains from its different produce
-        gates. 
+        gates.
         Returns:
             * A list of references to strand instance sequences
         '''
         if self.sequences == []:
             return [self.pepper_names['sequence']]
         return self.sequences[:]
-    
+
     def get_noninteracting_peppernames(self, th, dom_list=None):
         '''
-        
+
         '''
         out_list = []
         for i, hist in enumerate(self.history_domains):
@@ -227,7 +227,7 @@ class StrandInstance(SignalStrand):
         self.species = signal.species
         self.name = name
         self.names = [name]
-        self.pepper_names = signal.pepper_names    
+        self.pepper_names = signal.pepper_names
         if name in signal.names:
             i = [ x for x in range(len(signal.names)) if signal.names[x] == name]
             i = i[0]
@@ -253,31 +253,31 @@ class Gate(object):
     '''
     def __repr__(self):
         return self.get_reaction_line()[:-1]
-    
+
     def get_noninteracting_peppernames(self, toehold):
         # Toehold should be the exact name of a toehold domain in the pil/mfe
         # file, which should match the name assigned to the SignalStrand object
         # passed to the gate upon initialization. The is-a Gate object should
-        # have an initialized overloading of this function that sees whether 
+        # have an initialized overloading of this function that sees whether
         # the input toehold matches one of the toeholds in the gate, and if so
         # which top strands it should interact with.
         if toehold in self.toe_nointeract_map:
             return self.toe_nointeract_map[toehold]
         else:
             return self.top_strands[:]
-    
+
     def get_complexes(self):
         return self.complexes[:]
-    
+
     def get_top_strands(self):
         return self.top_strands[:]
-    
+
     def get_top_strand_dict(self):
         return self.top_s_dict.copy()
-    
+
     def get_base_domains(self):
         return self.base[:]
-    
+
     def get_reaction_line(self):
         comp = self.comp
         rxn = self.rxn_name
@@ -347,18 +347,18 @@ class ProduceGate(Gate):
 
 def process_rxns(rxns, species, d_params):
     """ Read CRN info into lists of strands and gates
-    
+
     This function iterates through each reaction recording the gates and
     strands required to model it using DNA. These strand and gate objects
     hold references to specific strands, complexes, domains, and subsequences
-    of the DSD system that help construct the inputs to the Pepper compiler 
-    and spuriousSSM. In addition, they allow the scoring functions to access 
+    of the DSD system that help construct the inputs to the Pepper compiler
+    and spuriousSSM. In addition, they allow the scoring functions to access
     the specific nucleotide sequences they require.
-    
+
     Args:
         rxns: Output of a import_crn call, a list of reaction dicts
         species: List of unique species in the CRN
-        d_params: Parameters to the system 
+        d_params: Parameters to the system
     Returns: A tuple of the following
         gates: A list of gate objects
         strands: A list of strand objects
@@ -367,7 +367,7 @@ def process_rxns(rxns, species, d_params):
     species_instances = dict()
     # A list to be populated with gate information
     gates = []
-    
+
     # For each reaction, determine the individual react-produce reactions
     # needed to be specified and write these lines to the system file
     for i, rxn in enumerate(rxns):
@@ -423,9 +423,9 @@ def process_rxns(rxns, species, d_params):
                 sys.exit('Unexpected product stoichiometry in reaction ' + I)
             gates.append(ProduceGate(produce_name, reactants, products, nr, d_params))
         else:
-            # No products! Null output produce gates 
+            # No products! Null output produce gates
             print('unexpected stoichiometry!')
             sys.exit('Unexpected product stoichiometry in reaction ' + I)
-    
+
     strands = list(species_instances.values())
     return (gates, strands)

@@ -1,6 +1,6 @@
 
 # E.g. run like this:
-# python selectseq.py oscillator_scores_bmax10.csv 
+# python selectseq.py oscillator_scores_bmax10.csv
 # python selectseq.py oscillator_scores_bmax2000.csv
 # python selectseq.py oscillator_scores_bmax10.csv oscillator_scores_bmax2000.csv
 
@@ -26,7 +26,7 @@ if __name__ == "__main__":
                     scores.append(row)
                     columns_named=True
             csvfile.close()
-    
+
     numseqs = len(scores)-1
     numscores = len(scores[1])-1
     print("Found information for " + str(numseqs) + " sequences with " + str(numscores) + " score types each.")
@@ -114,8 +114,8 @@ if __name__ == "__main__":
 
     # scores used:
     # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI
-    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8] 
-        
+    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8]
+
     print("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs))
     print("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs]))
     print("  Sum of weighted ranks, for these sequences: " + str([sum(numpy.array(ranks[i])*weights/100.0) for i in ok_seqs]))
