@@ -14,18 +14,18 @@ from . import DSDClasses
 small_crn = pkg_resources.resource_filename('piperine', "data/small.crn")
 data_dir = os.path.dirname(small_crn)
 
-def call_compiler(basename, 
-                    args = (7, 15, 2), 
-                    outputname=None, 
-                    savename=None, 
-                    fixed_file=None, 
-                    synth=True, 
+def call_compiler(basename,
+                    args = (7, 15, 2),
+                    outputname=None,
+                    savename=None,
+                    fixed_file=None,
+                    synth=True,
                     includes=None):
     """ Generates a PIL file from a .sys. (peppercompiler wrapper)
-    
+
     Args:
         basename: The default name of filetypes to be produced and accessed.
-        args: A tuple of system arguments. 
+        args: A tuple of system arguments.
         outputname: the PIL file produced by the compiler. (<basename>.pil)
         savename: the save file produced by the compiler. def: (<basename>.save)
         fixed_file: filename specifying sequence constraints.
@@ -39,26 +39,26 @@ def call_compiler(basename,
         outputname = '{}.pil'.format(basename)
     if savename is None:
         savename = '{}.save'.format(basename)
-    if includes is None:    
+    if includes is None:
         includes = []
     includes.append(data_dir)
     compiler(basename, args, outputname, savename, fixed_file, synth, includes)
 
-def call_design(basename, 
-                infilename=None, 
-                outfilename=None, 
-                cleanup=True, 
-                verbose=False, 
-                reuse=False, 
-                just_files=False, 
-                struct_orient=False, 
-                old_output=False, 
-                tempname=None, 
-                extra_pars="", 
-                findmfe=False, 
+def call_design(basename,
+                infilename=None,
+                outfilename=None,
+                cleanup=True,
+                verbose=False,
+                reuse=False,
+                just_files=False,
+                struct_orient=False,
+                old_output=False,
+                tempname=None,
+                extra_pars="",
+                findmfe=False,
                 spuriousbinary="spuriousSSM"):
     """ Generates an MFE file from a .pil file. (peppercompiler wrapper)
-    
+
     Args:
         basename: The default name of filetypes to be produced and accessed.
         infilename: PIL file read by the designer. (basename.pil)
@@ -81,8 +81,8 @@ def call_design(basename,
         infilename = '{}.pil'.format(basename)
     if not outfilename:
         outfilename = '{}.mfe'.format(basename)
-    design(basename, infilename, outfilename, cleanup, verbose, reuse, 
-              just_files, struct_orient, old_output, tempname, extra_pars, 
+    design(basename, infilename, outfilename, cleanup, verbose, reuse,
+              just_files, struct_orient, old_output, tempname, extra_pars,
               findmfe, spuriousbinary)
     if not os.path.isfile(outfilename):
         raise RuntimeError('Expected MFE not created, expect SSM failure')
@@ -101,7 +101,7 @@ def call_finish(basename,
                 spurious=False,
                 spurious_time=10.0):
     """ Generates a .seq file from an .mfe file. (peppercompiler wrapper)
-    
+
     Args:
         basename: The default name of all files produced and accessed.
         savename: File storing process states. (basename.save)
@@ -126,42 +126,42 @@ def call_finish(basename,
         designname = '{}.mfe'.format(basename)
     if not seqname:
         seqname = '{}.seq'.format(basename)
-    
-    finish(savename, designname, seqname, strandsname, run_kin, 
+
+    finish(savename, designname, seqname, strandsname, run_kin,
                   cleanup, trials, time, temp, conc, spurious, spurious_time)
 
 def read_crn(in_file):
     """ Interprets a CRN from a text file.
-    
-    Maintains a list of reactions and species. For each reaction, the rate 
+
+    Maintains a list of reactions and species. For each reaction, the rate
     constant, reactants, products, and stoichiometric coefficients are read.
     The interpreter relies on a lot of regex to extract tokens from the lines
-    of texts. 
-    
+    of texts.
+
     Tokens are as follows:
         * Alphanumeric are species
         * Numeric before alphanumeric are stoichiometric identifiers
         * Arrow (->) separates reactants from products
-        * Parentheses enclose the rate constant, which python should be able 
+        * Parentheses enclose the rate constant, which python should be able
           to evaluate
     Args:
         in_file : String of the file name holding the CRN specification
-    
+
     Returns:
-        crn_info : A tuple containing lists called 'reactions' and 'species'. 
+        crn_info : A tuple containing lists called 'reactions' and 'species'.
                    'reactions' contains a list of dicionaries keyed by
-                   'reactants', 'products', 'rate', 'stoich_r', and 
+                   'reactants', 'products', 'rate', 'stoich_r', and
                    'stoich_p'. 'species' list holds strings representing
                    signal species names.
     """
-    import re 
+    import re
     fid = open(in_file, 'r')
     lines = list()
     for line in fid:
         lines.append(line[:-1])
-    
+
     fid.close()
-    
+
     # Read through the file and extract reaction specifications
     rxn_tup = list()
     spe_ind_dic = dict()
@@ -173,11 +173,11 @@ def read_crn(in_file):
         # eat empty lines
         if line == '':
             continue
-        
+
         full_line = line[:]
         # Remove whitespace
         line = re.sub(r'\s','',line)
-        
+
         # Check for reaction rate
         rate_match = re.search(r'\(.*\)', line)
         if rate_match:
@@ -186,7 +186,7 @@ def read_crn(in_file):
             line = re.sub(r'\(' + rate_str + '\)', '', line)
         else:
             rate = 1
-        
+
         # Split into reactants and products
         rxn_eq = re.split('->',line)
         try:
@@ -194,7 +194,7 @@ def read_crn(in_file):
         except AssertionError as e:
             print('Check reaction arrow use.')
             raise
-            
+
         stoich = 1
         reactants = list()
         products = list()
@@ -215,36 +215,36 @@ def read_crn(in_file):
                     token = token.replace(coeff_string, '')
                 else:
                     stoich = 1
-                
+
                 # Remaining token string should be species identifier
                 if spe_pattern.match(token):
                     if token not in spe_ind_dic:
                         spe_ind_dic[token] = update_ind
                         update_ind += 1
                         species_list.append(token)
-                    
+
                     spe = spe_ind_dic[token]
-                    
+
                     if lhs_flag:
                         reactants.append(token)
                         stoich_r.append(stoich)
                     else:
                         products.append(token)
                         stoich_p.append(stoich)
-                    
+
                     stoich = 1
-                    
+
         rxn_tup.append({"reactants":reactants,
-                        "products":products, 
-                        "stoich_r":stoich_r, 
-                        "stoich_p":stoich_p, 
+                        "products":products,
+                        "stoich_r":stoich_r,
+                        "stoich_p":stoich_p,
                         "rate":rate})
-    
+
     return (rxn_tup, species_list)
 
 def write_toehold_file(toehold_file, strands, toeholds, n_th):
     """ Writes the fixed file for the given strands and toeholds
-    
+
     Args:
         toehold_file: File where toehold constraints are written
         strands: List of SignalStrand objects
@@ -259,20 +259,20 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
     th_names = sorted(list(set(th_names)))
     th_data = [(th, ', '.join([strand.name for strand in strands if th in strand.get_ths()]))
                     for th in th_names]
-    for data, seq in zip(th_data, toeholds):   
+    for data, seq in zip(th_data, toeholds):
         constraint = line.format(data[0], seq.upper(), data[1])
         f.write(constraint)
-    
+
     f.close()
 
-def toehold_wrapper(n_ths, 
+def toehold_wrapper(n_ths,
                     thold_l=7,
                     thold_e=7.7,
                     e_dev=1,
                     m_spurious=0.5,
                     e_module=energyfuncs_james):
     """ Wrapper generating toeholds, calls gen_th
-    
+
     Args:
         n_ths: Number of toeholds
         thold_l: Nt in a toehold (7)
@@ -291,7 +291,7 @@ def toehold_wrapper(n_ths,
     ths = get_toeholds(n_ths, thold_l, thold_e, e_dev, m_spurious, e_module)
     return ths
 
-def write_sys_file(basename, 
+def write_sys_file(basename,
                    gates=None,
                    sys_file=None,
                    trans_module=DSDClasses):
@@ -299,7 +299,7 @@ def write_sys_file(basename,
 
     This function takes in filenames and a CRN specification and writes a system
     file, which outlines the overall DNA implementation.
-    
+
     Args:
         basename: Default name for files accessed and written
         gates: List of gate objects
@@ -308,15 +308,15 @@ def write_sys_file(basename,
     Returns:
         Nothing
     """
-    
+
     # Write header immediately
     if sys_file is None:
         sys_file = basename + '.sys'
-    
+
     # Clean basename if it was provided with directory prefix
     if os.path.sep in basename:
         basename = os.path.basename(basename)
-    
+
     with open(sys_file, 'w') as f:
         f.write("declare system " + basename + trans_module.param_string + " -> \n")
         f.write("\n")
@@ -327,17 +327,17 @@ def write_sys_file(basename,
         for rxn in gates:
             f.write(rxn.get_reaction_line())
 
-def process_crn(basename=None,  
-                design_params=(7, 15, 2), 
+def process_crn(basename=None,
+                design_params=(7, 15, 2),
                 trans_module=None,
                 crn_file=None):
     """ Generate objects describing DNA implementation
-    
-    Gate and strand objects tell the scoring modules, write_sys_file, and 
-    write_toehold_files which names in the .PIL file refer to the DNA sequence 
-    domains these functions need to access.  This function, making use of 
-    other methods, reads in a text file describing an abstract CRN and determines 
-    the strands and gates necessary to implement the CRN.        
+
+    Gate and strand objects tell the scoring modules, write_sys_file, and
+    write_toehold_files which names in the .PIL file refer to the DNA sequence
+    domains these functions need to access.  This function, making use of
+    other methods, reads in a text file describing an abstract CRN and determines
+    the strands and gates necessary to implement the CRN.
     Args:
         basename: Default name for files accessed and written
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
@@ -350,32 +350,32 @@ def process_crn(basename=None,
     """
     if trans_module is None:
         from . import DSDClasses as trans_module
-    
+
     if crn_file is None:
         crn_file = basename + ".crn"
-    
+
     reactions, species = read_crn(crn_file)
-    
+
     output = trans_module.process_rxns(reactions, species, design_params)
     (gates, strands) = output
-    
+
     return (gates, strands)
 
-def generate_scheme(basename,  
-                    design_params=(7, 15, 2), 
+def generate_scheme(basename,
+                    design_params=(7, 15, 2),
                     trans_module=None,
                     crn_file=None,
                     system_file=None):
     """ Produce SYS file describing a CRN
-    
-    A scheme consists a .sys file and lists of gate and strand objects. Gate 
-    and strand objects tell the scoring modules, write_sys_file, and 
-    write_toehold_files which names in the .PIL file refer to the DNA sequence 
-    domains these functions need to access.  This function, making use of 
-    other methods, reads in a text file describing an abstract CRN, determines 
-    the strands and gates necessary to implement the CRN, and writes a .sys 
+
+    A scheme consists a .sys file and lists of gate and strand objects. Gate
+    and strand objects tell the scoring modules, write_sys_file, and
+    write_toehold_files which names in the .PIL file refer to the DNA sequence
+    domains these functions need to access.  This function, making use of
+    other methods, reads in a text file describing an abstract CRN, determines
+    the strands and gates necessary to implement the CRN, and writes a .sys
     for a DNA approximation of that reaction network.
-        
+
     Args:
         basename: Default name for files accessed and written
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
@@ -388,20 +388,20 @@ def generate_scheme(basename,
     """
     if trans_module is None:
         from . import DSDClasses as trans_module
-    
+
     if system_file is None:
         system_file = basename + ".sys"
-    
+
     (gates, strands) = process_crn(basename, design_params, trans_module, crn_file)
-    
+
     write_sys_file(basename, gates, system_file, trans_module)
     return (gates, strands)
 
-def generate_seqs(basename, 
-                  gates, 
-                  strands, 
-                  design_params=(7, 15, 2), 
-                  n_th=2, 
+def generate_seqs(basename,
+                  gates,
+                  strands,
+                  design_params=(7, 15, 2),
+                  n_th=2,
                   thold_l=7,
                   thold_e=7.7,
                   e_dev=1,
@@ -417,11 +417,11 @@ def generate_seqs(basename,
                   save_file=None,
                   strands_file=None):
     """ Produce sequences for a scheme
-    
-    This function accepts a base file name, a list of gate objects, a list of 
-    strand objects, and toehold parameters and calls StickyDesign, the 
-    peppercompiler, and SpuriousSSM to generate a DNA sequence.     
-    
+
+    This function accepts a base file name, a list of gate objects, a list of
+    strand objects, and toehold parameters and calls StickyDesign, the
+    peppercompiler, and SpuriousSSM to generate a DNA sequence.
+
     Args:
         basename: Default name for files accessed and written
         gates: A list of Gate objects
@@ -443,9 +443,9 @@ def generate_seqs(basename,
         save_file: Filename of the peppercompiler save file (basename + .save)
         strands_file: Filename of the peppercompiler strands file (basename + _strands.txt)
     Returns:
-        toeholds: 
+        toeholds:
     """
-    
+
     # Prepare filenames
     if system_file is None:
         system_file = basename + ".sys"
@@ -470,7 +470,7 @@ def generate_seqs(basename,
             strands_file = basename + "_strands.txt"
     if fixed_file is None:
         fixed_file = basename + ".fixed"
-    
+
     # Make toeholds
     n_species = len(strands)
     signal_names = [ s.name for s in strands ]
@@ -479,24 +479,24 @@ def generate_seqs(basename,
         tdomains += strand.get_ths()
     tdomains = list(set(tdomains))
     n_toeholds = len(tdomains)
- 
+
     toeholds = toehold_wrapper(n_toeholds,
                                thold_l=thold_l,
                                thold_e=thold_e,
                                e_dev=e_dev,
                                m_spurious=m_spurious,
                                e_module=e_module)
-    
+
     # Write the fixed file for the toehold sequences and compile the sys file to PIL
     write_toehold_file(fixed_file, strands, toeholds, n_th)
     try:
-        call_compiler(basename, args=design_params, fixed_file=fixed_file, 
+        call_compiler(basename, args=design_params, fixed_file=fixed_file,
                       outputname=pil_file, savename=save_file)
     except KeyError as e:
         raise(e)
-    
+
     # Generate sequences
-    call_design(basename, pil_file, mfe_file, verbose=False, 
+    call_design(basename, pil_file, mfe_file, verbose=False,
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
@@ -504,12 +504,12 @@ def generate_seqs(basename,
     return toeholds
 
 def selection(scores):
-    
+
     if sys.version_info >= (3,1):
         print_fn = lambda x : print(x, end='')
     else:
         print_fn = lambda x : print(x)
-    
+
     columns = list(zip(*scores))
     ranks = []
     fractions = []
@@ -539,7 +539,7 @@ def selection(scores):
     fractions=list(zip(*temp))
     temp=percents
     percents=list(zip(*temp))
-    
+
     print_fn("\nRank array:")
     print_fn("\n                         ")
     for title in scores[0]:
@@ -555,7 +555,7 @@ def selection(scores):
             print_fn("{:6d}".format(v))
         print_fn("]\n")
         i=i+1
-    
+
     print_fn("\nFractional excess array:")
     print_fn("\n                         ")
     for title in scores[0]:
@@ -571,7 +571,7 @@ def selection(scores):
             print_fn("{:6.2f}".format(v))
         print_fn("]\n")
         i=i+1
-    
+
     print_fn("\nPercent badness (best to worst) array:")
     print_fn("\n                         ")
     for title in scores[0]:
@@ -587,7 +587,7 @@ def selection(scores):
             print_fn("{:6.2f}".format(100*v))
         print_fn("]\n")
         i=i+1
-    
+
     print_fn("\n")
     worst_rank = 0
     while 1:
@@ -597,11 +597,11 @@ def selection(scores):
             continue
         else:
             break
-    
+
     # scores used:
     # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, Toehold error, Toehold range
-    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8,            20]#, 20] 
-        
+    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8,            20]#, 20]
+
     print_fn("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)+"\n")
     print_fn("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])+"\n")
     print_fn("  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs])+"\n")
@@ -643,8 +643,8 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
         sys.stdout = stdout
     return winner
 
-def run_designer(basename=small_crn[:-4], 
-                 reps=1, 
+def run_designer(basename=small_crn[:-4],
+                 reps=1,
                  design_params=(7, 15, 2),
                  thold_l=7,
                  thold_e=7.7,
@@ -658,14 +658,14 @@ def run_designer(basename=small_crn[:-4],
                  includes=None
                 ):
     """ Generate and score sequences
-    
-    This function links together all component of the compiler pipeline. It 
-    generates a system and PIL file, then runs negative sequence design 
+
+    This function links together all component of the compiler pipeline. It
+    generates a system and PIL file, then runs negative sequence design
     software multiple times to generate multiple sequences. The scoring wrappper
     accepts the gates and strands lists of objects that allow the scoring
     functions to access and compute on the domains and strands from each
     sequence set.
-    
+
     Args:
         basename: Default name for files accessed and written (small)
         reps: Number of sequence sets to be generated and scored (1)
@@ -690,40 +690,40 @@ def run_designer(basename=small_crn[:-4],
         trans_module = importlib.import_module('.' + trans_module, 'piperine')
     if type(e_module) is str:
         e_module = importlib.import_module('.' + e_module, 'piperine')
-    # 
+    #
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"
-    
+
     from . import tdm
     fixed_file = basename + ".fixed"
     system_file = basename + ".sys"
     pil_file = basename + ".pil"
-    
+
     (gates, strands) = \
         generate_scheme(basename, design_params, trans_module)
-    
+
     if reps >= 1:
         scoreslist = []
         for i in range(reps):
             testname = basename + str(i) + '.txt'
             try:
-                toeholds = generate_seqs(basename, 
-                                         gates, 
-                                         strands, 
+                toeholds = generate_seqs(basename,
+                                         gates,
+                                         strands,
                                          design_params,
-                                         n_th=trans_module.n_th, 
+                                         n_th=trans_module.n_th,
                                          thold_l=thold_l,
                                          thold_e=thold_e,
                                          e_dev=e_dev,
                                          m_spurious=m_spurious,
                                          e_module=e_module,
-                                         strands_file=testname, 
+                                         strands_file=testname,
                                          extra_pars=extra_pars)
-                
-                scores, score_names = tdm.EvalCurrent(basename, 
+
+                scores, score_names = tdm.EvalCurrent(basename,
                                                       gates,
-                                                      strands, 
-                                                      testname=testname, 
+                                                      strands,
+                                                      testname=testname,
                                                       compile_params=design_params,
                                                       quick=quick,
                                                       includes=includes,
@@ -746,29 +746,29 @@ def run_designer(basename=small_crn[:-4],
             f.write('\n')
             f.writelines( [ ','.join(map(str, l)) + '\n' for l in scoreslist ])
             f.write("Winner : {}".format(winner))
-    
+
     return (gates, strands, winner, scoreslist)
 
-def score_fixed(fixed_file, 
-                 basename=os.path.dirname(__file__)+'/small', 
-                 crn_file=None, 
-                 sys_file=None, 
-                 pil_file=None, 
-                 save_file=None, 
-                 mfe_file=None, 
-                 seq_file=None, 
-                 score_file=None, 
-                 design_params=(7, 15, 2), 
-                 thold_e=7, 
-                 trans_module=DSDClasses, 
-                 e_module=energyfuncs_james, 
-                 includes=None, 
+def score_fixed(fixed_file,
+                 basename=os.path.dirname(__file__)+'/small',
+                 crn_file=None,
+                 sys_file=None,
+                 pil_file=None,
+                 save_file=None,
+                 mfe_file=None,
+                 seq_file=None,
+                 score_file=None,
+                 design_params=(7, 15, 2),
+                 thold_e=7,
+                 trans_module=DSDClasses,
+                 e_module=energyfuncs_james,
+                 includes=None,
                  quick=False):
     """ Score a sequence set
-    
+
     This function takes in a fixed file, crn file, and reaction scheme specification
-    and outputs the heuristic scores of the set. 
-    
+    and outputs the heuristic scores of the set.
+
     Args:
         fixed_file: Filename pointing to the seqeunce set
         basename: Default name for files accessed and written
@@ -815,25 +815,25 @@ def score_fixed(fixed_file,
     if basename is None:
         basename = bn
     extra_pars = ""
-    
-    gates, strands = generate_scheme(basename,  
-                                   design_params, 
-                                   crn_file=crn_file, 
+
+    gates, strands = generate_scheme(basename,
+                                   design_params,
+                                   crn_file=crn_file,
                                    system_file=sys_file,
                                    trans_module=trans_module)
-    call_compiler(basename, args=design_params, fixed_file=fixed_file, 
+    call_compiler(basename, args=design_params, fixed_file=fixed_file,
                   outputname=pil_file, savename=save_file, includes=includes)
-    
+
     # Generate MFE
-    call_design(basename, pil_file, mfe_file, verbose=False, 
+    call_design(basename, pil_file, mfe_file, verbose=False,
                 extra_pars=extra_pars, cleanup=False)
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
                 seqname=seq_file, run_kin=False)
-    scores, score_names = tdm.EvalCurrent(basename, 
+    scores, score_names = tdm.EvalCurrent(basename,
                                           gates,
-                                          strands, 
-                                          testname=testname, 
+                                          strands,
+                                          testname=testname,
                                           compile_params=design_params,
                                           quick=quick,
                                           includes=includes,
@@ -867,7 +867,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", '--module', help='Module describing the strand'+
                         ' displacement architecture[DSDClasses]', type=str)
     parser.add_argument("-x", '--extrapars', help='Parameters sent to SpuriousSSM[]', type=str)
-    parser.add_argument("-q", '--quick', action='store_true', 
+    parser.add_argument("-q", '--quick', action='store_true',
                         help='Make random numbers instead of computing heuristics to save time[False]')
     args = parser.parse_args()
     ############## Interpret arguments
@@ -884,19 +884,19 @@ if __name__ == "__main__":
         thold_l = int(args.length)
     else:
         thold_l = int(7)
-    
+
     # Set target toehold binding energy, kcal/mol
     if args.energy:
         thold_e = args.energy
     else:
         thold_e = 7.7
-    
+
     # Set allowable toehold binding energy deviation, kcal/mol
     if args.deviation:
         e_dev = args.deviation
     else:
         e_dev = 0.5
-    
+
     # Set allowable spurious interactions, fraction of target energy.
     # The spurious interactions are calculated with standard SantaLucia parameters
     # and sticky-end contexts, not toehold contexts
@@ -904,24 +904,24 @@ if __name__ == "__main__":
         m_spurious = args.maxspurious
     else:
         m_spurious = 0.4
-    
+
     # Import desired energetics module as ef
     if args.energetics:
         energetics = args.energetics
     else:
         energetics = 'energyfuncs_james'
-    
+
     # Set user-specified spurious interaction heatmap image file name
     if args.candidates:
         reps = args.candidates
     else:
         reps = 1
-    
+
     if args.module:
         exec('import {} as trans_module'.format(args.module))
     else:
         from . import DSDClasses as trans_module
-    
+
     # Set user-specified spurious interaction heatmap image file name
     if args.systemparams:
         design_params = [ int(i) for i in args.systemparams.split(' ')]
@@ -932,15 +932,15 @@ if __name__ == "__main__":
             print(e)
             print('Cannot guess default .sys parameters without a module')
             raise
-    
+
     if args.extrapars:
         extra_pars = args.extrapars
     else:
         extra_pars = ""
-    
+
     th_params={"thold_l":thold_l, "thold_e":thold_e, "e_dev":e_dev, \
                "m_spurious":m_spurious, "e_module":energetics}
-    
-    gates, strands, winner = run_designer(basename, reps, th_params, design_params, trans_module, 
+
+    gates, strands, winner = run_designer(basename, reps, th_params, design_params, trans_module,
                                     extra_pars=extra_pars, quick=args.quick)
     print('Winning sequence set is index {}'.format(winner))
