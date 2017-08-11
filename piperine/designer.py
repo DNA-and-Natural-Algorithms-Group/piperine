@@ -544,7 +544,7 @@ def selection(scores):
     print_fn("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title or 'WSI' == col[0]:
+        if 'Index' in title or 'Defect' in title or 'WSI' == title:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -560,7 +560,7 @@ def selection(scores):
     print_fn("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title or 'WSI' == col[0]:
+        if 'Index' in title or 'Defect' in title or 'WSI' == title:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -576,7 +576,7 @@ def selection(scores):
     print_fn("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title or 'WSI' == col[0]:
+        if 'Index' in title or 'Defect' in title or 'WSI' == title:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
