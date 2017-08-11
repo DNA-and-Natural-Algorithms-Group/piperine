@@ -735,7 +735,7 @@ def run_designer(basename=small_crn[:-4],
                                          thold_e=thold_e,
                                          e_dev=e_dev,
                                          m_spurious=m_spurious,
-                                         e_module=energyfuncs_james,
+                                         e_module=e_module,
                                          strands_file=testname, 
                                          extra_pars=extra_pars)
                 
@@ -745,7 +745,9 @@ def run_designer(basename=small_crn[:-4],
                                                       testname=testname, 
                                                       compile_params=design_params,
                                                       quick=quick,
-                                                      includes=includes)
+                                                      includes=includes,
+                                                      energetics_module=e_module,
+                                                      targetdG = thold_e)
                 scores = [i] + scores
                 scoreslist.append(scores)
             except KeyError as e:
@@ -776,7 +778,9 @@ def score_fixed(fixed_file,
                  seq_file=None, 
                  score_file=None, 
                  design_params=(7, 15, 2), 
+                 thold_e=7, 
                  trans_module=DSDClasses, 
+                 e_module=energyfuncs_james, 
                  includes=None, 
                  quick=False):
     """ Score a sequence set
@@ -845,11 +849,15 @@ def score_fixed(fixed_file,
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
                 seqname=seq_file, run_kin=False)
-    scores, score_names = tdm.EvalCurrent(basename, gates, strands, 
-                                      compile_params=design_params, 
-                                      seq_file=seq_file, mfe_file=mfe_file,
-                                      quick=quick,
-                                      includes=includes)
+    scores, score_names = tdm.EvalCurrent(basename, 
+                                          gates,
+                                          strands, 
+                                          testname=testname, 
+                                          compile_params=design_params,
+                                          quick=quick,
+                                          includes=includes,
+                                          energetics_module=e_module,
+                                          targetdG = thold_e)
     with open(score_file, 'w') as f:
         f.write(','.join(score_names))
         f.write('\n')

@@ -11,7 +11,7 @@ import re
 import random
 whiteSpaceSearch = re.compile('\s+')
 
-from . import gen_th
+from . import gen_th, energyfuncs_james
 
 class MyProgress(object):
     class ImproperInput(Exception):
@@ -180,7 +180,8 @@ def get_heuristics_inputs(gates, strands):
 
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
                 header=True, testname=None, seq_file=None, mfe_file=None,
-                quick=False, targetdG=7.7, includes=None, clean=True):
+                quick=False, targetdG=7.7, energetics_module=energyfuncs_james,
+                includes=None, clean=True):
     if not testname:
         testname = basename
     if not seq_file:
@@ -258,7 +259,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     if quick:
         th_scores = np.random.random((2,))
     else:
-        th_scores = gen_th.score_toeholds(toeholds, targetdG)
+        th_scores = gen_th.score_toeholds(toeholds, targetdG, e_module=energetics_module)
     th_names = ['Toehold Avg dG', 'Range of toehold dG\'s']
     
     score_list = [css_scores, bm_scores, ss_scores, ted_scores, 
