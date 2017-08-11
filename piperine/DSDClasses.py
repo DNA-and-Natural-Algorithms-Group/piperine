@@ -1,3 +1,4 @@
+from __future__ import division, print_function
 import pkg_resources
 
 # comps = [pkg_resources.resource_stream('piperine', 'data/bimrxn.comp')]
