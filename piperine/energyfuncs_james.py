@@ -17,8 +17,7 @@ class energyfuncs:
     def __init__(self, mismatchtype='max', targetdG=7):
         import os
         try:
-            #dsb = pkg_resources.resource_stream(__name__, os.path.join('params','dnastackingbig.csv'))
-            dsb = resource_stream(Requirement('stickydesign'), 'stickydesign/params/dnastackingbig.csv')
+            dsb = resource_stream('stickydesign', 'stickydesign/params/dnastackingbig.csv')
         except:
             try:
                 this_dir, this_filename = os.path.split(__file__)
