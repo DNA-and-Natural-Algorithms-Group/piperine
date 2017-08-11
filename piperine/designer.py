@@ -13,7 +13,6 @@ from . import DSDClasses
 
 small_crn = pkg_resources.resource_filename('piperine', "data/small.crn")
 data_dir = os.path.dirname(small_crn)
-#data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
 def call_compiler(basename, 
                     args = (7, 15, 2), 
@@ -254,8 +253,6 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
     Returns:
         Nothing
     """
-    from numpy import mod as modulo
-    from numpy import floor 
     line = 'sequence {} = {} # species {}\n'
     f = open(toehold_file, 'w')
     th_names = [th for strand in strands for th in strand.get_ths()]
@@ -266,18 +263,6 @@ def write_toehold_file(toehold_file, strands, toeholds, n_th):
         constraint = line.format(data[0], seq.upper(), data[1])
         f.write(constraint)
     
-    # if type(toeholds[0]) is str:
-    #     for i, th in zip(list(range(len(toeholds))), toeholds):
-    #         strand = strands[ int(floor((i - modulo(i, n_th)) / n_th)) ]
-    #         constraint = line.format(strand.th(modulo(i, n_th)), toeholds[i].upper(), 
-    #                                  strand.name)
-    #         f.write(constraint)
-    # else:
-    #     for strand, ths in zip(strands, toeholds):
-    #         for i in range(len(ths)):
-    #             constraint = line.format(strand.th(i), ths[i].upper(), 
-    #                                      strand.name)
-    #             f.write(constraint)
     f.close()
 
 def toehold_wrapper(n_ths, 
@@ -531,7 +516,7 @@ def selection(scores):
     percents = []
     for col in columns:
         # if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
-        if 'Index' in col[0] or 'Defect' in col[0]:# or 'WSI' == col[0]:
+        if 'Index' in col[0] or 'Defect' in col[0] or 'WSI' == col[0]:
             continue
         if 'SSU' in col[0] or 'SSTU' in col[0]:    # for these scores, higher is better
             col = [-float(x) for x in col[1:]]
@@ -544,12 +529,8 @@ def selection(scores):
         temp_ranks = np.array([rank_dict[x] for x in array])
         temp = array.argsort()
         colranks = np.array([rank_dict[x] for x in array])
-        #colranks[temp] = numpy.arange(len(array))
-        #array = np.array(col)
-        #temp = array.argsort()
-        #colranks = np.empty(len(array), int)
-        #colranks[temp] = np.arange(len(array))
-        ranks.append(colranks)                     # low rank is better
+        # low rank is better
+        ranks.append(colranks)
         fractions.append((array - array.min())/abs(array.min() + (array.min()==0) ))
         percents.append((array - array.min())/(array.max() - array.min()))
     temp=ranks
@@ -563,7 +544,7 @@ def selection(scores):
     print_fn("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect': # in title or 'WSI' == col[0]:
+        if 'Index' in title or 'Defect' in title or 'WSI' == col[0]:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -579,7 +560,7 @@ def selection(scores):
     print_fn("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect':# in title or 'WSI' == col[0]:
+        if 'Index' in title or 'Defect' in title or 'WSI' == col[0]:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -595,7 +576,7 @@ def selection(scores):
     print_fn("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect':# in title or 'WSI' == col[0]:
+        if 'Index' in title or 'Defect' in title or 'WSI' == col[0]:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -618,8 +599,8 @@ def selection(scores):
             break
     
     # scores used:
-    # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI
-    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8, 20]#, 20] 
+    # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, Toehold error, Toehold range
+    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8,            20]#, 20] 
         
     print_fn("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)+"\n")
     print_fn("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])+"\n")
