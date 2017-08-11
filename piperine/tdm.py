@@ -319,7 +319,7 @@ def NUPACK_Eval_bad_nucleotide(mfe_seqs, ideal_structs, complex_names, \
     # Convert TED to % bad nucleotides out of total nucleotides
     bad_nuc_vec = 100 * ted_vec / (target_conc * bp_vec + ted_vec)
     bad_nuc_max = bad_nuc_vec.max()
-    bn_max_name = name_list[int(np.where(bad_nuc_vec == bad_nuc_max)[0])]
+    bn_max_name = name_list[int(np.where(bad_nuc_vec == bad_nuc_max)[0][0])]
     #return [Bad Nucleotide % max, max complex name, mean bad nuc]
     return [bad_nuc_max, bn_max_name, bad_nuc_vec.mean()]
 
