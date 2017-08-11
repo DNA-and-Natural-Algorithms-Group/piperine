@@ -4,13 +4,14 @@ Piperine takes in plain text files specifying abstract CRNs and produces sets of
 ## Installation 
 Piperine has only been tested on Ubuntu and MacOSX Sierra. Windows yet unsupported.
 ### Python version
-Piperine works with only Python 2.7. Make an appropriate [environment](https://pypi.python.org/pypi/virtualenv) if necessary.
+Piperine works with Python >= 2.7.
 ### Requirements
 Piperine depends on 
 -Numpy
 -Scipy
 -NUPACK (version 3.0.x)
--stickydesign. 
+-stickydesign
+-peppercompiler
 Make sure these are installed before installing Piperine. 
 ### Preparation for installation
 Numpy and Scipy can both be installed easily through pip or conda. NUPACK can be found [here](http://www.nupack.org/) and stickydesign can be found [here](https://github.com/DNA-and-Natural-Algorithms-Group/stickydesign). 
@@ -22,20 +23,11 @@ For now, you can only install Piperine from the source files. Clone or download 
 
 > `git clone git@github.com:DNA-and-Natural-Algorithms-Group/piperine.git`
 
-> `cd piperine`
-Execute the following from the command line from within the piperine repo
+> `pip install -e piperine`
 
-> `python setup.py install`
+To install updates, return to the git repository and execute 
 
-During the installation, you will see a prompt that asks 
-
-> Please choose which thermodynamics package to use:
-
-> (1) Nupack mfe (recomended/default)
-
-> (2) Vienna RNAfold
-
-Choose 1. The prompt will then ask if it has guessed the right location for NUPACK, specifically to the executable NUPACKHOME/bin/mfe. If this does not match your expected destination, type in the path to your own NUPACKHOME/bin/mfe and hit enter.
+> `git pull`
 
 ### Use cases
 #### Generating sequences
@@ -59,6 +51,4 @@ This will tell piperine to generate four candidate sequence sets that each imple
 ## TODO
 1. Update test suite
 1. Improve documentation
-1. Make compatible with Python >=2.6
-1. Import from external package [peppercompiler](https://github.com/DNA-and-Natural-Algorithms-Group/peppercompiler), rather than package it within piperine
-1. Provide built distributions
+1. Host on PyPI
