@@ -49,7 +49,7 @@ def get_toeholds(n_ths=6, thold_l=int(7.0), thold_e=7.7, e_dev=0.5, m_spurious=0
                                fdev=e_dev/thold_e, alphabet='h', adjs=['c','g'],
                                maxspurious=m_spurious, energetics=ef,
                                oldends=avoid_list)
-            notoes = len(ends) < n_ths
+            notoes = len(ends) < n_ths + len(avoid_list)
         except ValueError as e:
             if (time() - startime) > timeout:
                 return -1
