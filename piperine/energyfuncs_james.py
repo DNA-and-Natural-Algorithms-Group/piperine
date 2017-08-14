@@ -20,8 +20,7 @@ class energyfuncs:
             dsb = resource_stream('stickydesign', 'stickydesign/params/dnastackingbig.csv')
         except:
             try:
-                this_dir, this_filename = os.path.split(__file__)
-                dsb = open( os.path.join(this_dir, "params", "dnastackingbig.csv") )
+                dsb = resource_stream('stickydesign', 'params/dnastackingbig.csv')
             except IOError:
                 raise IOError("Error loading dnastackingbig.csv")
         try:
