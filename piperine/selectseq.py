@@ -4,10 +4,19 @@
 # python selectseq.py oscillator_scores_bmax2000.csv
 # python selectseq.py oscillator_scores_bmax10.csv oscillator_scores_bmax2000.csv
 
+from __future__ import division, print_function
+
 import sys, csv
-import numpy
+import numpy as np
 
 if __name__ == "__main__":
+
+    print(sys.version_info)
+
+    if sys.version_info >= (3,1):
+        print_fn = lambda x : print(x, end='')
+    else:
+        print_fn = lambda x : print(x, end='')
 
     csvnames = sys.argv[1:]
 
@@ -20,6 +29,8 @@ if __name__ == "__main__":
             score_reader = csv.reader(csvfile)
             for row in score_reader:
                 print(', '.join(row))
+                if 'Winner' in row[0]:
+                    continue
                 if 'Index' in row[0] and columns_named:
                     continue
                 else:
@@ -37,17 +48,32 @@ if __name__ == "__main__":
     percents = []
     for col in columns:
         # print col
-        if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
+        # if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:  ### old EW
+        # if 'Index' in col[0] or 'Defect' in col[0] or 'WSI' == col[0]:   ### recent James
+        if 'Index' in col[0] or 'Defect' in col[0]:   ### new EW
             continue
         if 'SSU' in col[0] or 'SSTU' in col[0]:    # for these scores, higher is better
             col = [-float(x) for x in col[1:]]
         else:
             col = [float(x) for x in col[1:]]
-        array = numpy.array(col)
+
+        # old:  ties come out in random order
+        # array = np.array(col)
+        # temp = array.argsort()
+        # colranks = np.empty(len(array), int)
+        # colranks[temp] = np.arange(len(array))
+        # ranks.append(colranks)                 
+
+        # new:  ties get same rank; next worse gets that rank+1
+        array = np.array(col)
+        array_uni = np.unique(array)
+        array_ord = array_uni.argsort()
+        rank_dict = dict(zip(array_uni, array_ord))
+        temp_ranks = np.array([rank_dict[x] for x in array])
         temp = array.argsort()
-        colranks = numpy.empty(len(array), int)
-        colranks[temp] = numpy.arange(len(array))
-        ranks.append(colranks)                     # low rank is better
+        colranks = np.array([rank_dict[x] for x in array])
+        # low rank is better
+        ranks.append(colranks)
         fractions.append((array - array.min())/abs(array.min() + (array.min()==0) ))
         percents.append((array - array.min())/(array.max() - array.min()))
     temp=ranks
@@ -57,52 +83,64 @@ if __name__ == "__main__":
     temp=percents
     percents=list(zip(*temp))
 
-    print("\nRank array:")
-    print("                         ")
+    print(scores[0])
+    newtitles={ "BM Score" : "BM sum", "Largest Match" : "BM max", 
+                "SSU Min" : "SSU min", "SSU Avg" : "SSU avg", "SSTU Min" : "SSTU min", "SSTU Avg" : "SSTU avg",
+                "Max Bad Nucleotide %" : "BN% max", "Mean Bad Nucleotide %" : "BN% avg",
+                "WSI-Intra" : "WSAS", "WSI-Inter" : "WSIS", "WSI-Intra-1" : "WSAS-M", "WSI-Inter-1" : "WSIS-M",
+                "WSI" : "Spurious", "Toehold Avg dG" : "dG error", "Range of toehold dG's" : "dG range" }
+    scores[0]=[ newtitles[t] if t in newtitles else t for t in scores[0] ]
+    print(scores[0])
+
+    print_fn("\nRank array:")
+    print_fn("\n                         ")
     for title in scores[0]:
-        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect' in title:
             continue
-        print("{:>6s}".format(title[0:6]))
-    print()
+        print_fn("{:>6s}".format(title[0:6]))
+    print_fn("\n")
     i=0
     for r in ranks:
-        print("design {:2d}: {:6d} = sum [".format(i,sum(r)))
+        print_fn("design {:3d}: {:6d} = sum [".format(i,sum(r)))
         for v in r:
-            print("{:6d}".format(v))
-        print("]")
+            print_fn("{:6d}".format(v))
+        print_fn("]\n")
         i=i+1
 
-    print("\nFractional excess array:")
-    print("                         ")
+    print_fn("\nFractional excess array:")
+    print_fn("\n                         ")
     for title in scores[0]:
-        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect' in title:
             continue
-        print("{:>6s}".format(title[0:6]))
-    print()
+        print_fn("{:>6s}".format(title[0:6]))
+    print_fn("\n")
     i=0
     for f in fractions:
-        print("design {:2d}: {:6.2f} = sum [".format(i,sum(f)))
+        print_fn("design {:3d}: {:6.2f} = sum [".format(i,sum(f)))
         for v in f:
-            print("{:6.2f}".format(v))
-        print("]")
+            print_fn("{:6.2f}".format(v))
+        print_fn("]\n")
         i=i+1
 
-    print("\nPercent badness (best to worst) array:")
-    print("                         ")
+    print_fn("\nPercent badness (best to worst) array:")
+    print_fn("\n                         ")
     for title in scores[0]:
-        if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect' in title:
             continue
-        print("{:>6s}".format(title[0:6]))
-    print()
+        print_fn("{:>6s}".format(title[0:6]))
+    print_fn("\n")
     i=0
     for p in percents:
-        print("design {:2d}: {:6.2f} = sum [".format(i,100*sum(p)))
+        print_fn("design {:3d}: {:6.2f} = sum [".format(i,100*sum(p)))
         for v in p:
-            print("{:6.2f}".format(100*v))
-        print("]")
+            print_fn("{:6.2f}".format(100*v))
+        print_fn("]\n")
         i=i+1
 
-    print(" ")
+    print_fn("\n...finding worst ranks...\n\n")
     worst_rank = 0
     while 1:
         ok_seqs = [i for i in range(len(ranks)) if max(ranks[i])<=worst_rank]
@@ -112,27 +150,79 @@ if __name__ == "__main__":
         else:
             break
 
-    # scores used:
+    # scores previously used:
     # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI
-    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8]
+    # CSV file has
+    # TSI avg, TSI max, TO avg, TO max, BM Score, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nucleotide %, [Max Defect Component], Mean Bad Nucleotide %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI, Toehold Avg dG, Range of toehold dG's]
+    # Want them to be:                    *       *        *        *         *         *        *        *       *    *      *       *                  *         *         *  
+    # TSI avg, TSI max, TO avg, TO max, BM sum, BM max, SSU min, SSU avg, SSTU min, SSTU avg, BN% max, BN% avg, WSAS, WSIS, WSAS-M, WSIS-M, Verboten, Spurious, dG error, dG range 
+    # yes spurious, no dG error, dG range  (i.e. old EW)
+    # weights= [5,   20,     10,     30,      2,      3,      30,      10,       50,       20,      10,       5,    6,    4,      5,      3,        2,        8]
+    # no spurious, yes dG error, dG range  (i.e. recent James)
+    # weights = [5,   20,     10,     30,      2,      3,      30,      10,       50,       20,      10,       5,    6,    4,      5,      3,        2,        8,       20 ]
+    # new weights, including dG error and dG range and spurious (i.e. new EW) 
+    weights = [5,   20,     10,     30,      2,      3,      30,      10,       50,       20,      10,       5,    6,    4,      5,      3,        2,        8,       10,       20 ]
 
     print("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs))
     print("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs]))
-    print("  Sum of weighted ranks, for these sequences: " + str([sum(numpy.array(ranks[i])*weights/100.0) for i in ok_seqs]))
+    print("  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs]))
     print("  Sum of fractional excess over best score:   " + str([sum(fractions[i]) for i in ok_seqs]))
-    print("  Sum of weighted fractional excess:          " + str([sum(numpy.array(fractions[i])*weights/100.0) for i in ok_seqs]))
+    print("  Sum of weighted fractional excess:          " + str([sum(np.array(fractions[i])*weights/100.0) for i in ok_seqs]))
     print("  Sum of percent badness scores:              " + str([100*sum(percents[i]) for i in ok_seqs]))
-    print("  Sum of weighted percent badness scores:     " + str([sum(numpy.array(percents[i])*weights) for i in ok_seqs]))
+    print("  Sum of weighted percent badness scores:     " + str([sum(np.array(percents[i])*weights) for i in ok_seqs]))
     temp = [sum(r) for r in ranks]
-    print("Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), numpy.argmin(temp), max(temp), numpy.argmax(temp) ))
-    temp = [sum(numpy.array(r)*weights/100.0) for r in ranks]
-    print("Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), numpy.argmin(temp), max(temp), numpy.argmax(temp) ))
+    print("Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    temp = [sum(np.array(r)*weights/100.0) for r in ranks]
+    print("Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(f) for f in fractions]
-    print("Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), numpy.argmin(temp), max(temp), numpy.argmax(temp) ))
-    temp = [sum(numpy.array(f)*weights/100.0) for f in fractions]
-    print("Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), numpy.argmin(temp), max(temp), numpy.argmax(temp) ))
+    print("Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    temp = [sum(np.array(f)*weights/100.0) for f in fractions]
+    print("Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [100*sum(p) for p in percents]
-    print("Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), numpy.argmin(temp), max(temp), numpy.argmax(temp) ))
-    temp = [sum(numpy.array(p)*weights) for p in percents]
-    print("Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), numpy.argmin(temp), max(temp), numpy.argmax(temp) ))
+    print("Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    temp = [sum(np.array(p)*weights) for p in percents]
+    print("Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     print()
+
+    # now make a new matrix showing, for each design:
+    #  the worst-rank, sum-of-ranks, sum-of-weighted-ranks, fractional-excess, weighted-fractional-excess, percent-badness, weighted-percent-badness
+    
+    metascores=[
+        [max(r) for r in ranks],
+        [max(np.array(r)*weights/100.0) for r in ranks],
+        [sum(r) for r in ranks],
+        [sum(np.array(r)*weights/100.0) for r in ranks],
+        [sum(f) for f in fractions],
+        [sum(np.array(f)*weights/100.0) for f in fractions],
+        [100*sum(p) for p in percents],
+        [sum(np.array(p)*weights) for p in percents]
+        ]
+
+    metaranks=[]
+    for col in metascores:
+        # new:  ties get same rank; next worse gets that rank+1
+        array = np.array(col)
+        array_uni = np.unique(array)
+        array_ord = array_uni.argsort()
+        rank_dict = dict(zip(array_uni, array_ord))
+        temp_ranks = np.array([rank_dict[x] for x in array])
+        temp = array.argsort()
+        colranks = np.array([rank_dict[x] for x in array])
+        # low rank is better
+        metaranks.append(colranks)
+    temp=metaranks
+    metaranks=list(zip(*temp))
+
+    print_fn("\nMetascores array:")
+    print_fn("\n                                 Worst-rank (weighted)  Sum-of-ranks  (weighted) Fractional-excess (weighted) Percent-badness (weighted)")
+    print_fn("\n")
+    i=0
+    for m in metaranks:
+        print_fn("design {:3d}: {:6.2f} = sum [".format(i,sum(m)))
+        for r in m:
+            print_fn("{:13d}".format(r))
+        print_fn("       ]\n")
+        i=i+1
+
+    temp = [sum(r) for r in metaranks]
+    print("Best sum-of-metaranks: {:6.2f} by [{:d}]".format( min(temp), np.argmin(temp) ))
