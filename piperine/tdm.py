@@ -253,9 +253,9 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     ss_names = ['SSU min', 'SSU avg', 'SSTU min', 'SSTU avg']
     print('')
 
-    # Retrieve only first toeholds for dG Error and Range
-    th_strs = [ s.th(0) for s in strands ]
-    toeholds = [seq_dict[i] for ths in th_strs for i in ths]
+    # Retrieve only toeholds for dG Error and Range
+    toeholds = [ [seq_dict[i] for i in s.get_ths()] for s in strands ]
+
     if quick:
         th_scores = np.random.random((2,))
     else:

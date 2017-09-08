@@ -198,6 +198,7 @@ class energyfuncs:
 
     def score_toeholds(self, toeholds):
         import stickydesign as sd
+        toeholds = [ th_set[0] for th_set in toeholds]
         toeholds_flanked = [ 'c' + th.lower() + 'c' for th in toeholds]
         ends = sd.endarray(toeholds_flanked, 'TD')
         e_vec_ext = self.th_external_dG(ends)
