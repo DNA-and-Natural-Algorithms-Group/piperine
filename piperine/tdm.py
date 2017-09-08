@@ -180,7 +180,7 @@ def get_heuristics_inputs(gates, strands):
 
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
                 header=True, testname=None, seq_file=None, mfe_file=None,
-                quick=False, targetdG=7.7, energetics_module=energyfuncs_james,
+                quick=False, energyfuncs=energyfuncs_james.energyfuncs(targetdG=7.7),
                 includes=None, clean=True):
     if not testname:
         testname = basename
@@ -189,13 +189,12 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     if not mfe_file:
         mfe_file = basename + '.mfe'
 
-    if not quick:
-        heuristics_inputs = get_heuristics_inputs(gates, strands)
-        (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
-         NotToInteract) = heuristics_inputs
+    heuristics_inputs = get_heuristics_inputs(gates, strands)
+    (TopStrandlist, complex_names, BaseStrandlist, TopStranddict, BMlist,
+     NotToInteract) = heuristics_inputs
 
-        seq_dict, cmplx_dict, domains_list = get_seq_dicts(basename, heuristics_inputs,
-                                                           mfe_file, seq_file)
+    seq_dict, cmplx_dict, domains_list = get_seq_dicts(basename, heuristics_inputs,
+                                                       mfe_file, seq_file)
 
 
     print('Start WSI computation')
@@ -205,9 +204,9 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
         ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict,
                                              compile_params=compile_params,
                                              includes=includes, clean=clean)
-    ssm_names = ['WSI-Intra', 'WSI-Inter', \
-                 'WSI-Intra-1', 'WSI-Inter-1', \
-                 'Verboten', 'WSI']
+    ssm_names = ['WSAS', 'WSIS', \
+                 'WSAS-M', 'WSIS-M', \
+                 'Verboten', 'Spurious']
     print('')
 
     # Score cross-strand spurious interactions
@@ -228,15 +227,13 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     else:
         ted_scores = NUPACK_Eval_bad_nucleotide(seq_dict, cmplx_dict, complex_names,\
             prefix='tube_ensemble', clean=clean)
-    ted_names = ['Max Bad Nucleotide %', 'Max Defect Component',
-                 'Mean Bad Nucleotide %']
+    ted_names = ['BN% max', 'Max Defect Component',
+                 'BN% avg']
     print('')
 
     # Retrieve toeholds for BM score calculation
-    if not quick:
-        th_strs = [ s.get_ths() for s in strands ]
-        toeholds = [seq_dict[i] for ths in th_strs for i in ths]
-    th_names = ['TH energy avg', 'TH energy range']
+    th_strs = [ s.get_ths() for s in strands ]
+    toeholds = [seq_dict[i] for ths in th_strs for i in ths]
 
     # Score weighted spurious interactions
     print('Start BM score computation')
@@ -244,7 +241,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
         bm_scores = np.random.rand(2)
     else:
         bm_scores = BM_Eval(seq_dict, BMlist, toeholds)
-    bm_names = ['BM Score', 'Largest Match']
+    bm_names = ['WS-BM', 'Max-BM']
     print('')
 
     # Score intra-strand spurious interactions and toehold availability
@@ -253,14 +250,14 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
         ss_scores = np.random.rand(4)
     else:
         ss_scores = SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna', clean=clean)
-    ss_names = ['SSU Min', 'SSU Avg', 'SSTU Min', 'SSTU Avg']
+    ss_names = ['SSU min', 'SSU avg', 'SSTU min', 'SSTU avg']
     print('')
 
     if quick:
         th_scores = np.random.random((2,))
     else:
-        th_scores = gen_th.score_toeholds(toeholds, targetdG, e_module=energetics_module)
-    th_names = ['Toehold Avg dG', 'Range of toehold dG\'s']
+        th_scores = energyfuncs.score_toeholds(toeholds)
+    th_names = ['dG Error', 'dG Range']
 
     score_list = [css_scores, bm_scores, ss_scores, ted_scores,
                   ssm_scores, th_scores]

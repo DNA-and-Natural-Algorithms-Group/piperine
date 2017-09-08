@@ -516,7 +516,7 @@ def selection(scores):
     percents = []
     for col in columns:
         # if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
-        if 'Index' in col[0] or 'Defect' in col[0] or 'WSI' == col[0]:
+        if 'Index' in col[0] or 'Defect' in col[0] or 'Spurious' == col[0]:
             continue
         if 'SSU' in col[0] or 'SSTU' in col[0]:    # for these scores, higher is better
             col = [-float(x) for x in col[1:]]
@@ -544,7 +544,7 @@ def selection(scores):
     print_fn("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title or 'WSI' == title:
+        if 'Index' in title or 'Defect' in title or 'Spurious' == title:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -560,7 +560,7 @@ def selection(scores):
     print_fn("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title or 'WSI' == title:
+        if 'Index' in title or 'Defect' in title or 'Spurious' == title:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -576,7 +576,7 @@ def selection(scores):
     print_fn("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title or 'WSI' == title:
+        if 'Index' in title or 'Defect' in title or 'Spurious' == title:
             continue
         print_fn("{:>6s}".format(title[0:6]))
     print_fn("\n")
@@ -701,6 +701,7 @@ def run_designer(basename=small_crn[:-4],
 
     (gates, strands) = \
         generate_scheme(basename, design_params, trans_module)
+    energyfuncs = e_module.energyfuncs(targetdG=thold_e)
 
     if reps >= 1:
         scoreslist = []
@@ -727,8 +728,7 @@ def run_designer(basename=small_crn[:-4],
                                                       compile_params=design_params,
                                                       quick=quick,
                                                       includes=includes,
-                                                      energetics_module=e_module,
-                                                      targetdG = thold_e)
+                                                      energyfuncs=energyfuncs)
                 scores = [i] + scores
                 scoreslist.append(scores)
             except KeyError as e:
@@ -821,6 +821,7 @@ def score_fixed(fixed_file,
                                    crn_file=crn_file,
                                    system_file=sys_file,
                                    trans_module=trans_module)
+    energyfuncs = e_module.energyfuncs(targetdG=thold_e)
     call_compiler(basename, args=design_params, fixed_file=fixed_file,
                   outputname=pil_file, savename=save_file, includes=includes)
 
@@ -836,8 +837,7 @@ def score_fixed(fixed_file,
                                           compile_params=design_params,
                                           quick=quick,
                                           includes=includes,
-                                          energetics_module=e_module,
-                                          targetdG = thold_e)
+                                          energyfuncs=energyfuncs)
     with open(score_file, 'w') as f:
         f.write(','.join(score_names))
         f.write('\n')

@@ -196,4 +196,14 @@ class energyfuncs:
 
         return r-self.initdG
 
+    def score_toeholds(self, toeholds):
+        import stickydesign as sd
+        toeholds_flanked = [ 'c' + th.lower() + 'c' for th in toeholds]
+        ends = sd.endarray(toeholds_flanked, 'TD')
+        e_vec_ext = self.th_external_dG(ends)
+        e_vec_int = self.th_internal_dG(ends)
+        e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
+        e_err = np.abs(e_vec_all.mean() - self.targetdG)
+        e_rng = e_vec_all.max() - e_vec_all.min()
+        return (e_err, e_rng)
 
