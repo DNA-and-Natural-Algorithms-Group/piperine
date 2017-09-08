@@ -253,6 +253,9 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     ss_names = ['SSU min', 'SSU avg', 'SSTU min', 'SSTU avg']
     print('')
 
+    # Retrieve only first toeholds for dG Error and Range
+    th_strs = [ s.th(0) for s in strands ]
+    toeholds = [seq_dict[i] for ths in th_strs for i in ths]
     if quick:
         th_scores = np.random.random((2,))
     else:
@@ -314,7 +317,7 @@ def NUPACK_Eval_bad_nucleotide(mfe_seqs, ideal_structs, complex_names, \
         prog.inc()
 
     # Convert TED to % bad nucleotides out of total nucleotides
-    bad_nuc_vec = 100 * ted_vec / (target_conc * bp_vec + ted_vec)
+    bad_nuc_vec = 100 * ted_vec / (target_conc * bp_vec)
     bad_nuc_max = bad_nuc_vec.max()
     bn_max_name = name_list[int(np.where(bad_nuc_vec == bad_nuc_max)[0][0])]
     #return [Bad Nucleotide % max, max complex name, mean bad nuc]
