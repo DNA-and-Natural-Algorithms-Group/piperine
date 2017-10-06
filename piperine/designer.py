@@ -845,7 +845,7 @@ def score_fixed(fixed_file,
         f.writelines( [ ','.join(map(str, l)) + '\n' for l in [scores] ])
     return (scores, score_names)
 
-if __name__ == "__main__":
+def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-b", "--basename", help='Basename.[small]', type=str)
@@ -941,6 +941,15 @@ if __name__ == "__main__":
     th_params={"thold_l":thold_l, "thold_e":thold_e, "e_dev":e_dev, \
                "m_spurious":m_spurious, "e_module":energetics}
 
-    gates, strands, winner = run_designer(basename, reps, th_params, design_params, trans_module,
-                                    extra_pars=extra_pars, quick=args.quick)
+    gates, strands, winner, scorelist = \
+                             run_designer(basename,
+                                          reps,
+                                          design_params=design_params,
+                                          thold_l=thold_l,
+                                          thold_e=thold_e,
+                                          e_dev=e_dev,
+                                          m_spurious=m_spurious,
+                                          e_module=energetics,
+                                          extra_pars=extra_pars,
+                                          quick=args.quick)
     print('Winning sequence set is index {}'.format(winner))

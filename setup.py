@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages, Extension
 
 setup(name='piperine',
-    version='0.3',
+    version='0.4a',
 
     packages=['piperine', 'piperine.tests'],
     install_requires=["numpy","scipy", "stickydesign", "peppercompiler"],
@@ -11,8 +11,10 @@ setup(name='piperine',
          'piperine':['piperine/data/*', 'piperine/tests/test_data/*']
     },
     dependency_links=["http://www.nupack.org", "http://dna.caltech.edu/DNA_Sequence_Design_Tools/"],
+    entry_points={ 'console_scripts': [
+        'piperine-design = piperine.designer:main']},
     exclude_package_data={'': ['*.pyc', '*config_choi*']},
-    description='Collection of software associated with the Winfree lab at Caltech',
+    description='A pipeline to generate DNA sequences that implement abstract CRNs.',
     author='James Parkin',
     url='http://www.dna.caltech.edu/DNA_Sequence_Design_Tools/',
     license='GNU GPLv3',
