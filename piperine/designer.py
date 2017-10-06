@@ -142,6 +142,7 @@ def read_crn(in_file):
         * Alphanumeric are species
         * Numeric before alphanumeric are stoichiometric identifiers
         * Arrow (->) separates reactants from products
+        * Lines with an equals signs (=) are skipped
         * Parentheses enclose the rate constant, which python should be able
           to evaluate
     Args:
@@ -170,8 +171,12 @@ def read_crn(in_file):
     num_pattern = re.compile(r"^[0-9./]+|^[0-9.]+e-?[0-9.]+")
     spe_pattern = re.compile(r"\w+")
     for line in lines:
-        # eat empty lines
+        # Skip empty lines
         if line == '':
+            continue
+
+        # Skip lines that define design parameters
+        if '=' in line:
             continue
 
         full_line = line[:]
@@ -242,28 +247,28 @@ def read_crn(in_file):
 
     return (rxn_tup, species_list)
 
-def write_toehold_file(toehold_file, strands, toeholds, n_th):
+def write_toehold_file(toehold_file, strands, toeholds):
     """ Writes the fixed file for the given strands and toeholds
 
     Args:
         toehold_file: File where toehold constraints are written
         strands: List of SignalStrand objects
         toeholds: List of toehold two-big tuples
-        n_th: Number of toeholds
     Returns:
         Nothing
     """
     line = 'sequence {} = {} # species {}\n'
-    f = open(toehold_file, 'w')
+    # Build list of PIL names for toehold domains
     th_names = [th for strand in strands for th in strand.get_ths()]
     th_names = sorted(list(set(th_names)))
     th_data = [(th, ', '.join([strand.name for strand in strands if th in strand.get_ths()]))
                     for th in th_names]
-    for data, seq in zip(th_data, toeholds):
-        constraint = line.format(data[0], seq.upper(), data[1])
-        f.write(constraint)
-
-    f.close()
+    # Write file
+    with open(toehold_file, 'w') as f:
+        for data, seq in zip(th_data, toeholds):
+            constraint = line.format(data[0], seq.upper(), data[1])
+            f.write(constraint)
+        f.close()
 
 def toehold_wrapper(n_ths,
                     thold_l=7,
@@ -343,7 +348,6 @@ def process_crn(basename=None,
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
         trans_module: module containing scheme variables and classes (DSDClasses)
         crn_file: name of the text file specifying the CRN (basename + .crn)
-        system_file: name of the system file (basename + .sys)
     Returns:
         gates: A list of gate objects
         strands: A list of strand objects
@@ -401,7 +405,6 @@ def generate_seqs(basename,
                   gates,
                   strands,
                   design_params=(7, 15, 2),
-                  n_th=2,
                   thold_l=7,
                   thold_e=7.7,
                   e_dev=1,
@@ -427,7 +430,6 @@ def generate_seqs(basename,
         gates: A list of Gate objects
         strands: A list of SignalStrand objects
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        n_th: How many toeholds to generate per signal strand
         thold_l: Nt in a toehold (7)
         thold_e: Target deltaG in kCal/Mol (7.7)
         e_dev: Allowable standard deviation in kCal/mole (1)
@@ -488,7 +490,7 @@ def generate_seqs(basename,
                                e_module=e_module)
 
     # Write the fixed file for the toehold sequences and compile the sys file to PIL
-    write_toehold_file(fixed_file, strands, toeholds, n_th)
+    write_toehold_file(fixed_file, strands, toeholds)
     try:
         call_compiler(basename, args=design_params, fixed_file=fixed_file,
                       outputname=pil_file, savename=save_file)
@@ -690,7 +692,7 @@ def run_designer(basename=small_crn[:-4],
         trans_module = importlib.import_module('.' + trans_module, 'piperine')
     if type(e_module) is str:
         e_module = importlib.import_module('.' + e_module, 'piperine')
-    #
+    # Provide extra parameters to spuriousSSM such that no minimization is performed
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"
 
@@ -712,7 +714,6 @@ def run_designer(basename=small_crn[:-4],
                                          gates,
                                          strands,
                                          design_params,
-                                         n_th=trans_module.n_th,
                                          thold_l=thold_l,
                                          thold_e=thold_e,
                                          e_dev=e_dev,
@@ -759,7 +760,7 @@ def score_fixed(fixed_file,
                  seq_file=None,
                  score_file=None,
                  design_params=(7, 15, 2),
-                 thold_e=7,
+                 thold_e=7.7,
                  trans_module=DSDClasses,
                  e_module=energyfuncs_james,
                  includes=None,

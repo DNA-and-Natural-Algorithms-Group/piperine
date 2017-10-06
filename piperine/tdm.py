@@ -253,7 +253,7 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     ss_names = ['SSU min', 'SSU avg', 'SSTU min', 'SSTU avg']
     print('')
 
-    # Retrieve only toeholds for dG Error and Range
+    # Convert the list of toeholds from each strand into nucleotide sequences
     toeholds = [ [seq_dict[i] for i in s.get_ths()] for s in strands ]
 
     if quick:
