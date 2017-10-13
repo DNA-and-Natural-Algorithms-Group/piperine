@@ -10,7 +10,9 @@ import importlib
 
 from . import energyfuncs_james
 from . import DSDClasses
+from . import Srinivas2017
 
+default_energyfuncs = Srinivas2017.energetics.energyfuncs()
 small_crn = pkg_resources.resource_filename('piperine', "data/small.crn")
 data_dir = os.path.dirname(small_crn)
 
@@ -270,36 +272,10 @@ def write_toehold_file(toehold_file, strands, toeholds):
             f.write(constraint)
         f.close()
 
-def toehold_wrapper(n_ths,
-                    thold_l=7,
-                    thold_e=7.7,
-                    e_dev=1,
-                    m_spurious=0.5,
-                    e_module=energyfuncs_james):
-    """ Wrapper generating toeholds, calls gen_th
-
-    Args:
-        n_ths: Number of toeholds
-        thold_l: Nt in a toehold (7)
-        thold_e: Target deltaG in kCal/Mol (7.7)
-        e_dev: Allowable standard deviation in kCal/mole (1)
-        m_spurious: Maximum spurious dG as fraction of thold_e (0.5)
-        e_module: Thermodynamics used by stickydesign (energyfuncs_james)
-    Returns:
-        ths: Toeholds, listed as tupled-pairs
-        th_score: average toehold dG and the range of dG's
-    """
-    from .gen_th import get_toeholds
-    # Grab parameters from the dictionary or set defaults
-    # Toehold length (basepairs)
-    thold_l = int(thold_l)
-    ths = get_toeholds(n_ths, thold_l, thold_e, e_dev, m_spurious, e_module)
-    return ths
-
 def write_sys_file(basename,
                    gates=None,
                    sys_file=None,
-                   trans_module=DSDClasses):
+                   trans_module=Srinivas2017.translation):
     """ Write system file from gates list
 
     This function takes in filenames and a CRN specification and writes a system
@@ -405,11 +381,7 @@ def generate_seqs(basename,
                   gates,
                   strands,
                   design_params=(7, 15, 2),
-                  thold_l=7,
-                  thold_e=7.7,
-                  e_dev=1,
-                  m_spurious=0.5,
-                  e_module=energyfuncs_james,
+                  energyfuncs=default_energyfuncs,
                   outname=None,
                   extra_pars="",
                   system_file=None,
@@ -430,11 +402,7 @@ def generate_seqs(basename,
         gates: A list of Gate objects
         strands: A list of SignalStrand objects
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        thold_l: Nt in a toehold (7)
-        thold_e: Target deltaG in kCal/Mol (7.7)
-        e_dev: Allowable standard deviation in kCal/mole (1)
-        m_spurious: Maximum spurious dG as fraction of thold_e (0.5)
-        e_module: Thermodynamics used by stickydesign (energyfuncs_james)
+        energyfuncs: Thermodynamics used by stickydesign
         outname: Optional name for files produced as a result of this call (basename + .mfe)
         extra_pars: Options sent to spurious designer. ("")
         system_file: Filename of the peppercompiler system file (basename + .sys)
@@ -482,12 +450,7 @@ def generate_seqs(basename,
     tdomains = list(set(tdomains))
     n_toeholds = len(tdomains)
 
-    toeholds = toehold_wrapper(n_toeholds,
-                               thold_l=thold_l,
-                               thold_e=thold_e,
-                               e_dev=e_dev,
-                               m_spurious=m_spurious,
-                               e_module=e_module)
+    toeholds = energyfuncs.get_toeholds(n_toeholds)
 
     # Write the fixed file for the toehold sequences and compile the sys file to PIL
     write_toehold_file(fixed_file, strands, toeholds)
@@ -648,12 +611,8 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
 def run_designer(basename=small_crn[:-4],
                  reps=1,
                  design_params=(7, 15, 2),
-                 thold_l=7,
-                 thold_e=7.7,
-                 e_dev=1,
-                 m_spurious=0.5,
-                 e_module=energyfuncs_james,
-                 trans_module=DSDClasses,
+                 energyfuncs=default_energyfuncs,
+                 trans_module=Srinivas2017.translation,
                  extra_pars="",
                  temp_files=True,
                  quick=False,
@@ -672,11 +631,6 @@ def run_designer(basename=small_crn[:-4],
         basename: Default name for files accessed and written (small)
         reps: Number of sequence sets to be generated and scored (1)
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        thold_l: Nt in a toehold (7)
-        thold_e: Target deltaG in kCal/Mol (7.7)
-        e_dev: Allowable standard deviation in kCal/mole (1)
-        m_spurious: Maximum spurious dG as fraction of thold_e (0.5)
-        e_module: Thermodynamics used by stickydesign (energyfuncs_james)
         trans_module: module containing scheme variables and classes (DSDClasses)
         extra_pars: Options sent to spurious designer. ('')
         quick: Make random scores instead of computing heursitics. Skips time
@@ -690,8 +644,6 @@ def run_designer(basename=small_crn[:-4],
     # If module inputs are strings, import them
     if type(trans_module) is str:
         trans_module = importlib.import_module('.' + trans_module, 'piperine')
-    if type(e_module) is str:
-        e_module = importlib.import_module('.' + e_module, 'piperine')
     # Provide extra parameters to spuriousSSM such that no minimization is performed
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"
@@ -703,7 +655,6 @@ def run_designer(basename=small_crn[:-4],
 
     (gates, strands) = \
         generate_scheme(basename, design_params, trans_module)
-    energyfuncs = e_module.energyfuncs(targetdG=thold_e)
 
     if reps >= 1:
         scoreslist = []
@@ -714,11 +665,7 @@ def run_designer(basename=small_crn[:-4],
                                          gates,
                                          strands,
                                          design_params,
-                                         thold_l=thold_l,
-                                         thold_e=thold_e,
-                                         e_dev=e_dev,
-                                         m_spurious=m_spurious,
-                                         e_module=e_module,
+                                         energyfuncs=energyfuncs,
                                          strands_file=testname,
                                          extra_pars=extra_pars)
 
@@ -760,9 +707,8 @@ def score_fixed(fixed_file,
                  seq_file=None,
                  score_file=None,
                  design_params=(7, 15, 2),
-                 thold_e=7.7,
                  trans_module=DSDClasses,
-                 e_module=energyfuncs_james,
+                 energyfuncs=default_energyfuncs,
                  includes=None,
                  quick=False):
     """ Score a sequence set
@@ -822,13 +768,13 @@ def score_fixed(fixed_file,
                                    crn_file=crn_file,
                                    system_file=sys_file,
                                    trans_module=trans_module)
-    energyfuncs = e_module.energyfuncs(targetdG=thold_e)
     call_compiler(basename, args=design_params, fixed_file=fixed_file,
                   outputname=pil_file, savename=save_file, includes=includes)
 
     # Generate MFE
     call_design(basename, pil_file, mfe_file, verbose=False,
                 extra_pars=extra_pars, cleanup=False)
+
     # "Finish" the sequence generation
     call_finish(basename, savename=save_file, designname=mfe_file, \
                 seqname=seq_file, run_kin=False)
@@ -847,84 +793,102 @@ def score_fixed(fixed_file,
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--basename", help='Basename.[small]', type=str)
-    parser.add_argument("-l", "--length", help='Toehold length.[7]', type=int)
-    parser.add_argument("-e", "--energy", help='Target toehold binding energy'+
-                        'in kcal/mol.[7.7]', type=float)
-    parser.add_argument("-d", "--deviation", help='Toehold binding energy st'+\
-                        'andard deviation limit in kcal/mol.[0.5]', type=float)
-    parser.add_argument("-M", "--maxspurious", help='Maximum spurious interac'+
-                        'tion energy as a multiple of target binding energy.['+
-                        '0.4]', type=float)
-    parser.add_argument("-g", '--energetics', help='The name of the energetics'+
-                        ' module to be used for toehold generation.[energyfunc'+
-                        's_james]', type=str)
-    parser.add_argument("-p", '--systemparams', help='A string of integers that'+
-                        ' are parameters to the sys file compilation[Finds in module]', type=str)
-    parser.add_argument("-n", '--candidates', help='Number of candidate sequences'+
-                        ' to generate[1]', type=int)
-    parser.add_argument("-m", '--module', help='Module describing the strand'+
-                        ' displacement architecture[DSDClasses]', type=str)
-    parser.add_argument("-x", '--extrapars', help='Parameters sent to SpuriousSSM[]', type=str)
-    parser.add_argument("-q", '--quick', action='store_true',
-                        help='Make random numbers instead of computing heuristics to save time[False]')
+    import importlib
+    descr = "Piperine documentation."
+    usage = "\
+usage: piperine-design basename \n\
+           [-h] [-l LENGTH] [-e ENERGY] [-d DEVIATION] \n\
+           [-M MAXSPURIOUS] [-g ENERGETICS] \n\
+           [-p [SYSTEMPARAMS [SYSTEMPARAMS ...]]] [-n CANDIDATES] \n\
+           [-t TRANSLATION] [-x EXTRAPARS] [-q] \n\n\
+Example executions with CRN file myproject.crn, energetics module Chen2013.py, and translation module trans.py\n\
+    \n\
+    To design one set of sequences for the myproject.crn according to the Srinivas2017 translation scheme:\n\
+    piperine-design myproject\n\
+    \n\
+    To design one set of sequences for the myproject.crn according to the Chen2013 translation scheme:\n\
+    piperine-design myproject -t Chen2013\n\
+    \n\
+    To design 10 sequence sets for the myproject.crn according to the Chen2013 translation scheme:\n\
+    piperine-design myproject -t Chen2013 -n 10\n\
+    "
+    parser = argparse.ArgumentParser(description=descr, usage=usage)
+    parser.add_argument("basename",
+                        help='Files read or generated by this call will have the form: basename.extension ; '+
+                          'E.g. basename.crn, basename.pil, etc.',
+                        type=str)
+
+    parser.add_argument("-l", "--length",
+                        help='Toehold length in nucleotides. [default: 7]',
+                        type=int,
+                        default=7)
+
+    parser.add_argument("-e", "--energy",
+                        help='Target toehold binding energy used by StickyDesign, '+
+                        'in kcal/mol. [default: 7.7]',
+                        type=float,
+                        default=7.7)
+
+    parser.add_argument("-d", "--deviation",
+                        help='Maximum standard deviation for toehold binding energies allowed by StickyDesign'+
+                            ', in kcal/mol. [default: 0.5]',
+                        type=float,
+                        default=0.5)
+
+    parser.add_argument("-M", "--maxspurious",
+                        help='This argument is passed to StickyDesign and sets the Maximum spurious interac'+
+                        'tion energy as a multiple of target binding energy. [default: '+
+                        '0.4]',
+                        type=float,
+                        default=0.4)
+
+    parser.add_argument("-p", '--systemparams',
+                        help='A string of integers that are parameters to the sys file compilation. [default: Finds in module]',
+                        type=int,
+                        nargs="*")
+
+    parser.add_argument("-n", '--candidates',
+                        help='Number of candidate sequences to generate. [default: 1]',
+                        default=1,
+                        type=int)
+
+    parser.add_argument("-t", '--translation',
+                        help='Provide a string, the name of the Python package describing the translation scheme used to convert'+
+                            'the CRN to DNA strands and complexes. See piperine.Srinivas2017 for an example of such a package.'+
+                            ' [default: Srinivas2017]',
+                        default='Srinivas2017',
+                        type=str)
+
+    parser.add_argument("-x", '--extrapars',
+                        help='Parameters sent to SpuriousSSM. [default: None]',
+                        type=str)
+
+    parser.add_argument("-q", '--quick',
+                        action='store_true',
+                        help='Make random numbers instead of computing heuristics to save time[default: False]')
+
     args = parser.parse_args()
+
     ############## Interpret arguments
-    if args.basename:
-        basename = args.basename
-    else:
-        basename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data','small'))
+    basename = args.basename
+
     # Find absolute path to basename
     basedir = os.path.dirname(basename)
     if basedir == '':
         basename = os.getcwd() + os.path.sep + basename
-    # Set toehold length in base pairs
-    if args.length:
-        thold_l = int(args.length)
-    else:
-        thold_l = int(7)
 
-    # Set target toehold binding energy, kcal/mol
-    if args.energy:
-        thold_e = args.energy
-    else:
-        thold_e = 7.7
-
-    # Set allowable toehold binding energy deviation, kcal/mol
-    if args.deviation:
-        e_dev = args.deviation
-    else:
-        e_dev = 0.5
-
-    # Set allowable spurious interactions, fraction of target energy.
-    # The spurious interactions are calculated with standard SantaLucia parameters
-    # and sticky-end contexts, not toehold contexts
-    if args.maxspurious:
-        m_spurious = args.maxspurious
-    else:
-        m_spurious = 0.4
-
-    # Import desired energetics module as ef
-    if args.energetics:
-        energetics = args.energetics
-    else:
-        energetics = 'energyfuncs_james'
-
-    # Set user-specified spurious interaction heatmap image file name
-    if args.candidates:
-        reps = args.candidates
-    else:
-        reps = 1
-
-    if args.module:
-        exec('import {} as trans_module'.format(args.module))
-    else:
-        from . import DSDClasses as trans_module
+    # Import translation module
+    if args.translation:
+        translation = importlib.import_module("."+args.translation, 'piperine')
+        energyfuncs = translation.energetics.energyfuncs(targetdG=args.energy,
+                                             length=args.length,
+                                             deviation=args.deviation,
+                                             max_spurious=args.maxspurious)
+        trans_module = translation.translation
 
     # Set user-specified spurious interaction heatmap image file name
     if args.systemparams:
-        design_params = [ int(i) for i in args.systemparams.split(' ')]
+        design_params = args.systemparams
     else:
         try:
             design_params = trans_module.default_params
@@ -938,18 +902,12 @@ def main():
     else:
         extra_pars = ""
 
-    th_params={"thold_l":thold_l, "thold_e":thold_e, "e_dev":e_dev, \
-               "m_spurious":m_spurious, "e_module":energetics}
-
     gates, strands, winner, scorelist = \
                              run_designer(basename,
-                                          reps,
+                                          reps=args.candidates,
                                           design_params=design_params,
-                                          thold_l=thold_l,
-                                          thold_e=thold_e,
-                                          e_dev=e_dev,
-                                          m_spurious=m_spurious,
-                                          e_module=energetics,
+                                          energyfuncs=energyfuncs,
+                                          trans_module=trans_module,
                                           extra_pars=extra_pars,
                                           quick=args.quick)
     print('Winning sequence set is index {}'.format(winner))

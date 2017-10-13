@@ -3,7 +3,7 @@ from setuptools import setup, find_packages, Extension
 setup(name='piperine',
     version='0.4a',
 
-    packages=['piperine', 'piperine.tests'],
+    packages=['piperine', 'piperine.tests', 'piperine.Srinivas2017'],
     install_requires=["numpy","scipy", "stickydesign", "peppercompiler"],
     include_package_data=True,
 
