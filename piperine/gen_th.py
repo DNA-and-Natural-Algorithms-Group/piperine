@@ -5,13 +5,6 @@ from time import time
 import stickydesign as sd
 from . import energyfuncs_james as efj
 
-def flatten(x):
-    if type(x) in [list, tuple]:
-        return [ z for y in x for z in flatten(y)]
-    else:
-        return [x]
-
-
 def get_toeholds(n_ths=6, thold_l=int(7.0), thold_e=7.7, e_dev=0.5, m_spurious=0.4,
                  e_module=efj, timeout=8):
     """ Generate specified stickyends for the Soloveichik DSD approach
@@ -50,6 +43,8 @@ def get_toeholds(n_ths=6, thold_l=int(7.0), thold_e=7.7, e_dev=0.5, m_spurious=0
                                maxspurious=m_spurious, energetics=ef,
                                oldends=avoid_list)
             notoes = len(ends) < n_ths + len(avoid_list)
+            if (time() - startime) > timeout:
+                return -1
         except ValueError as e:
             if (time() - startime) > timeout:
                 return -1
