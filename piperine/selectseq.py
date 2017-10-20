@@ -1,5 +1,10 @@
-
-# E.g. run like this:
+# selectseq
+#
+# Reads scores from a Piperine-produced .csv file, or combines scores from many such files,
+# and compares all sequence designs according to a variety of metrics,
+# ultimately selecting a "winner" based on a meta-rank score that "hedges bets".
+#
+# Run like this, for example:
 # python selectseq.py oscillator_scores_bmax10.csv
 # python selectseq.py oscillator_scores_bmax2000.csv
 # python selectseq.py oscillator_scores_bmax10.csv oscillator_scores_bmax2000.csv
@@ -53,6 +58,7 @@ if __name__ == "__main__":
     print("Found information for " + str(numseqs) + " sequences with " + str(numscores) + " score types each.")
 
     columns = list(zip(*scores))
+    rawscores = []
     ranks = []
     fractions = []
     percents = []
@@ -62,10 +68,12 @@ if __name__ == "__main__":
         # if 'Index' in col[0] or 'Defect' in col[0] or 'WSI' == col[0]:   ### recent James
         if 'Index' in col[0] or 'Defect' in col[0]:   ### new EW
             continue
-        if 'SSU' in col[0] or 'SSTU' in col[0]:    # for these scores, higher is better
+
+        rawscores.append([float(x) for x in col[1:]])  # don't invert raw scores
+        if 'SSU' in col[0] or 'SSTU' in col[0]:        # for these scores, higher is better
             col = [-float(x) for x in col[1:]]
         else:
-            col = [float(x) for x in col[1:]]
+            col = [float(x) for x in col[1:]]          # for these scores, lower is better
 
         # ties get same rank; next worse gets that rank+1; low rank is better
         array = np.array(col)
@@ -84,7 +92,10 @@ if __name__ == "__main__":
     fractions=list(zip(*temp))
     temp=percents
     percents=list(zip(*temp))
+    temp=rawscores
+    rawscores=list(zip(*temp))
 
+    # with the latest piperine designer code, there should be no need to retitle columns, and this should do nothing
     # print(scores[0])
     newtitles={ "BM Score" : "BM sum", "Largest Match" : "BM max", 
                 "SSU Min" : "SSU min", "SSU Avg" : "SSU avg", "SSTU Min" : "SSTU min", "SSTU Avg" : "SSTU avg",
@@ -92,13 +103,30 @@ if __name__ == "__main__":
                 "WSI-Intra" : "WSAS", "WSI-Inter" : "WSIS", "WSI-Intra-1" : "WSAS-M", "WSI-Inter-1" : "WSIS-M",
                 "WSI" : "Spurious", "Toehold Avg dG" : "dG error", "Range of toehold dG's" : "dG range" }
     scores[0]=[ newtitles[t] if t in newtitles else t for t in scores[0] ]
+    # print()
     # print(scores[0])
+
+    print_fn("\nRaw scores array:")
+    print_fn("\n                             ")
+    for title in scores[0]:
+        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
+        if 'Index' in title or 'Defect' in title:   # don't need design number, don't need Max Defect Component name
+            continue
+        print_fn("{:>9s}".format(title[0:9]))
+    print_fn("\n")
+    i=0
+    for s in rawscores:
+        print_fn("design {:3d}:                 [".format(i))
+        for v in s:
+            print_fn("{:9.2f}".format(v))
+        print_fn("]\n")
+        i=i+1
 
     print_fn("\nRank array:")
     print_fn("\n                             ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title:
+        if 'Index' in title or 'Defect' in title:   # don't need design number, don't need Max Defect Component name
             continue
         print_fn("{:>9s}".format(title[0:9]))
     print_fn("  :: worst \n")
