@@ -132,6 +132,52 @@ def call_finish(basename,
     finish(savename, designname, seqname, strandsname, run_kin,
                   cleanup, trials, time, temp, conc, spurious, spurious_time)
 
+def parse_parameter_line(line):
+    """ This interprets compilation or DNA domain parameters in the CRN file.
+
+    This function is called whenever the read_crn function encounters an equals
+    sign "=" and, if the parameter term is recognized, the associated value is
+    recorded and assigned internally to the matched parameter.
+
+    Parameters that can be assigned through this method. Terms in parentheticals
+    are the terms this function detects.
+        * Any parameters required by components (.comp) files
+        * Toehold parameters
+            * (toehold_energy) Target binding energy
+            * (toehold_deviation) Maximum standard deviation of toehold binding energies
+            * (toehold_spurious) Maximum spurious binding energy
+        * (translation) Translation scheme
+        * (n) Number of sets to generate
+
+    Args:
+        line : String from the CRN file defining a compilation parameter
+
+    Returns:
+        param_dict : A dictionary listing the parameter definitions found in the CRN file
+    """
+
+    # Accepted terms
+    terms = ("toehold_energy",
+             "toehold_deviation",
+             "toehold_spurious",
+             "translation",
+             "n")
+    converters = [lambda x : np.float(x),
+                  lambda x : np.float(x),
+                  lambda x : np.float(x),
+                  lambda x : x,
+                  lambda x : np.int(x)]
+
+    # Remove whitespace
+    line = re.sub(r'\s','',line)
+    rhs, lhs = line.split('=')
+
+    param_dict = {}
+    for i, term in enumerate(terms):
+        if rhs == term:
+            param_dict.update({term:converters[i](lhs)})
+    return param_dict
+
 def read_crn(in_file):
     """ Interprets a CRN from a text file.
 
@@ -179,7 +225,7 @@ def read_crn(in_file):
 
         # Skip lines that define design parameters
         if '=' in line:
-            continue
+            params = parse_parameter_line(line)
 
         full_line = line[:]
         # Remove whitespace
