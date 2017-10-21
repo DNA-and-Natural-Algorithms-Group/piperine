@@ -3,6 +3,8 @@ import pkg_resources
 
 # Default design parameters
 default_params = (7, 15, 2)
+param_terms = ('t', 'bm', 'c')
+toehold_length_term = 't'
 
 # The .comp files to be imported in the .sys file
 comps = ['bimrxn']

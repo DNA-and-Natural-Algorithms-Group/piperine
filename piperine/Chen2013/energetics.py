@@ -14,7 +14,7 @@ class energyfuncs:
     consider mismatches.  'max' is probably the best choice, but is slowest -
     it takes the maximum interaction of the 'loop' and 'dangle' options.
     """
-    def __init__(self, mismatchtype='max', targetdG=7):
+    def __init__(self, targetdG=7, length=7, deviation=0.5, max_spurious=0.4):
         import os
         try:
             dsb = resource_stream('stickydesign', 'stickydesign/params/dnastackingbig.csv')
@@ -32,6 +32,9 @@ class energyfuncs:
             except IOError:
                 raise IOError("Error loading dnadangle.csv")
         self.targetdG=targetdG
+        self.deviation=deviation
+        self.max_spurious=max_spurious
+        self.length=length
         self.nndG_full = -np.loadtxt(dsb ,delimiter=',')
         self.dgldG_full = -np.loadtxt(dgl ,delimiter=',')
         self.taildG = 1.3
@@ -49,18 +52,11 @@ class energyfuncs:
         # 30-01-15: As of now, the dangle base is set to C, so make a lookup ta
         # ble ordered by terminating toehold base
         self.dgldG_fixedC = self.dgldG_full[1, np.arange(4) + 4 * nt['c']]
-        if mismatchtype == 'max':
-            self.uniform = lambda x,y: np.maximum( self.uniform_loopmismatch(x,y), \
-                                                   self.uniform_danglemismatch(x,y) \
-                                                 )
-        elif mismatchtype == 'loop':
-            self.uniform = self.uniform_loopmismatch
-        elif mismatchtype == 'dangle':
-            self.uniform = self.uniform_danglemismatch
-        else:
-            raise InputError("Mismatchtype {0} is not supported.".format(mismatchtype))
+        self.uniform = lambda x,y: np.maximum( self.uniform_loopmismatch(x,y), \
+                                               self.uniform_danglemismatch(x,y) \
+                                             )
 
-    def th_external_dG(self, seqs):
+    def th_external_3_dG(self, seqs):
         # Convert nearest-neighbor stacks to dG-table lookup indices.
         # Sum up the near-neighbor energy contributions
         # Add context-specific dG values, eg tail or dangle contributions
@@ -70,19 +66,35 @@ class energyfuncs:
         cols_external = np.arange(seqs_len-1)
         tops_external = tops(seqs[:, cols_external])
         nndG_external = np.sum(self.nndG[tops_external], 1)
-        # The external-context dangle is fixed at C.
-        dgldG_external = self.dgldG_fixedC[seqs[:, seqs_len-2]]
-        return nndG_external + dgldG_external - self.taildG - self.initdG
+        return nndG_external - self.taildG - self.initdG
+
+    def th_external_5_dG(self, seqs):
+        # Convert nearest-neighbor stacks to dG-table lookup indices.
+        # Sum up the near-neighbor energy contributions
+        # Add context-specific dG values, eg tail or dangle contributions
+        seqs_len = np.size(seqs, 1)
+        # The external context involves a 5' dangle, so exclude the 5' flank
+        # base.
+        cols_external = np.arange(1, seqs_len)
+        tops_external = tops(seqs[:, cols_external])
+        nndG_external = np.sum(self.nndG[tops_external], 1)
+        return nndG_external - self.taildG - self.initdG
+
+    def th_external_dG(self, seqs):
+        # Make a boolean vector representing which toeholds' external 3' context dG
+        # is further from the target dG than than their external 5' context dG
+        dG_external3 = self.th_external_3_dG(seqs)
+        dG_external5 = self.th_external_5_dG(seqs)
+        external_further_bool = np.abs(dG_external3 - self.targetdG) >\
+                                np.abs(dG_external5 - self.targetdG)
+        return np.choose(external_further_bool, [dG_external5, dG_external3])
 
     def th_internal_dG(self, seqs):
         # Convert nearest-neighbor stacks to dG-table lookup indices
         # Sum up and return the near-neighbor energy contributions
         # Add context-specific dG values, eg tail or dangle contributions
         seqs_len = np.size(seqs, 1)
-        # The internal context involves a truncated toehold. Remove first 3' to
-        # ehold base.
-        cols_internal = np.concatenate((np.arange(seqs_len-2), [seqs_len-1]))
-        tops_internal = tops(seqs[:, cols_internal])
+        tops_internal = tops(seqs)
         nndG_internal = np.sum(self.nndG[tops_internal], 1)
         return nndG_internal - self.taildG - self.initdG
 
@@ -122,7 +134,7 @@ class energyfuncs:
             pac1 = seqs2[:,0]*4+(3-seqs1[:,-1])
             ps2 = seqs2[:,::-1][:,1:-1]*4+seqs2[:,::-1][:,2:]
             pa2 = seqs2[:,-2]*4+seqs2[:,-1]
-            pac2 = (seqs1[:,0])*4+(3-seqs2[:,-1])
+            pac2 = (seqs1[:,-1])*4+(3-seqs2[:,-1])
 
         # Shift here is considering the first strand as fixed, and the second one as
         # shifting.  The shift is the offset of the bottom one in terms of pair
@@ -201,10 +213,84 @@ class energyfuncs:
         toeholds = [ th_set[0] for th_set in toeholds]
         toeholds_flanked = [ 'c' + th.lower() + 'c' for th in toeholds]
         ends = sd.endarray(toeholds_flanked, 'TD')
-        e_vec_ext = self.th_external_dG(ends)
-        e_vec_int = self.th_internal_dG(ends)
-        e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
+        e_fn_list = [self.th_external_3_dG, self.th_external_5_dG,
+                     self.th_internal_dG, self.th_external_dG]
+        e_vec_list = [ fn(ends) for fn in e_fn_list ]
+        e_vec_all = np.concatenate( e_vec_list )
         e_err = np.abs(e_vec_all.mean() - self.targetdG)
         e_rng = e_vec_all.max() - e_vec_all.min()
         return (e_err, e_rng)
+
+    def get_toeholds(self, n_ths=6, timeout=8):
+        from  time import time
+        import stickydesign as sd
+        """ Generate specified stickyends for the Soloveichik DSD approach
+
+        A given run of stickydesign may not generate toeholds that match the
+        Soloveichik approach. This function reports whether the run was successful
+        or not. Otherwise, the toeholds are matched to respect the backwards
+        strand back-to-back toeholds.
+
+        Args:
+            ef: Stickydesign easyends object
+            n_ths: Number of signal strand species to generate toeholds for
+        Returns:
+            ends_all: Stickydesign stickyends object
+            (e_avg, e_rng): Average and range (max minus min) of toehold energies
+        """
+        # Give StickyDesign a set of trivial, single-nucleotide toeholds to avoid poor
+        # designs. I'm not sure if this helps now, but it did once.
+        avoid_list = [i * int(self.length + 2) for i in ['a', 'c', 't']]
+
+        # Generate toeholds
+        fdev = self.deviation / self.targetdG
+        notoes = True
+        startime = time()
+        while notoes:
+            try:
+                ends = sd.easyends('TD',
+                                   self.length,
+                                   interaction=self.targetdG,
+                                   fdev=fdev,
+                                   alphabet='h',
+                                   adjs=['c','g'],
+                                   maxspurious=self.max_spurious,
+                                   energetics=self,
+                                   oldends=avoid_list)
+                notoes = len(ends) < n_ths + len(avoid_list)
+                if (time() - startime) > timeout:
+                    ends = sd.easyends('TD', self.length, alphabet='h', adjs=['c', 'g'], energetics=self)
+                    e_fn_list = [self.th_external_3_dG, self.th_external_5_dG,
+                                 self.th_internal_dG, self.th_external_dG]
+                    e_vec_list = [ fn(ends) for fn in e_fn_list ]
+                    e_vec_all = np.concatenate( e_vec_list )
+                    e_avg = e_vec_all.mean()
+                    e_dev = np.std(e_vec_all)
+                    msg = "Cannot make toeholds to user specification! Try target energy:{} and deviation: {} has {} toeholds"
+                    print(msg.format(e_avg, e_dev, len(e_vec_all)))
+                    raise Exception()
+            except ValueError as e:
+                if (time() - startime) > timeout:
+                    ends = sd.easyends('TD', self.length, alphabet='h', adjs=['c', 'g'], energetics=self)
+                    e_fn_list = [self.th_external_3_dG, self.th_external_5_dG,
+                                 self.th_internal_dG, self.th_external_dG]
+                    e_vec_list = [ fn(ends) for fn in e_fn_list ]
+                    e_vec_all = np.concatenate( e_vec_list )
+                    e_avg = e_vec_all.mean()
+                    e_dev = np.std(e_vec_all)
+                    msg = "Cannot make toeholds to user specification! Try target energy:{} and deviation: {} has {} toeholds"
+                    print(msg.format(e_avg, e_dev, len(e_vec_all)))
+                    raise Exception()
+                noetoes = True
+
+        th_cands = ends.tolist()
+        # remove "avoid" sequences
+        th_cands = th_cands[len(avoid_list):]
+        # Make as many end in c as possible
+        th_cands = th_cands[:n_ths]
+        th_all = [ th[1:-1] for th in th_cands]
+        ends_full = sd.endarray(th_cands, 'TD')
+        ends_all = sd.endarray(th_all, 'TD')
+        return ends_all.tolist()
+
 

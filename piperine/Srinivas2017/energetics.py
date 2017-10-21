@@ -1,5 +1,4 @@
 from __future__ import division, print_function
-import sys
 from pkg_resources import Requirement, resource_stream
 import numpy as np
 import itertools
@@ -243,7 +242,15 @@ class energyfuncs:
                                    oldends=avoid_list)
                 notoes = len(ends) < n_ths + len(avoid_list)
                 if (time() - startime) > timeout:
-                    return -1
+                    ends = sd.easyends('TD', self.length, alphabet='h', adjs=['c', 'g'], energetics=self)
+                    e_vec_ext = self.th_external_dG(ends)
+                    e_vec_int = self.th_internal_dG(ends)
+                    e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
+                    e_avg = e_vec_all.mean()
+                    e_dev = np.std(e_vec_all)
+                    msg = "Cannot make toeholds to user specification! Try target energy:{} and deviation: {}"
+                    print(msg.format(e_avg, e_dev))
+                    raise Exception()
             except ValueError as e:
                 if (time() - startime) > timeout:
                     return -1
