@@ -4,6 +4,8 @@ import numpy as np
 import itertools
 import logging
 
+from . import translation
+
 nt = { 'a': 0, 'c': 1, 'g': 2, 't': 3 }
 tops = lambda s: 4*s[:,:-1]+s[:,1:]
 class energyfuncs:
@@ -210,7 +212,7 @@ class energyfuncs:
 
     def score_toeholds(self, toeholds):
         import stickydesign as sd
-        toeholds = [ th_set[0] for th_set in toeholds]
+        toeholds = translation.flatten(toeholds)
         toeholds_flanked = [ 'c' + th.lower() + 'c' for th in toeholds]
         ends = sd.endarray(toeholds_flanked, 'TD')
         e_fn_list = [self.th_external_3_dG, self.th_external_5_dG,
@@ -221,7 +223,27 @@ class energyfuncs:
         e_rng = e_vec_all.max() - e_vec_all.min()
         return (e_err, e_rng)
 
-    def get_toeholds(self, n_ths=6, timeout=8):
+    def calculate_unrestricted_toehold_characteristics(self):
+        import stickydesign as sd
+        ends = sd.easyends('TD',
+                           self.length,
+                           alphabet='h',
+                           adjs=['c', 'g'],
+                           energetics=self)
+        n_ends = len(ends)
+        e_array = sd.energy_array_uniform(ends, self)
+        e_array = e_array[n_ends:, :n_ends]
+        for i in range(n_ends):
+            e_array[i,i] = 0
+        e_spr = e_array.max()/self.targetdG
+        e_vec_ext = self.th_external_dG(ends)
+        e_vec_int = self.th_internal_dG(ends)
+        e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
+        e_avg = e_vec_all.mean()
+        e_dev = np.max(np.abs(e_vec_all - self.targetdG))
+        return e_avg, e_spr, e_dev, n_ends
+
+    def get_toeholds(self, n_ths=6, timeout=2):
         from  time import time
         import stickydesign as sd
         """ Generate specified stickyends for the Soloveichik DSD approach
@@ -240,7 +262,7 @@ class energyfuncs:
         """
         # Give StickyDesign a set of trivial, single-nucleotide toeholds to avoid poor
         # designs. I'm not sure if this helps now, but it did once.
-        avoid_list = [i * int(self.length + 2) for i in ['a', 'c', 't']]
+        avoid_list = [i * int(self.length + 2) for i in ['a', 't']]
 
         # Generate toeholds
         fdev = self.deviation / self.targetdG
@@ -253,34 +275,22 @@ class energyfuncs:
                                    interaction=self.targetdG,
                                    fdev=fdev,
                                    alphabet='h',
-                                   adjs=['c','g'],
+                                   adjs=['c', 'g'],
                                    maxspurious=self.max_spurious,
                                    energetics=self,
                                    oldends=avoid_list)
                 notoes = len(ends) < n_ths + len(avoid_list)
                 if (time() - startime) > timeout:
-                    ends = sd.easyends('TD', self.length, alphabet='h', adjs=['c', 'g'], energetics=self)
-                    e_fn_list = [self.th_external_3_dG, self.th_external_5_dG,
-                                 self.th_internal_dG, self.th_external_dG]
-                    e_vec_list = [ fn(ends) for fn in e_fn_list ]
-                    e_vec_all = np.concatenate( e_vec_list )
-                    e_avg = e_vec_all.mean()
-                    e_dev = np.std(e_vec_all)
-                    msg = "Cannot make toeholds to user specification! Try target energy:{} and deviation: {} has {} toeholds"
-                    print(msg.format(e_avg, e_dev, len(e_vec_all)))
+                    e_avg, e_spr, e_dev, n_ends = self.calculate_unrestricted_toehold_characteristics()
+                    msg = "Cannot make toeholds to user specification! Try target energy:{:.2}, maxspurious:{:.2}, deviation:{:.2}, which makes {:d} toeholds."
+                    print(msg.format(e_avg, e_spr, e_dev, n_ends))
                     raise Exception()
             except ValueError as e:
                 if (time() - startime) > timeout:
-                    ends = sd.easyends('TD', self.length, alphabet='h', adjs=['c', 'g'], energetics=self)
-                    e_fn_list = [self.th_external_3_dG, self.th_external_5_dG,
-                                 self.th_internal_dG, self.th_external_dG]
-                    e_vec_list = [ fn(ends) for fn in e_fn_list ]
-                    e_vec_all = np.concatenate( e_vec_list )
-                    e_avg = e_vec_all.mean()
-                    e_dev = np.std(e_vec_all)
-                    msg = "Cannot make toeholds to user specification! Try target energy:{} and deviation: {} has {} toeholds"
-                    print(msg.format(e_avg, e_dev, len(e_vec_all)))
-                    raise Exception()
+                    e_avg, e_spr, e_dev, n_ends = self.calculate_unrestricted_toehold_characteristics()
+                    msg = "Cannot make toeholds to user specification! Try target energy:{:.2}, maxspurious:{:.2}, deviation:{:.2}, which makes {:d} toeholds."
+                    print(msg.format(e_avg, e_spr, e_dev, n_ends))
+                    raise e
                 noetoes = True
 
         th_cands = ends.tolist()

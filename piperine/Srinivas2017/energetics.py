@@ -32,6 +32,8 @@ class energyfuncs:
             except IOError:
                 raise IOError("Error loading dnadangle.csv")
         self.targetdG=targetdG
+        self.alphabet='h'
+        self.adjs=['c', 'g']
         self.deviation=deviation
         self.max_spurious=max_spurious
         self.length=length
@@ -204,6 +206,25 @@ class energyfuncs:
         e_rng = e_vec_all.max() - e_vec_all.min()
         return (e_err, e_rng)
 
+    def calculate_unrestricted_toehold_characteristics(self):
+        ends = sd.easyends('TD',
+                           self.length,
+                           alphabet=self.alphabet,
+                           adjs=self.adjs,
+                           energetics=self)
+        n_ends = len(ends)
+        e_array = sd.energy_array_uniform(ends, self)
+        e_array = e_array[n_ends:, :n_ends]
+        for i in range(n_ends):
+            e_array[i,i] = 0
+        e_spr = e_array.max()/self.targetdG
+        e_vec_ext = self.th_external_dG(ends)
+        e_vec_int = self.th_internal_dG(ends)
+        e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
+        e_avg = e_vec_all.mean()
+        e_dev = np.max(np.abs(e_vec_all - self.targetdG))
+        return e_avg, e_spr, n_ends
+
     def get_toeholds(self, n_ths=6, timeout=8):
         from  time import time
         import stickydesign as sd
@@ -235,25 +256,14 @@ class energyfuncs:
                                    self.length,
                                    interaction=self.targetdG,
                                    fdev=fdev,
-                                   alphabet='h',
-                                   adjs=['c','g'],
+                                   alphabet=self.alphabet,
+                                   adjs=self.adjs,
                                    maxspurious=self.max_spurious,
                                    energetics=self,
                                    oldends=avoid_list)
                 notoes = len(ends) < n_ths + len(avoid_list)
                 if (time() - startime) > timeout:
-                    ends = sd.easyends('TD', self.length, alphabet='h', adjs=['c', 'g'], energetics=self)
-                    n_ends = len(ends)
-                    e_array = sd.energy_array_uniform(ends, self)
-                    e_array = e_array[n_ends:, :n_ends]
-                    for i in range(n_ends):
-                        e_array[i,i] = 0
-                    e_spr = e_array.max()/self.targetdG
-                    e_vec_ext = self.th_external_dG(ends)
-                    e_vec_int = self.th_internal_dG(ends)
-                    e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
-                    e_avg = e_vec_all.mean()
-                    e_dev = np.max(np.abs(e_vec_all - self.targetdG))
+                    e_avg, e_spr, e_dev, n_ends = self.calculate_unrestricted_toehold_characteristics()
                     msg = "Cannot make toeholds to user specification! Try target energy:{:.2}, maxspurious:{:.2}, deviation:{:.2}, which makes {:d} toeholds."
                     print(msg.format(e_avg, e_spr, e_dev, n_ends))
                     raise Exception()
@@ -261,7 +271,6 @@ class energyfuncs:
                 if (time() - startime) > timeout:
                     raise e
                 noetoes = True
-
         th_cands = ends.tolist()
         # remove "avoid" sequences
         th_cands = th_cands[len(avoid_list):]
