@@ -40,10 +40,10 @@ if __name__ == "__main__":
     for csvname in sys.argv[1:] :
         print("Reading scores from "+csvname+" .")
 
-        with open(csvname, 'rb') as csvfile:
+        with open(csvname, 'r') as csvfile:
             score_reader = csv.reader(csvfile)
             for row in score_reader:
-                # print(', '.join(row))
+                print(', '.join(row))
                 if 'Winner' in row[0]:
                     continue
                 if 'Index' in row[0] and columns_named:
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         rank_dict = dict(zip(array_uni, array_ord))
         temp_ranks = np.array([rank_dict[x] for x in array])
         temp = array.argsort()
-        colranks = np.array([rank_dict[x] for x in array]) 
+        colranks = np.array([rank_dict[x] for x in array])
         ranks.append(colranks)
         fractions.append((array - array.min())/abs(array.min() + (array.min()==0) ))
         percents.append((array - array.min())/(array.max() - array.min() + (array.min()==array.max()) ))
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     # with the latest piperine designer code, there should be no need to retitle columns, and this should do nothing
     # print(scores[0])
-    newtitles={ "BM Score" : "BM sum", "Largest Match" : "BM max", 
+    newtitles={ "BM Score" : "BM sum", "Largest Match" : "BM max",
                 "SSU Min" : "SSU min", "SSU Avg" : "SSU avg", "SSTU Min" : "SSTU min", "SSTU Avg" : "SSTU avg",
                 "Max Bad Nucleotide %" : "BN% max", "Mean Bad Nucleotide %" : "BN% avg",
                 "WSI-Intra" : "WSAS", "WSI-Inter" : "WSIS", "WSI-Intra-1" : "WSAS-M", "WSI-Inter-1" : "WSIS-M",
@@ -175,13 +175,13 @@ if __name__ == "__main__":
     # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI
     # CSV file has
     # TSI avg, TSI max, TO avg, TO max, BM Score, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nucleotide %, [Max Defect Component], Mean Bad Nucleotide %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, WSI, Toehold Avg dG, Range of toehold dG's]
-    # Want them to be:                    *       *        *        *         *         *        *        *       *    *      *       *                  *         *         *  
-    # TSI avg, TSI max, TO avg, TO max, BM sum, BM max, SSU min, SSU avg, SSTU min, SSTU avg, BN% max, BN% avg, WSAS, WSIS, WSAS-M, WSIS-M, Verboten, Spurious, dG error, dG range 
+    # Want them to be:                    *       *        *        *         *         *        *        *       *    *      *       *                  *         *         *
+    # TSI avg, TSI max, TO avg, TO max, BM sum, BM max, SSU min, SSU avg, SSTU min, SSTU avg, BN% max, BN% avg, WSAS, WSIS, WSAS-M, WSIS-M, Verboten, Spurious, dG error, dG range
     # yes spurious, no dG error, dG range  (i.e. old EW)
     # weights= [5,   20,     10,     30,      2,      3,      30,      10,       50,       20,      10,       5,    6,    4,      5,      3,        2,        8]
     # no spurious, yes dG error, dG range  (i.e. recent James)
     # weights = [5,   20,     10,     30,      2,      3,      30,      10,       50,       20,      10,       5,    6,    4,      5,      3,        2,        8,       20 ]
-    # new weights, including dG error and dG range and spurious (i.e. new EW 2017) 
+    # new weights, including dG error and dG range and spurious (i.e. new EW 2017)
     weights = [5,   20,     10,     30,      2,      3,      30,      10,       50,       20,      10,       5,    6,    4,      5,      3,        2,        8,       10,       20 ]
 
     print()
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     # now make a new matrix showing, for each design:
     #  the worst-rank, sum-of-ranks, sum-of-weighted-ranks, fractional-excess, weighted-fractional-excess, percent-badness, weighted-percent-badness
-    
+
     metascores=[
         [max(r) for r in ranks],
         [max(np.array(r)*weights/100.0) for r in ranks],

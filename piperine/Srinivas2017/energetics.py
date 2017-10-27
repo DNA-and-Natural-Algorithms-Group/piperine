@@ -243,17 +243,23 @@ class energyfuncs:
                 notoes = len(ends) < n_ths + len(avoid_list)
                 if (time() - startime) > timeout:
                     ends = sd.easyends('TD', self.length, alphabet='h', adjs=['c', 'g'], energetics=self)
+                    n_ends = len(ends)
+                    e_array = sd.energy_array_uniform(ends, self)
+                    e_array = e_array[n_ends:, :n_ends]
+                    for i in range(n_ends):
+                        e_array[i,i] = 0
+                    e_spr = e_array.max()/self.targetdG
                     e_vec_ext = self.th_external_dG(ends)
                     e_vec_int = self.th_internal_dG(ends)
                     e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
                     e_avg = e_vec_all.mean()
-                    e_dev = np.std(e_vec_all)
-                    msg = "Cannot make toeholds to user specification! Try target energy:{} and deviation: {}"
-                    print(msg.format(e_avg, e_dev))
+                    e_dev = np.max(np.abs(e_vec_all - self.targetdG))
+                    msg = "Cannot make toeholds to user specification! Try target energy:{:.2}, maxspurious:{:.2}, deviation:{:.2}, which makes {:d} toeholds."
+                    print(msg.format(e_avg, e_spr, e_dev, n_ends))
                     raise Exception()
             except ValueError as e:
                 if (time() - startime) > timeout:
-                    return -1
+                    raise e
                 noetoes = True
 
         th_cands = ends.tolist()
