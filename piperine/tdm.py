@@ -9,9 +9,9 @@ nupackpath = os.environ['NUPACKHOME']+'/bin/'
 import numpy as np
 import re
 import random
-whiteSpaceSearch = re.compile('\s+')
 
-from . import gen_th, energyfuncs_james
+from .designer import default_energyfuncs
+whiteSpaceSearch = re.compile('\s+')
 
 class MyProgress(object):
     class ImproperInput(Exception):
@@ -180,7 +180,7 @@ def get_heuristics_inputs(gates, strands):
 
 def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
                 header=True, testname=None, seq_file=None, mfe_file=None,
-                quick=False, energyfuncs=energyfuncs_james.energyfuncs(targetdG=7.7),
+                quick=False, energyfuncs=default_energyfuncs,
                 includes=None, clean=True):
     if not testname:
         testname = basename

@@ -2,40 +2,41 @@
 from __future__ import division, print_function
 
 import sys
-import pkg_resources
-import numpy as np
 import os
 import os.path
 import importlib
+import pkg_resources
 
-from . import energyfuncs_james
-from . import DSDClasses
-from . import Srinivas2017
+import numpy as np
 
-default_energyfuncs = Srinivas2017.energetics.energyfuncs()
+from . import Srinivas2017 as default_translation_scheme
+
+default_energyfuncs = default_translation_scheme.energetics.energyfuncs()
+default_translation = default_translation_scheme.translation
+default_design_params = default_translation_scheme.translation.default_params
 small_crn = pkg_resources.resource_filename('piperine', "data/small.crn")
 data_dir = os.path.dirname(small_crn)
 
 def call_compiler(basename,
-                    args = (7, 15, 2),
-                    outputname=None,
-                    savename=None,
-                    fixed_file=None,
-                    synth=True,
-                    includes=None):
-    """ Generates a PIL file from a .sys. (peppercompiler wrapper)
+                  args=default_design_params,
+                  outputname=None,
+                  savename=None,
+                  fixed_file=None,
+                  includes=None):
+    """ Generates a PIL file from a .sys. This is a wrapper for a peppercompiler function.
 
     Args:
         basename: The default name of filetypes to be produced and accessed.
         args: A tuple of system arguments.
-        outputname: the PIL file produced by the compiler. (<basename>.pil)
-        savename: the save file produced by the compiler. def: (<basename>.save)
-        fixed_file: filename specifying sequence constraints.
-        synth: Boolean, whether or not to produce an output. Deprecated.
-        includes: path to folder holding component files referenced by .sys. (location of this file)
+        outputname: The PIL file produced by the compiler. (Default: <basename>.pil)
+        savename: The save file produced by the compiler. def: (Default: <basename>.save)
+        fixed_file: Filename specifying sequence constraints. (Default: No fixed file)
+        includes: Path to folder holding component files referenced by .sys.
+                  (Default: piperine.data)
     Returns:
         Nothing
     """
+    print(basename)
     from peppercompiler.compiler import compiler
     if outputname is None:
         outputname = '{}.pil'.format(basename)
@@ -44,7 +45,7 @@ def call_compiler(basename,
     if includes is None:
         includes = []
     includes.append(data_dir)
-    compiler(basename, args, outputname, savename, fixed_file, synth, includes)
+    compiler(basename, args, outputname, savename, fixed_file, True, includes)
 
 def call_design(basename,
                 infilename=None,
@@ -59,7 +60,7 @@ def call_design(basename,
                 extra_pars="",
                 findmfe=False,
                 spuriousbinary="spuriousSSM"):
-    """ Generates an MFE file from a .pil file. (peppercompiler wrapper)
+    """ Generates an MFE file from a .pil file. This is a wrapper for a peppercompiler function.
 
     Args:
         basename: The default name of filetypes to be produced and accessed.
@@ -84,8 +85,8 @@ def call_design(basename,
     if not outfilename:
         outfilename = '{}.mfe'.format(basename)
     design(basename, infilename, outfilename, cleanup, verbose, reuse,
-              just_files, struct_orient, old_output, tempname, extra_pars,
-              findmfe, spuriousbinary)
+           just_files, struct_orient, old_output, tempname, extra_pars,
+           findmfe, spuriousbinary)
     if not os.path.isfile(outfilename):
         raise RuntimeError('Expected MFE not created, expect SSM failure')
 
@@ -102,35 +103,130 @@ def call_finish(basename,
                 conc=1,
                 spurious=False,
                 spurious_time=10.0):
-    """ Generates a .seq file from an .mfe file. (peppercompiler wrapper)
+    """ Generates a .seq file from an .mfe file. This is a wrapper for a peppercompiler function.
 
     Args:
         basename: The default name of all files produced and accessed.
-        savename: File storing process states. (basename.save)
-        designname: MFE file, read for sequences (basename.mfe)
-        seqname: Output file containing all sequences (basename.seq)
-        strandsname: Output file containing all strand sequences (None)
-        run_kin: Run spurious kinetic tests on sequences (False)
-        cleanup: Delete temporary files (True)
-        trials: Number of kinetics trials to run (24)
-        time: Simulation seconds (1000000)
-        temp: Degrees celsius for simulations (25)
-        conc: Concentration of strands in simulations in uM (1)
-        spurious: Run pairwise kinetics tests (false)
-        spurious_time: Simulation time (s) for spurious kinetics (10.0)
+        savename: File storing process states. (Default: basename.save)
+        designname: MFE file, read for sequences (Default: basename.mfe)
+        seqname: Output file containing all sequences (Default: basename.seq)
+        strandsname: Output file containing all strand sequences (Default: None)
+        run_kin: Run spurious kinetic tests on sequences (Default: False)
+        cleanup: Delete temporary files (Default: True)
+        trials: Number of kinetics trials to run (Default: 24)
+        time: Simulation seconds (Default: 1000000)
+        temp: Degrees celsius for simulations (Default: 25)
+        conc: Concentration of strands in simulations in uM (Default: 1)
+        spurious: Run pairwise kinetics tests (Default: False)
+        spurious_time: Simulation time (s) for spurious kinetics (Default: 10.0)
     Returns:
         Nothing
     """
     from peppercompiler.finish import finish
-    if not savename:
+    if savename is None:
         savename = '{}.save'.format(basename)
-    if not designname:
+    if designname is None:
         designname = '{}.mfe'.format(basename)
-    if not seqname:
+    if seqname is None:
         seqname = '{}.seq'.format(basename)
 
     finish(savename, designname, seqname, strandsname, run_kin,
-                  cleanup, trials, time, temp, conc, spurious, spurious_time)
+           cleanup, trials, time, temp, conc, spurious, spurious_time)
+
+def parse_parameter_line(line, translation=default_translation):
+    """ This interprets compilation or DNA domain parameters found in the CRN file.
+
+    This function is called whenever the get_parameters_from_crn_file function
+    encounters an equals sign "=" and, if the parameter term is recognized, the
+    associated value is recorded and assigned internally to the matched parameter.
+
+    Parameter terms are either those related to toehold generation, defining
+    translation scheme package, sequence designer The following are parameters that can
+    be assigned through this method. Terms in parentheticals are the terms this
+    function detects.
+
+        * Any parameters required by components (.comp) files. The translation scheme
+          package provides the terms to look for.
+        * Toehold parameters
+            * (toehold_energy) Target binding energy
+            * (toehold_deviation) Maximum standard deviation of toehold binding energies
+            * (toehold_spurious) Maximum spurious binding energy
+        * (translation scheme) Python package defining translation and energyfuncs
+        * (spurious_design_parameters) A string that is appended to the
+          spurious design call. Look at the spurious design documentation for info.
+        * (n) Number of sets to generate
+
+    Other terms will be accepted if they appear in the list of parameter terms
+    defined in the translation scheme. Terms not found in these places will
+    be ignored. Terms are detected in line order, so higher line number is
+    higher priority.
+
+    Args:
+        line : String from the CRN file defining a compilation parameter
+        translation : Translation module (Default: Srinivas2017.translation)
+
+    Returns:
+        param_dict : A dictionary listing the parameter definitions found in the CRN file
+    """
+    import re
+    # Accepted terms
+    terms = ["toehold_energy",
+             "toehold_deviation",
+             "toehold_spurious",
+             "toehold_length",
+             "spurious_design_parameters",
+             "translation_scheme",
+             "n"]
+
+    converters = [lambda x: np.float(x),
+                  lambda x: np.float(x),
+                  lambda x: np.float(x),
+                  lambda x: np.int(x),
+                  lambda x: x,
+                  lambda x: x,
+                  lambda x: np.int(x)]
+
+    # Design parameters are always integers
+    if  translation is not None:
+        for param_term in default_translation.param_terms:
+            terms.append(param_term)
+            converters.append(lambda x: np.int(x))
+
+    # Remove whitespace
+    line = re.sub(r'\s', '', line)
+    rhs, lhs = line.split('=')
+
+    param_dict = {}
+    for i, term in enumerate(terms):
+        if rhs == term:
+            param_dict.update({term:converters[i](lhs)})
+    return param_dict
+
+def get_parameters_form_crn_file(crn_file, translation=default_translation):
+    '''
+    Wraapper function for parse_parameter_line.
+
+    Args:
+        line : String from the CRN file defining a compilation parameter
+        translation : Translation module (Default: Srinivas2017.translation)
+
+    Returns:
+        param_dict : A dictionary listing the parameter definitions found in the CRN file
+    '''
+    fid = open(crn_file, 'r')
+    lines = list()
+    for line in fid:
+        lines.append(line[:-1])
+
+    fid.close()
+
+    # Read through the file and extract reaction specifications
+    parameters = {}
+    for line in lines:
+        if '=' in line:
+            parameters.update(parse_parameter_line(line, translation))
+
+    return parameters
 
 def read_crn(in_file):
     """ Interprets a CRN from a text file.
@@ -172,6 +268,7 @@ def read_crn(in_file):
     update_ind = 0
     num_pattern = re.compile(r"^[0-9./]+|^[0-9.]+e-?[0-9.]+")
     spe_pattern = re.compile(r"\w+")
+    parameters = {}
     for line in lines:
         # Skip empty lines
         if line == '':
@@ -183,21 +280,21 @@ def read_crn(in_file):
 
         full_line = line[:]
         # Remove whitespace
-        line = re.sub(r'\s','',line)
+        line = re.sub(r'\s', '', line)
 
         # Check for reaction rate
         rate_match = re.search(r'\(.*\)', line)
         if rate_match:
             rate_str = rate_match.group(0)[1:-1]
             rate = float(eval(rate_str))
-            line = re.sub(r'\(' + rate_str + '\)', '', line)
+            line = re.sub(r'\(' + rate_str + r'\)', '', line)
         else:
             rate = 1
 
         # Split into reactants and products
-        rxn_eq = re.split('->',line)
+        rxn_eq = re.split('->', line)
         try:
-            assert len(rxn_eq)==2
+            assert len(rxn_eq) == 2
         except AssertionError as e:
             print('Check reaction arrow use.')
             raise
@@ -275,7 +372,7 @@ def write_toehold_file(toehold_file, strands, toeholds):
 def write_sys_file(basename,
                    gates=None,
                    sys_file=None,
-                   trans_module=Srinivas2017.translation):
+                   translation=default_translation):
     """ Write system file from gates list
 
     This function takes in filenames and a CRN specification and writes a system
@@ -285,7 +382,7 @@ def write_sys_file(basename,
         basename: Default name for files accessed and written
         gates: List of gate objects
         sys_file: System file filename (basename + .sys)
-        trans_module: module containing scheme variables and classes (DSDClasses)
+        translation: module containing scheme variables and classes (Srinivas2017.translation)
     Returns:
         Nothing
     """
@@ -299,18 +396,18 @@ def write_sys_file(basename,
         basename = os.path.basename(basename)
 
     with open(sys_file, 'w') as f:
-        f.write("declare system " + basename + trans_module.param_string + " -> \n")
+        f.write("declare system " + basename + translation.param_string + " -> \n")
         f.write("\n")
         # Comps is defined in Classes file
-        for comp in trans_module.comps:
+        for comp in translation.comps:
             f.write("import {0}\n".format(comp))
         f.write("\n")
         for rxn in gates:
             f.write(rxn.get_reaction_line())
 
 def process_crn(basename=None,
-                design_params=(7, 15, 2),
-                trans_module=None,
+                design_params=None,
+                translation=default_translation,
                 crn_file=None):
     """ Generate objects describing DNA implementation
 
@@ -322,28 +419,29 @@ def process_crn(basename=None,
     Args:
         basename: Default name for files accessed and written
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        trans_module: module containing scheme variables and classes (DSDClasses)
+        translation: module containing scheme variables and classes (Srinivas2017.translation)
         crn_file: name of the text file specifying the CRN (basename + .crn)
     Returns:
         gates: A list of gate objects
         strands: A list of strand objects
     """
-    if trans_module is None:
-        from . import DSDClasses as trans_module
 
     if crn_file is None:
         crn_file = basename + ".crn"
 
+    if design_params is None:
+        design_params = translation.default_params
+
     reactions, species = read_crn(crn_file)
 
-    output = trans_module.process_rxns(reactions, species, design_params)
+    output = translation.process_rxns(reactions, species, design_params)
     (gates, strands) = output
 
     return (gates, strands)
 
 def generate_scheme(basename,
-                    design_params=(7, 15, 2),
-                    trans_module=None,
+                    design_params=default_design_params,
+                    translation=default_translation,
                     crn_file=None,
                     system_file=None):
     """ Produce SYS file describing a CRN
@@ -359,28 +457,26 @@ def generate_scheme(basename,
     Args:
         basename: Default name for files accessed and written
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        trans_module: module containing scheme variables and classes (DSDClasses)
+        translation: module containing scheme variables and classes (Srinivas2017.translation)
         crn_file: name of the text file specifying the CRN (basename + .crn)
         system_file: name of the system file (basename + .sys)
     Returns:
         gates: A list of gate objects
         strands: A list of strand objects
     """
-    if trans_module is None:
-        from . import DSDClasses as trans_module
 
     if system_file is None:
         system_file = basename + ".sys"
 
-    (gates, strands) = process_crn(basename, design_params, trans_module, crn_file)
+    (gates, strands) = process_crn(basename, design_params, translation, crn_file)
 
-    write_sys_file(basename, gates, system_file, trans_module)
+    write_sys_file(basename, gates, system_file, translation)
     return (gates, strands)
 
 def generate_seqs(basename,
                   gates,
                   strands,
-                  design_params=(7, 15, 2),
+                  design_params=default_design_params,
                   energyfuncs=default_energyfuncs,
                   outname=None,
                   extra_pars="",
@@ -409,7 +505,7 @@ def generate_seqs(basename,
         pil_file: Filename of the peppercompiler (basename + .pil)
         mfe_file: Filename of the peppercompiler MFE file (basename + .mfe)
         seq_file: Filename of the peppercompiler sequence file (basename + .seq)
-        fixed_file: Filename of the peppercompiler fixed file (basename + .fixed)
+        fixed_file: Filename of the peppercompiler fixed file (Default: None)
         save_file: Filename of the peppercompiler save file (basename + .save)
         strands_file: Filename of the peppercompiler strands file (basename + _strands.txt)
     Returns:
@@ -443,7 +539,7 @@ def generate_seqs(basename,
 
     # Make toeholds
     n_species = len(strands)
-    signal_names = [ s.name for s in strands ]
+    signal_names = [s.name for s in strands]
     tdomains = []
     for strand in strands:
         tdomains += strand.get_ths()
@@ -469,12 +565,8 @@ def generate_seqs(basename,
     return toeholds
 
 def selection(scores):
-
-    if sys.version_info >= (3,1):
-        print_fn = lambda x : print(x, end='')
-    else:
-        print_fn = lambda x : print(x)
-
+    '''
+    '''
     columns = list(zip(*scores))
     ranks = []
     fractions = []
@@ -496,69 +588,69 @@ def selection(scores):
         colranks = np.array([rank_dict[x] for x in array])
         # low rank is better
         ranks.append(colranks)
-        fractions.append((array - array.min())/abs(array.min() + (array.min()==0) ))
+        fractions.append((array - array.min())/abs(array.min() + (array.min() == 0) ))
         percents.append((array - array.min())/(array.max() - array.min()))
-    temp=ranks
-    ranks=list(zip(*temp))
-    temp=fractions
-    fractions=list(zip(*temp))
-    temp=percents
-    percents=list(zip(*temp))
+    temp = ranks
+    ranks = list(zip(*temp))
+    temp = fractions
+    fractions = list(zip(*temp))
+    temp = percents
+    percents = list(zip(*temp))
 
-    print_fn("\nRank array:")
-    print_fn("\n                         ")
+    print("\nRank array:")
+    print("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
         if 'Index' in title or 'Defect' in title or 'Spurious' == title:
             continue
-        print_fn("{:>6s}".format(title[0:6]))
-    print_fn("\n")
-    i=0
+        print("{:>6s}".format(title[0:6]))
+    print("\n")
+    i = 0
     for r in ranks:
-        print_fn("design {:2d}: {:6d} = sum [".format(i,sum(r)))
+        print("design {:2d}: {:6d} = sum [".format(i, sum(r)))
         for v in r:
-            print_fn("{:6d}".format(v))
-        print_fn("]\n")
-        i=i+1
+            print("{:6d}".format(v))
+        print("]\n")
+        i = i+1
 
-    print_fn("\nFractional excess array:")
-    print_fn("\n                         ")
+    print("\nFractional excess array:")
+    print("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
         if 'Index' in title or 'Defect' in title or 'Spurious' == title:
             continue
-        print_fn("{:>6s}".format(title[0:6]))
-    print_fn("\n")
-    i=0
+        print("{:>6s}".format(title[0:6]))
+    print("\n")
+    i = 0
     for f in fractions:
-        print_fn("design {:2d}: {:6.2f} = sum [".format(i,sum(f)))
+        print("design {:2d}: {:6.2f} = sum [".format(i, sum(f)))
         for v in f:
-            print_fn("{:6.2f}".format(v))
-        print_fn("]\n")
-        i=i+1
+            print("{:6.2f}".format(v))
+        print("]\n")
+        i = i+1
 
-    print_fn("\nPercent badness (best to worst) array:")
-    print_fn("\n                         ")
+    print("\nPercent badness (best to worst) array:")
+    print("\n                         ")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
         if 'Index' in title or 'Defect' in title or 'Spurious' == title:
             continue
-        print_fn("{:>6s}".format(title[0:6]))
-    print_fn("\n")
-    i=0
+        print("{:>6s}".format(title[0:6]))
+    print("\n")
+    i = 0
     for p in percents:
-        print_fn("design {:2d}: {:6.2f} = sum [".format(i,100*sum(p)))
+        print("design {:2d}: {:6.2f} = sum [".format(i, 100*sum(p)))
         for v in p:
-            print_fn("{:6.2f}".format(100*v))
-        print_fn("]\n")
-        i=i+1
+            print("{:6.2f}".format(100*v))
+        print("]\n")
+        i = i+1
 
-    print_fn("\n")
+    print("\n")
     worst_rank = 0
     while 1:
         ok_seqs = [i for i in range(len(ranks)) if max(ranks[i])<=worst_rank]
-        if len(ok_seqs)==0:
-            worst_rank=worst_rank+1
+        if len(ok_seqs) == 0:
+            worst_rank = worst_rank+1
             continue
         else:
             break
@@ -567,31 +659,33 @@ def selection(scores):
     # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, Toehold error, Toehold range
     weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8,            20]#, 20]
 
-    print_fn("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)+"\n")
-    print_fn("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])+"\n")
-    print_fn("  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs])+"\n")
-    print_fn("  Sum of fractional excess over best score:   " + str([sum(fractions[i]) for i in ok_seqs])+"\n")
-    print_fn("  Sum of weighted fractional excess:          " + str([sum(np.array(fractions[i])*weights/100.0) for i in ok_seqs])+"\n")
-    print_fn("  Sum of percent badness scores:              " + str([100*sum(percents[i]) for i in ok_seqs])+"\n")
-    print_fn("  Sum of weighted percent badness scores:     " + str([sum(np.array(percents[i])*weights) for i in ok_seqs])+"\n")
+    print("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)+"\n")
+    print("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])+"\n")
+    print("  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs])+"\n")
+    print("  Sum of fractional excess over best score:   " + str([sum(fractions[i]) for i in ok_seqs])+"\n")
+    print("  Sum of weighted fractional excess:          " + str([sum(np.array(fractions[i])*weights/100.0) for i in ok_seqs])+"\n")
+    print("  Sum of percent badness scores:              " + str([100*sum(percents[i]) for i in ok_seqs])+"\n")
+    print("  Sum of weighted percent badness scores:     " + str([sum(np.array(percents[i])*weights) for i in ok_seqs])+"\n")
     temp = [sum(r) for r in ranks]
-    print_fn("Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print("Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     winner = np.argmin(temp)
     temp = [sum(np.array(r)*weights/100.0) for r in ranks]
-    print_fn("Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print("Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(f) for f in fractions]
-    print_fn("Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print("Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(np.array(f)*weights/100.0) for f in fractions]
-    print_fn("Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print("Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [100*sum(p) for p in percents]
-    print_fn("Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print("Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
     temp = [sum(np.array(p)*weights) for p in percents]
-    print_fn("Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
-    print_fn("\n")
+    print("Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ))
+    print("\n")
     return winner
 
 def selection_wrapper(scores, reportfile = 'score_report.txt'):
-    import sys
+    '''
+    docstring
+    '''
     stdout = sys.stdout
     try:
         sys.stdout = open(reportfile, 'w')
@@ -602,7 +696,6 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
         print(e)
         print(sys.exc_info()[0])
         raise
-        return 'bad'
     else:
         sys.stdout.close()
         sys.stdout = stdout
@@ -610,11 +703,10 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
 
 def run_designer(basename=small_crn[:-4],
                  reps=1,
-                 design_params=(7, 15, 2),
+                 design_params=default_design_params,
+                 translation=default_translation,
                  energyfuncs=default_energyfuncs,
-                 trans_module=Srinivas2017.translation,
                  extra_pars="",
-                 temp_files=True,
                  quick=False,
                  includes=None
                 ):
@@ -627,34 +719,40 @@ def run_designer(basename=small_crn[:-4],
     functions to access and compute on the domains and strands from each
     sequence set.
 
+    Writes many basename + extension files, such as:
+        system file (.sys)
+        sequences (.seq)
+        scores (_scores.csv)
+
     Args:
         basename: Default name for files accessed and written (small)
         reps: Number of sequence sets to be generated and scored (1)
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        trans_module: module containing scheme variables and classes (DSDClasses)
+        translation: Module containing scheme variables and classes (Srinivas2017.translation)
+        energyfuncs: Module defining all functions related to toehold generation (Srinivas2017.energetics())
         extra_pars: Options sent to spurious designer. ('')
         quick: Make random scores instead of computing heursitics. Skips time
                consuming computations for debugging purposes. (False)
+        includes: List of directories that peppercompiler looks in to find .comp files (None)
     Returns:
-        Nothing, but writes many basename + extension files, such as:
-            system file (.sys)
-            sequences (.seq)
-            scores (_scores.csv)
+        gates: List of gate objects created by the translation module
+        strands: List of strand objects created by the translation module
+        winner: Integer defining the index of the winning candidate
+        scoreslist: List of list containing scores for each candidate
     """
     # If module inputs are strings, import them
-    if type(trans_module) is str:
-        trans_module = importlib.import_module('.' + trans_module, 'piperine')
+    if type(translation) is str:
+        translation = importlib.import_module('.' + translation, 'piperine')
     # Provide extra parameters to spuriousSSM such that no minimization is performed
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"
 
     from . import tdm
-    fixed_file = basename + ".fixed"
     system_file = basename + ".sys"
     pil_file = basename + ".pil"
 
     (gates, strands) = \
-        generate_scheme(basename, design_params, trans_module)
+        generate_scheme(basename, design_params, translation)
 
     if reps >= 1:
         scoreslist = []
@@ -692,7 +790,7 @@ def run_designer(basename=small_crn[:-4],
         with open(basename+'_scores.csv', 'w') as f:
             f.write(','.join(score_names))
             f.write('\n')
-            f.writelines( [ ','.join(map(str, l)) + '\n' for l in scoreslist ])
+            f.writelines( [','.join(map(str, l)) + '\n' for l in scoreslist])
             f.write("Winner : {}".format(winner))
 
     return (gates, strands, winner, scoreslist)
@@ -706,8 +804,8 @@ def score_fixed(fixed_file,
                  mfe_file=None,
                  seq_file=None,
                  score_file=None,
-                 design_params=(7, 15, 2),
-                 trans_module=DSDClasses,
+                 design_params=default_design_params,
+                 translation=default_translation,
                  energyfuncs=default_energyfuncs,
                  includes=None,
                  quick=False):
@@ -726,7 +824,9 @@ def score_fixed(fixed_file,
         mfe_file: Filename of the peppercompiler MFE file (basename + .mfe)
         seq_file: Filename of the peppercompiler output seq file (basename + .seq)
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
-        trans_module: Module containing scheme variables and classes (DSDClasses)
+        translation: Module containing scheme variables and classes (Srinivas2017.translation)
+        energyfuncs: Module defining all functions related to toehold generation (Srinivas2017.energetics())
+        includes: List of directories that peppercompiler looks in to find .comp files (None)
         quick: Skip time-consuming steps of minimizing sequence symetry and scoring (False)
     Returns:
         scores: A list containing the scores generated by EvalCurrent
@@ -736,38 +836,40 @@ def score_fixed(fixed_file,
     if crn_file is None:
         crn_file = basename + '.crn'
     else:
-        bn = crn_file[:-4]
+        basename_temp = crn_file[:-4]
     if sys_file is None:
         sys_file  = basename + '.sys'
     else:
-        bn = sys_file[:-4]
+        basename_temp = sys_file[:-4]
     if pil_file is None:
         pil_file = basename + '.pil'
     else:
-        bn = pil_file[:-4]
+        basename_temp = pil_file[:-4]
     if save_file is None:
         save_file = basename + '.save'
     else:
-        bn = save_file[:-5]
+        basename_temp = save_file[:-5]
     if mfe_file is None:
         mfe_file = basename + '.mfe'
     else:
-        bn = mfe_file[:-4]
+        basename_temp = mfe_file[:-4]
     if seq_file is None:
         seq_file = basename + '.seq'
     else:
-        bn = seq_file[:-4]
+        basename_temp = seq_file[:-4]
     if score_file is None:
         score_file = fixed_file[:-6] + '.score'
     if basename is None:
         basename = bn
     extra_pars = ""
 
+    # Generate .sys file
     gates, strands = generate_scheme(basename,
                                    design_params,
                                    crn_file=crn_file,
                                    system_file=sys_file,
-                                   trans_module=trans_module)
+                                   translation=translation)
+    # Generate PIL
     call_compiler(basename, args=design_params, fixed_file=fixed_file,
                   outputname=pil_file, savename=save_file, includes=includes)
 
@@ -775,88 +877,98 @@ def score_fixed(fixed_file,
     call_design(basename, pil_file, mfe_file, verbose=False,
                 extra_pars=extra_pars, cleanup=False)
 
-    # "Finish" the sequence generation
+    # Generate .seq file
     call_finish(basename, savename=save_file, designname=mfe_file, \
-                seqname=seq_file, run_kin=False)
+                seqname=seq_file, run_kin=False, cleanup=False)
+
     scores, score_names = tdm.EvalCurrent(basename,
                                           gates,
                                           strands,
                                           compile_params=design_params,
                                           quick=quick,
                                           includes=includes,
+                                          seq_file=seq_file,
+                                          mfe_file=mfe_file,
                                           energyfuncs=energyfuncs)
     with open(score_file, 'w') as f:
         f.write(','.join(score_names))
         f.write('\n')
-        f.writelines( [ ','.join(map(str, l)) + '\n' for l in [scores] ])
+        f.writelines([','.join(map(str, l)) + '\n' for l in [scores]])
     return (scores, score_names)
 
 def main():
+    '''
+    Function called by the command line function 'piperine-design'
+    '''
     import argparse
-    import importlib
-    descr = "Piperine documentation."
-    usage = "\
-usage: piperine-design basename \n\
-           [-h] [-l LENGTH] [-e ENERGY] [-d DEVIATION] \n\
-           [-M MAXSPURIOUS] [-g ENERGETICS] \n\
-           [-p [SYSTEMPARAMS [SYSTEMPARAMS ...]]] [-n CANDIDATES] \n\
-           [-t TRANSLATION] [-x EXTRAPARS] [-q] \n\n\
-Example executions with CRN file myproject.crn, energetics module Chen2013.py, and translation module trans.py\n\
+    descr = "Command line utility for the Piperine sequence designer."
+    usage = "\n\n\n\
+Call template with short option flags. Options are shown in brackets. Capitalized terms stand in for\
+required argument or multiple arguments.\n\
+piperine-design CRNFILE [-h] [-l LENGTH] [-e ENERGY] [-d DEVIATION] [-m MAXSPURIOUS] \
+[-p DESIGNPARAMS ...] [-n CANDIDATES] \
+[-t TRANSLATION] [-x EXTRAPARS] [-q] \n\n\
+Default execution parameters are stated in the option descriptions. The following are example executions with CRN \
+file my_very_own.crn and option arguments to override the default settings. \n\
     \n\
-    To design one set of sequences for the myproject.crn according to the Srinivas2017 translation scheme:\n\
-    piperine-design myproject\n\
-    \n\
-    To design one set of sequences for the myproject.crn according to the Chen2013 translation scheme:\n\
+    Design one set of sequences for the my_very_own.crn according to the default translation scheme, Srinivas2017:\n \n\
+    piperine-design my_very_own.crn\n \
+\n \
+\n\
+    Design one set of sequences for my_very_own.crn according to the Chen2013 translation scheme:\n\n\
     piperine-design myproject -t Chen2013\n\
-    \n\
-    To design 10 sequence sets for the myproject.crn according to the Chen2013 translation scheme:\n\
-    piperine-design myproject -t Chen2013 -n 10\n\
+    or\n\
+    piperine-design myproject -translation_scheme Chen2013\n\
+    \n \n\
+    Design 10 sequence sets for the myproject.crn according to the Chen2013 translation scheme:\n\n\
+    piperine-design myproject -translation_scheme Chen2013 -n 10\n\
+    \n \n\
+    Override default domain lengths for the Chen2013 translation scheme:\n\n\
+    piperine-design myproject -designparams 5 20 -translation_scheme Chen2013\n\
+    \n \n\
+    Override default domain lengths for the default translation scheme:\n\n\
+    piperine-design myproject -designparams 5 20 2 \n\
     "
     parser = argparse.ArgumentParser(description=descr, usage=usage)
-    parser.add_argument("basename",
-                        help='Files read or generated by this call will have the form: basename.extension ; '+
-                          'E.g. basename.crn, basename.pil, etc.',
+    parser.add_argument("crnfile",
+                        help='Text file describing CRN. May also define parameters. Files read or generated by ' +
+                              'this call will have the form: basename.extension ; '+
+                          'E.g. basename.crn, basename.pil, when the crn file is basename.crn.',
                         type=str)
 
     parser.add_argument("-l", "--length",
-                        help='Toehold length in nucleotides. [default: 7]',
-                        type=int,
-                        default=7)
+                        help='Toehold length in nucleotides. [default: Taken from translation scheme package]',
+                        type=int)
 
     parser.add_argument("-e", "--energy",
                         help='Target toehold binding energy used by StickyDesign, '+
                         'in kcal/mol. [default: 7.7]',
-                        type=float,
-                        default=7.7)
+                        type=float)
 
     parser.add_argument("-d", "--deviation",
                         help='Maximum standard deviation for toehold binding energies allowed by StickyDesign'+
                             ', in kcal/mol. [default: 0.5]',
-                        type=float,
-                        default=0.5)
+                        type=float)
 
-    parser.add_argument("-M", "--maxspurious",
+    parser.add_argument("-m", "--maxspurious",
                         help='This argument is passed to StickyDesign and sets the Maximum spurious interac'+
                         'tion energy as a multiple of target binding energy. [default: '+
                         '0.4]',
-                        type=float,
-                        default=0.4)
+                        type=float)
 
-    parser.add_argument("-p", '--systemparams',
+    parser.add_argument("-p", '--designparams',
                         help='A string of integers that are parameters to the sys file compilation. [default: Finds in module]',
                         type=int,
                         nargs="*")
 
     parser.add_argument("-n", '--candidates',
                         help='Number of candidate sequences to generate. [default: 1]',
-                        default=1,
                         type=int)
 
-    parser.add_argument("-t", '--translation',
+    parser.add_argument("-t", '--translation_scheme',
                         help='Provide a string, the name of the Python package describing the translation scheme used to convert'+
                             'the CRN to DNA strands and complexes. See piperine.Srinivas2017 for an example of such a package.'+
                             ' [default: Srinivas2017]',
-                        default='Srinivas2017',
                         type=str)
 
     parser.add_argument("-x", '--extrapars',
@@ -869,45 +981,247 @@ Example executions with CRN file myproject.crn, energetics module Chen2013.py, a
 
     args = parser.parse_args()
 
-    ############## Interpret arguments
-    basename = args.basename
+    ############## Interpret arguments.
+    # Precedence is : command line arguments > crn file arguments > default
+    assert(args.crnfile[-4:] == '.crn')
+    basename = args.crnfile[:-4]
+    crnfile = args.crnfile
 
     # Find absolute path to basename
     basedir = os.path.dirname(basename)
     if basedir == '':
         basename = os.getcwd() + os.path.sep + basename
+        crnfile = os.getcwd() + os.path.sep + args.crnfile
 
-    # Import translation module
-    if args.translation:
-        translation = importlib.import_module("."+args.translation, 'piperine')
-        energyfuncs = translation.energetics.energyfuncs(targetdG=args.energy,
-                                             length=args.length,
-                                             deviation=args.deviation,
-                                             max_spurious=args.maxspurious)
-        trans_module = translation.translation
+    # Read parameters from CRN file, only to see if translation scheme is defined
+    parameters = get_parameters_form_crn_file(crnfile, None)
 
-    # Set user-specified spurious interaction heatmap image file name
-    if args.systemparams:
-        design_params = args.systemparams
+    # Import translation scheme package
+    if args.translation_scheme:
+        translation_scheme = importlib.import_module("."+args.translation_scheme, 'piperine')
+    elif 'translation_scheme' in parameters:
+        translation_scheme = importlib.import_module("."+parameters['translation_scheme'], 'piperine')
     else:
-        try:
-            design_params = trans_module.default_params
-        except Exception as e:
-            print(e)
-            print('Cannot guess default .sys parameters without a module')
-            raise
+        translation_scheme = default_translation_scheme
+
+    # Sorry for this horrible line. "translation_scheme" is a package that holds the
+    # translation and energetics modules. "translation" is a module that provides the code
+    # that generates PIL descriptions of the DNA implementation.
+    translation = translation_scheme.translation
+
+    # Make dictionary for design parameters. Start with default parameters
+    design_param_dict = dict(zip(translation.param_terms, translation.default_params))
+
+    # Get compilation parameters and define energetics instance.
+    # This function uses the translation module to look for translation-specific parameters
+    parameters = get_parameters_form_crn_file(crnfile, translation)
+
+    # Apply parameter option preference
+    if args.length:
+        toehold_length = args.length
+    elif 'toehold_length' in parameters:
+        toehold_length = parameters['toehold_length']
+    elif translation.toehold_length_term in parameters:
+        toehold_length = parameters[translation.toehold_length_term]
+    else:
+        toehold_length = design_param_dict[translation.toehold_length_term]
+
+    design_param_dict[translation.toehold_length_term] = toehold_length
+
+    if args.energy:
+        targetdG = args.energy
+    elif 'toehold_energy' in parameters:
+        targetdG = parameters['toehold_energy']
+    else:
+        targetdG = 7.7
+
+    if args.deviation:
+        deviation = args.deviation
+    elif 'toehold_deviation' in parameters:
+        deviation = parameters['toehold_deviation']
+    else:
+        deviation = 0.5
+
+    if args.maxspurious:
+        max_spurious = args.maxspurious
+    elif 'toehold_spurious' in parameters:
+        max_spurious = parameters['toehold_spurious']
+    else:
+        max_spurious = 0.4
+
+    if args.candidates:
+        n = args.candidates
+    elif 'n' in parameters:
+        n = parameters['n']
+    else:
+        n = 1
+
+    if args.designparams:
+        design_params = args.designparams
+    else:
+        design_params = translation.default_params
+        for term in translation.param_terms:
+            if term in parameters:
+                design_param_dict[term] = parameters[term]
+
+    try:
+        assert(toehold_length == design_param_dict[translation.toehold_length_term])
+    except AssertionError:
+        raise AssertionError("Toehold length contradictions in input arguments")
 
     if args.extrapars:
         extra_pars = args.extrapars
+    elif 'spurious_design_parameters' in parameters:
+        extra_pars = parameters['spurious_design_parameters']
     else:
         extra_pars = ""
 
-    gates, strands, winner, scorelist = \
-                             run_designer(basename,
-                                          reps=args.candidates,
-                                          design_params=design_params,
-                                          energyfuncs=energyfuncs,
-                                          trans_module=trans_module,
-                                          extra_pars=extra_pars,
-                                          quick=args.quick)
-    print('Winning sequence set is index {}'.format(winner))
+    energyfuncs = translation_scheme.energetics.energyfuncs(targetdG=targetdG,
+                                         length=toehold_length,
+                                         deviation=deviation,
+                                         max_spurious=max_spurious)
+
+
+    out = run_designer(basename,
+                     reps=n,
+                     design_params=design_params,
+                     translation=translation,
+                     energyfuncs=energyfuncs,
+                     extra_pars=extra_pars,
+                     quick=args.quick)
+    print('Winning sequence set is index {}'.format(out[2]))
+
+def score():
+    '''
+    Function called by the command line function 'piperine-score'
+    '''
+    import argparse
+    descr = "Command line utility for scoring a designed sequence set."
+    usage = "\n\n\n\
+Call template with short option flags. Options are shown in brackets. Capitalized terms stand in for\
+required argument or multiple arguments.\n\
+piperine-score CRNFILE FIXEDFILE [-e ENERGY] [-p DESIGNPARAMS ...] [-t TRANSLATION_SHEME] [-x EXTRAPARS] [-q] \n\n\
+Default execution parameters are stated in the option descriptions. The following are example executions with CRN \
+file my_very_own.crn, fixed file my.fixed, and option arguments to override the default settings. \n\
+    \n\
+    Score the sequence set according to the default translation scheme, Srinivas2017:\n \n\
+    piperine-score my_very_own.crn my.fixed\n \
+\n \
+\n\
+    Score another fixed file implemented using the Chen2013 translation scheme:\n\n\
+    piperine-score my_very_own.crn chen2013_implementation.fixed -t Chen2013\n\
+    or\n\
+    piperine-score my_very_own.crn chen2013_implementation.fixed -translation_scheme Chen2013\n\n\n\
+    Score the sequence set, but with a different intended toehold binding energy:\n\n\
+    piperine-score my_very_own.crn my.fixed -e 9\n\
+    "
+    parser = argparse.ArgumentParser(description=descr, usage=usage)
+    parser.add_argument("crnfile",
+                        help='Text file describing CRN. May also define parameters.',
+                        type=str)
+
+    parser.add_argument("fixedfile",
+                        help='Text file containing sequence constraints. Files read or generated by ' +
+                              'this call will have the form: basename.extension ; '+
+                          'E.g. basename.fixed may generate basename.pil .',
+                        type=str)
+
+    parser.add_argument("-e", "--energy",
+                        help='Target toehold binding energy in kcal/mol. [default: 7.7]',
+                        type=float)
+
+    parser.add_argument("-p", '--designparams',
+                        help='A string of integers that are parameters to the sys file compilation. [default: Finds in module]',
+                        type=int,
+                        nargs="*")
+
+    parser.add_argument("-t", '--translation_scheme',
+                        help='Provide a string, the name of the Python package describing the translation scheme used to convert'+
+                            'the CRN to DNA strands and complexes. See piperine.Srinivas2017 for an example of such a package.'+
+                            ' [default: Srinivas2017]',
+                        type=str)
+
+    parser.add_argument("-q", '--quick',
+                        action='store_true',
+                        help='Make random numbers instead of computing heuristics to save time[default: False]')
+
+    args = parser.parse_args()
+
+    ############## Interpret arguments.
+    # Precedence is : command line arguments > crn file arguments > default
+    assert(args.crnfile[-4:] == '.crn')
+    crnfile = args.crnfile
+    fixedfile = args.fixedfile
+    basename = fixedfile[:-6]
+
+    # Find absolute path to basename
+    basedir = os.path.dirname(basename)
+    if basedir == '':
+        basename = os.getcwd() + os.path.sep + basename
+        crnfile = os.getcwd() + os.path.sep + args.crnfile
+
+    # Read parameters from CRN file, only to see if translation scheme is defined
+    parameters = get_parameters_form_crn_file(crnfile, None)
+
+    # Import translation scheme package
+    if args.translation_scheme:
+        translation_scheme = importlib.import_module("."+args.translation_scheme, 'piperine')
+    elif 'translation_scheme' in parameters:
+        translation_scheme = importlib.import_module("."+parameters['translation_scheme'], 'piperine')
+    else:
+        translation_scheme = default_translation_scheme
+
+    # Sorry for this horrible line. "translation_scheme" is a package that holds the
+    # translation and energetics modules. "translation" is a module that provides the code
+    # that generates PIL descriptions of the DNA implementation.
+    translation = translation_scheme.translation
+
+    # Make dictionary for design parameters. Start with default parameters
+    design_param_dict = dict(zip(translation.param_terms, translation.default_params))
+
+    # Get compilation parameters and define energetics instance.
+    # This function uses the translation module to look for translation-specific parameters
+    parameters = get_parameters_form_crn_file(crnfile, translation)
+
+    # Apply parameter option preference
+    if args.designparams:
+        design_params = args.designparams
+    else:
+        design_params = translation.default_params
+        for term in translation.param_terms:
+            if term in parameters:
+                design_param_dict[term] = parameters[term]
+
+    if 'toehold_length' in parameters:
+        toehold_length = parameters['toehold_length']
+    elif translation.toehold_length_term in parameters:
+        toehold_length = parameters[translation.toehold_length_term]
+    else:
+        toehold_length = design_param_dict[translation.toehold_length_term]
+
+    design_param_dict[translation.toehold_length_term] = toehold_length
+
+    if args.energy:
+        targetdG = args.energy
+    elif 'toehold_energy' in parameters:
+        targetdG = parameters['toehold_energy']
+    else:
+        targetdG = 7.7
+
+    try:
+        assert(toehold_length == design_param_dict[translation.toehold_length_term])
+    except AssertionError:
+        raise AssertionError("Toehold length contradictions in input arguments")
+
+    energyfuncs = translation_scheme.energetics.energyfuncs(targetdG=targetdG,
+                                         length=toehold_length)
+
+
+    out = score_fixed(fixedfile,
+                      basename,
+                      crn_file=crnfile,
+                      design_params=design_params,
+                      translation=translation,
+                      energyfuncs=energyfuncs,
+                      quick=args.quick)
+    print('Winning sequence set is index {}'.format(out[2]))
