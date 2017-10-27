@@ -1,0 +1,78 @@
+declare component cardelli_1r1p_react(t, bm): A -> B
+
+### Domains
+# Toeholds:
+sequence ta = "<t>H"
+sequence tr = "<t>H"
+sequence ti = "<t>H"
+sequence tq = "<t>H"
+sequence tb = "<t>H"
+
+# Branch migration domains:
+sequence am  = "C<bm - 2>HC"
+sequence rm  = "C<bm - 2>HC"
+sequence bm  = "C<bm - 2>HC"
+sequence im  = "C<bm - 2>HC"
+
+# Hairpin domains:
+sequence pinjl = "SHHHC"
+sequence loopjl = "TTTT"
+sequence pinjr = "CHHHS"
+sequence loopjr = "TTTT"
+sequence pinfr = "CHHHS"
+sequence loopfr = "TTTT"
+
+### I/O connectors
+sequence A = ta am
+sequence B = tb bm
+
+### Strands
+strand a = ta am
+strand aR = am tr
+strand helper = tr rm
+strand translator = rm tq
+strand join_base = pinjr loopjr pinjr* tq* rm* tr* am* ta* pinjl* loopjl pinjl
+strand bR = bm tr
+strand b = tb bm
+strand end = im tb
+strand waste = ti im
+strand fork_base = pinfr loopfr pinfr* tq* rm* tr* bm* tb* im*
+strand reporter_bottom = im* ti*
+strand reporter_top = im
+
+### Structures
+# Single-stranded:
+structure A_struct = a : domain ..
+structure Reverse_r1 = aR : domain ..
+structure Helper = helper : domain ..
+structure Translator = translator : domain ..
+structure Reverse_p1 = bR : domain ..
+structure B_struct = b : domain ..
+structure End = end : domain ..
+structure Waste = waste : domain ..
+structure Fluorophore = reporter_top : domain .
+
+# Gates:
+structure Join = join_base + aR + translator : domain (.)((((.(.)+))+))
+structure Fork = fork_base + waste + b + helper : domain (.).(((((+.)+))+))
+
+# Gate intermediates:
+structure Join_1 = join_base + a + translator : domain (.)((.(((.)+))+))
+structure Fork_1 = fork_base + waste + b + translator : domain (.)((.(((+.)+))+))
+structure Fork_2 = fork_base + waste + bR + translator : domain (.)((((.(+.)+))+))
+
+# Waste products:
+structure Join_2 = join_base + a + helper : domain (.).(((((.)+))+))
+structure Fork_3 = fork_base + end + bR + translator : domain (.)((((((+))+))+))
+
+# Reporting
+structure Reporter = reporter_bottom + reporter_top : domain (.+)
+structure Reporter_Waste = reporter_bottom + waste : domain ((+))
+
+### Reactions
+kinetic A_struct + Join -> Join_1 + Reverse_r1
+kinetic Helper + Join_1 -> Join_2 + Translator
+kinetic Translator + Fork -> Fork_1 + Helper
+kinetic Reverse_p1 + Fork_1 -> Fork_2 + B_struct
+kinetic End + Fork_2 -> Fork_3 + Waste
+kinetic Waste + Reporter -> Reporter_Waste + Fluorophore
