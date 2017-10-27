@@ -1224,4 +1224,4 @@ file my_very_own.crn, fixed file my.fixed, and option arguments to override the 
                       translation=translation,
                       energyfuncs=energyfuncs,
                       quick=args.quick)
-    print('Winning sequence set is index {}'.format(out[2]))
+    print(dict(zip(out[1], out[0])))
