@@ -224,7 +224,7 @@ class energyfuncs:
         e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
         e_avg = e_vec_all.mean()
         e_dev = np.max(np.abs(e_vec_all - self.targetdG))
-        return e_avg, e_spr, n_ends
+        return e_avg, e_dev, e_spr, n_ends
 
     def get_toeholds(self, n_ths=6, timeout=8):
         from  time import time
