@@ -901,7 +901,16 @@ def main():
     Function called by the command line function 'piperine-design'
     '''
     import argparse
-    descr = "Command line utility for the Piperine sequence designer."
+    descr = "Command line utility for the Piperine sequence designer.\n\
+Parameters that may be set in the CRN file are:\n\
+    * toehold_energy\n \
+    * toehold_deviation\n\
+    * toehold_spurious\n\
+    * toehold_length\n\
+    * spurious_design_parameters\n\
+    * translation_scheme\n\
+    * n\n"
+
     usage = "\n\n\n\
 Call template with short option flags. Options are shown in brackets. Capitalized terms stand in for\
 required argument or multiple arguments.\n\

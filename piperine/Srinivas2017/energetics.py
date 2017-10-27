@@ -207,6 +207,7 @@ class energyfuncs:
         return (e_err, e_rng)
 
     def calculate_unrestricted_toehold_characteristics(self):
+        import stickydesign as sd
         ends = sd.easyends('TD',
                            self.length,
                            alphabet=self.alphabet,
