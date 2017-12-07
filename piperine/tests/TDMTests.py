@@ -6,7 +6,8 @@ from tempfile import mkstemp
 import os
 from .test_data import fixed_file
 
-from .. import designer, tdm, DSDClasses
+from .. import designer, tdm
+from ..Srinivas2017 import translation
 
 def to_sequences(name_list, seq_dict):
     return [seq_dict[name] for name in name_list]
@@ -31,14 +32,14 @@ class TestTDM(unittest.TestCase):
                 10323.75,
                 5.56,
                 17.33]
-    
+
     fmts = ['{:.2f}', '{:.2f}', '{:.2f}', '{:.2f}', '{:.2f}', '{:.2f}',\
             '{:.2f}', '{:.2f}', '{:.2f}', '{:.2f}', '{:.2f}', '{}', '{:.2f}',\
             '{:.2f}', '{:.2f}', '{:.2f}', '{:.2f}', '{:.2f}', '{:.2f}',\
             '{:.2f}', '{:.2f}']
-    
+
     score_val = []
-    
+
     def setUp(self):
         self.crn_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.crn')
         self.sys_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.sys')
@@ -46,15 +47,14 @@ class TestTDM(unittest.TestCase):
         self.seq_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.seq')
         self.pil_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.pil')
         self.mfe_file = pkg_resources.resource_filename('piperine', 'tests/test_data/test_tdm.mfe')
-        
+
         self.basename = self.sys_file[0:-4]
         self.gates, self.strands = designer.process_crn(crn_file = self.crn_file,
-                                                        trans_module = DSDClasses,
                                                         design_params = (7, 15, 2))
         self.h_inputs = tdm.get_heuristics_inputs(self.gates, self.strands)
         self.seq_dict, self.cmplx_dict, self.domains_list = \
             tdm.get_seq_dicts(self.basename, self.h_inputs)
-        
+
         # True top strand list
         self.true_tsl =  ['r1-c',
                           'r2-c',
@@ -75,19 +75,19 @@ class TestTDM(unittest.TestCase):
                           'r2-Backward',
                           'r2-cat_helper',
                           'r2-helper']
-        
+
         # Base strand list contains all toehold complements
         self.true_bsl =  ['r0-toe-fa*',
                           #'r0-toe-sa*', # A does not appear as 2nd input
-                          'r0-toe-fb*', 
-                          'r0-toe-sb*', 
-                          'r0-toe-fc*', 
+                          'r0-toe-fb*',
+                          'r0-toe-sb*',
+                          'r0-toe-fc*',
                           #'r0-toe-sc*', # C does not appear as 2nd input
-                          'r0-toe-fd*', 
-                          'r0-toe-sd*', 
+                          'r0-toe-fd*',
+                          'r0-toe-sd*',
                           'r2-toe-fb*',
                           'r2-toe-sb*']
-        
+
         # Top strand dict lead to these subsequences
         sd = self.seq_dict
         self.true_tsd = [sd['r1-cm'][-1] + sd['r1-ccm'] + sd['r1-toe-fc'], #'r1-c',
@@ -109,19 +109,19 @@ class TestTDM(unittest.TestCase):
                          sd['r2-toe-fb-suffix'] + sd['r2-toe-sa'][:3], #'r2-Backward',
                          sd['r2-dh'][-1]+sd['r2-cdh']+sd['r2-toe-fc']+sd['r2-ch'][:3], #'r2-cat_helper',
                          sd['r2-dh'][-1] + sd['r2-cdh'] + sd['r2-toe-fc']] #'r2-helper',
-        
+
         # NotToInteract should return this dictionary
-        self.true_nti = {'r0-toe-fa*': ['r0-Out',  
-                         'r0-Backward',            
-                         'r0-cat_helper',          
-                         'r0-helper',              
-                         'r1-Out',                 
-                         'r1-Backward',            
+        self.true_nti = {'r0-toe-fa*': ['r0-Out',
+                         'r0-Backward',
+                         'r0-cat_helper',
+                         'r0-helper',
+                         'r1-Out',
+                         'r1-Backward',
                          'r1-toe-fdr1-dhr1-cdh',    # cat parts, bc A is 1st product
                          'r1-chr1-cch',             # cat parts, bc A is 1st product
                          'r1-toe-fdr1-dhr1-cdh',    # help parts, bc A is 1st product
-                         'r2-Out',                 
-                         'r2-Backward',            
+                         'r2-Out',
+                         'r2-Backward',
                          'r2-dhr2-cdh',             # A is both products
                          'r2-chr2-cch',             # A is both products
                          'r2-dhr2-cdh',             # A is both products
@@ -131,10 +131,10 @@ class TestTDM(unittest.TestCase):
                          'r0-toe-sar0-amr0-cam',   #
                          'r2-dhr2-cdh',            #
                          'r0-toe-sar0-amr0-cam',   #
-                         'r1-d',                   
-                         'r0-c',                   
-                         'r0-d',                   
-                         'r2-b'],                  
+                         'r1-d',
+                         'r0-c',
+                         'r0-d',
+                         'r2-b'],
                         'r0-toe-fb*': ['r0-Out',
                          'r0-toe-sar0-amr0-cam',   #
                          'r0-cat_helper',
@@ -150,8 +150,8 @@ class TestTDM(unittest.TestCase):
                          'r1-c',
                          'r2-c',
                          'r2-d',
-                         'r1-dhr1-cdh',            # 
-                         'r0-toe-sbr0-bmr0-cbm',   # 
+                         'r1-dhr1-cdh',            #
+                         'r0-toe-sbr0-bmr0-cbm',   #
                          'r0-c',
                          'r0-d',
                          'r2-b'],
@@ -254,7 +254,7 @@ class TestTDM(unittest.TestCase):
                          'r1-d',
                          'r0-c',
                          'r0-d',
-                         'r2-toe-sbr2-bmr2-cbm'], # 
+                         'r2-toe-sbr2-bmr2-cbm'], #
                         'r2-toe-sb*': ['r0-Out',
                          'r0-Backward',
                          'r0-cat_helper',
@@ -274,8 +274,8 @@ class TestTDM(unittest.TestCase):
                          'r1-d',
                          'r0-c',
                          'r0-d',
-                         'r2-bmr2-cbmr2-toe-fb']} # 
-        
+                         'r2-bmr2-cbmr2-toe-fb']} #
+
         self.bmlist = ['r0-amr0-cam',
                        'r1-chr1-cch',
                        'r2-chr2-cch',
@@ -309,27 +309,27 @@ class TestTDM(unittest.TestCase):
                             'r2-Trans_int',
                             'r2-Trans_waste',
                             'r2-Trans_cat_waste']
-                                  
+
     def tearDown(self):
-        pass 
-    
+        pass
+
     def runTest(self):
         self.test_tdm()
-    
+
     def test_TopStrandlist(self):
         # all strands intended to be in solution as solitons with no secondary structure
         set_true = set(self.true_tsl)
         set_test = set(self.h_inputs[0])
         self.assertTrue(set_true <= set_test, msg="True set <= test set")
         self.assertTrue(set_test <= set_true, msg="Test set <= true set")
-    
+
     def test_BaseStrandlist(self):
         # Base strand list contains all toehold complements
         set_true = set(to_sequences(self.true_bsl, self.seq_dict))
         set_test = set(to_sequences(self.h_inputs[2], self.seq_dict))
         self.assertTrue(set_true <= set_test, msg="True set <= test set {}".format(set_true - set_test))
         self.assertTrue(set_test <= set_true, msg="Test set <= true set {}".format(set_test - set_true))
-    
+
     def test_TopStranddict(self):
         # TopStranddict maps each top strand to the critical toehold binding area
         def tsd_to_sequence(tsd, sd):
@@ -339,14 +339,14 @@ class TestTDM(unittest.TestCase):
                 critical_region = ''.join([top_strand[i-1] for i in tsd[key]])
                 outlist.append(critical_region)
             return outlist
-        
+
         set_true = set(self.true_tsd)
         set_test = set(tsd_to_sequence(self.h_inputs[3], self.seq_dict))
         self.assertTrue(set_true <= set_test, msg="True set <= test set {}".format(set_true - set_test))
         self.assertTrue(set_test <= set_true, msg="Test set <= true set {}".format(set_test - set_true))
-    
+
     def test_NotToInteract(self):
-        # NotToInteract 
+        # NotToInteract
         def nti_to_sequence(nti, sd):
             outdict = {}
             for key in nti.keys():
@@ -361,31 +361,30 @@ class TestTDM(unittest.TestCase):
             set_test = set(test_nti_seqs[key])
             self.assertTrue(set_true <= set_test, msg="True set <= test set {}".format(set_true - set_test))
             self.assertTrue(set_test <= set_true, msg="Test set <= true set {}".format(set_test - set_true))
-    
+
     def test_BMlist(self):
         set_true = set(to_sequences(self.bmlist, self.seq_dict))
         set_test = set(to_sequences(self.h_inputs[4], self.seq_dict))
         self.assertTrue(set_true <= set_test, msg="True set <= test set {}".format(set_true - set_test))
         self.assertTrue(set_test <= set_true, msg="Test set <= true set {}".format(set_test - set_true))
-    
+
     def test_complex_names(self):
         set_true = set(to_sequences(self.cmplx_names, self.seq_dict))
         set_test = set(to_sequences(self.h_inputs[1], self.seq_dict))
         self.assertTrue(set_true <= set_test, msg="True set <= test set {}".format(set_true - set_test))
         self.assertTrue(set_test <= set_true, msg="Test set <= true set {}".format(set_test - set_true))
-    
+
     def test_tdm(self):
         # Score test sequences
-        self.scores, names = designer.score_fixed(self.fixed_file, 
-                 basename=self.basename, 
-                 crn_file=self.crn_file, 
-                 sys_file=self.sys_file, 
-                 pil_file=self.pil_file, 
-                 save_file=self.save_file, 
-                 mfe_file=self.mfe_file, 
+        self.scores, names = designer.score_fixed(self.fixed_file,
+                 basename=self.basename,
+                 crn_file=self.crn_file,
+                 sys_file=self.sys_file,
+                 pil_file=self.pil_file,
+                 save_file=self.save_file,
+                 mfe_file=self.mfe_file,
                  seq_file=self.seq_file,
-                 design_params=(7, 15, 2),
-                 trans_module=DSDClasses)
+                 design_params=(7, 15, 2))
         iterate_list = list(zip(self.scores, self.true_val, self.fmts, names))
         for score, tru, fmt, name in iterate_list:
             score_str = fmt.format(score)

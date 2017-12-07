@@ -11,6 +11,17 @@ import numpy as np
 
 from . import Srinivas2017 as default_translation_scheme
 
+from io import StringIO
+
+class Capturing(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        sys.stdout = self._stdout
+
 default_energyfuncs = default_translation_scheme.energetics.energyfuncs()
 default_translation = default_translation_scheme.translation
 default_design_params = default_translation_scheme.translation.default_params
@@ -103,13 +114,13 @@ def call_finish(basename,
                 conc=1,
                 spurious=False,
                 spurious_time=10.0):
-    """ Generates a .seq file from an .mfe file. This is a wrapper for a peppercompiler function.
+    """ Generates a .seqs file from an .mfe file. This is a wrapper for a peppercompiler function.
 
     Args:
         basename: The default name of all files produced and accessed.
         savename: File storing process states. (Default: basename.save)
         designname: MFE file, read for sequences (Default: basename.mfe)
-        seqname: Output file containing all sequences (Default: basename.seq)
+        seqname: Output file containing all sequences (Default: basename.seqs)
         strandsname: Output file containing all strand sequences (Default: None)
         run_kin: Run spurious kinetic tests on sequences (Default: False)
         cleanup: Delete temporary files (Default: True)
@@ -128,7 +139,7 @@ def call_finish(basename,
     if designname is None:
         designname = '{}.mfe'.format(basename)
     if seqname is None:
-        seqname = '{}.seq'.format(basename)
+        seqname = '{}.seqs'.format(basename)
 
     finish(savename, designname, seqname, strandsname, run_kin,
            cleanup, trials, time, temp, conc, spurious, spurious_time)
@@ -504,7 +515,7 @@ def generate_seqs(basename,
         system_file: Filename of the peppercompiler system file (basename + .sys)
         pil_file: Filename of the peppercompiler (basename + .pil)
         mfe_file: Filename of the peppercompiler MFE file (basename + .mfe)
-        seq_file: Filename of the peppercompiler sequence file (basename + .seq)
+        seq_file: Filename of the peppercompiler sequence file (basename + .seqs)
         fixed_file: Filename of the peppercompiler fixed file (Default: None)
         save_file: Filename of the peppercompiler save file (basename + .save)
         strands_file: Filename of the peppercompiler strands file (basename + _strands.txt)
@@ -526,9 +537,9 @@ def generate_seqs(basename,
             mfe_file = basename + ".mfe"
     if seq_file is None:
         if outname:
-            seq_file = outname + ".seq"
+            seq_file = outname + ".seqs"
         else:
-            seq_file = basename + ".seq"
+            seq_file = basename + ".seqs"
     if strands_file is None:
         if outname:
             strands_file = outname + "_strands.txt"
@@ -551,142 +562,33 @@ def generate_seqs(basename,
     # Write the fixed file for the toehold sequences and compile the sys file to PIL
     write_toehold_file(fixed_file, strands, toeholds)
     try:
-        call_compiler(basename, args=design_params, fixed_file=fixed_file,
-                      outputname=pil_file, savename=save_file)
+        with Capturing() as cptr:
+            call_compiler(basename, args=design_params, fixed_file=fixed_file,
+                          outputname=pil_file, savename=save_file)
     except KeyError as e:
         raise(e)
 
     # Generate sequences
-    call_design(basename, pil_file, mfe_file, verbose=False,
-                extra_pars=extra_pars, cleanup=False)
+    with Capturing() as cptr:
+        call_design(basename, pil_file, mfe_file, verbose=False,
+                    extra_pars=extra_pars, cleanup=False)
+
     # "Finish" the sequence generation
-    call_finish(basename, savename=save_file, designname=mfe_file, \
-                seqname=seq_file, strandsname=strands_file, run_kin=False)
+    with Capturing() as cptr:
+        call_finish(basename, savename=save_file, designname=mfe_file, \
+                    seqname=seq_file, strandsname=strands_file, run_kin=False)
     return toeholds
 
-def selection(scores):
-    '''
-    '''
-    columns = list(zip(*scores))
-    ranks = []
-    fractions = []
-    percents = []
-    for col in columns:
-        # if 'Index' in col[0] or 'Defect' in col[0] or 'Toehold Avg' in col[0] or 'Range of toehold' in col[0]:
-        if 'Index' in col[0] or 'Defect' in col[0] or 'Spurious' == col[0]:
-            continue
-        if 'SSU' in col[0] or 'SSTU' in col[0]:    # for these scores, higher is better
-            col = [-float(x) for x in col[1:]]
-        else:
-            col = [float(x) for x in col[1:]]
-        array = np.array(col)
-        array_uni = np.unique(array)
-        array_ord = array_uni.argsort()
-        rank_dict = dict(zip(array_uni, array_ord))
-        temp_ranks = np.array([rank_dict[x] for x in array])
-        temp = array.argsort()
-        colranks = np.array([rank_dict[x] for x in array])
-        # low rank is better
-        ranks.append(colranks)
-        fractions.append((array - array.min())/abs(array.min() + (array.min() == 0) ))
-        percents.append((array - array.min())/(array.max() - array.min()))
-    temp = ranks
-    ranks = list(zip(*temp))
-    temp = fractions
-    fractions = list(zip(*temp))
-    temp = percents
-    percents = list(zip(*temp))
-
-    print("\nRank array:",end="")
-    print("\n                         ",end="")
-    for title in scores[0]:
-        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title or 'Spurious' == title:
-            continue
-        print("{:>7s}".format(title[0:7]),end="")
-    print("\n",end="")
-    i = 0
-    for r in ranks:
-        print("design {:2d}: {:7d} = sum [".format(i, sum(r)),end="")
-        for v in r:
-            print("{:7d}".format(v),end="")
-        print("]\n",end="")
-        i = i+1
-
-    print("\nFractional excess array:",end="")
-    print("\n                         ",end="")
-    for title in scores[0]:
-        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title or 'Spurious' == title:
-            continue
-        print("{:>7s}".format(title[0:7]),end="")
-    print("\n",end="")
-    i = 0
-    for f in fractions:
-        print("design {:2d}: {:7.2f} = sum [".format(i, sum(f)),end="")
-        for v in f:
-            print("{:7.2f}".format(v),end="")
-        print("]\n",end="")
-        i = i+1
-
-    print("\nPercent badness (best to worst) array:",end="")
-    print("\n                         ",end="")
-    for title in scores[0]:
-        # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
-        if 'Index' in title or 'Defect' in title or 'Spurious' == title:
-            continue
-        print("{:>7s}".format(title[0:7]),end="")
-    print("\n",end="")
-    i = 0
-    for p in percents:
-        print("design {:2d}: {:=7.2f} = sum [".format(i, 100*sum(p)),end="")
-        for v in p:
-            print("{:=7.2f}".format(100*v),end="")
-        print("]\n",end="")
-        i = i+1
-
-    print("\n",end="")
-    worst_rank = 0
-    while 1:
-        ok_seqs = [i for i in range(len(ranks)) if max(ranks[i])<=worst_rank]
-        if len(ok_seqs) == 0:
-            worst_rank = worst_rank+1
-            continue
-        else:
-            break
-
-    # scores used:
-    # TSI avg, TSI max, TO avg, TO max, BM, Largest Match, SSU Min, SSU Avg, SSTU Min, SSTU Avg, Max Bad Nt %,  Mean Bad Nt %, WSI-Intra, WSI-Inter, WSI-Intra-1, WSI-Inter-1, Verboten, Toehold error, Toehold range
-    weights = [5,   20,     10,     30,  2,             3,      30,      10,       50,       20,           10,              5,         6,         4,           5,           3,        2,  8,            20]#, 20]
-
-    print("Indices of sequences with best worst rank of " + str(worst_rank) + ": " + str(ok_seqs)+"\n",end="")
-    print("  Sum of all ranks, for these sequences:      " + str([sum(ranks[i]) for i in ok_seqs])+"\n",end="")
-    print("  Sum of weighted ranks, for these sequences: " + str([sum(np.array(ranks[i])*weights/100.0) for i in ok_seqs])+"\n",end="")
-    print("  Sum of fractional excess over best score:   " + str([sum(fractions[i]) for i in ok_seqs])+"\n",end="")
-    print("  Sum of weighted fractional excess:          " + str([sum(np.array(fractions[i])*weights/100.0) for i in ok_seqs])+"\n",end="")
-    print("  Sum of percent badness scores:              " + str([100*sum(percents[i]) for i in ok_seqs])+"\n",end="")
-    print("  Sum of weighted percent badness scores:     " + str([sum(np.array(percents[i])*weights) for i in ok_seqs])+"\n",end="")
-    temp = [sum(r) for r in ranks]
-    print("Best sum-of-ranks:                   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ),end="")
-    winner = np.argmin(temp)
-    temp = [sum(np.array(r)*weights/100.0) for r in ranks]
-    print("Best sum-of-weighted-ranks:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ),end="")
-    temp = [sum(f) for f in fractions]
-    print("Best fractional excess sum:          {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ),end="")
-    temp = [sum(np.array(f)*weights/100.0) for f in fractions]
-    print("Best weighted fractional excess sum: {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ),end="")
-    temp = [100*sum(p) for p in percents]
-    print("Best percent badness sum:            {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ),end="")
-    temp = [sum(np.array(p)*weights) for p in percents]
-    print("Best weighted percent badness sum:   {:6.2f} by [{:d}]      and the worst: {:6.2f} by [{:d}]\n".format( min(temp), np.argmin(temp), max(temp), np.argmax(temp) ),end="")
-    print("\n",end="")
-    return winner
-
-def selection_wrapper(scores, reportfile = 'score_report.txt'):
+def selection_wrapper(scores, reportfile = 'score_report.txt', optimization='ranksum'):
     '''
     docstring
     '''
+    from . import selectseq
     stdout = sys.stdout
+    if optimization == 'ranksum':
+        selection = lambda x : selectseq.ranksum(x)
+    elif optimization == 'metarank':
+        selection = lambda x : selectseq.metarank(x)
     try:
         sys.stdout = open(reportfile, 'w')
         winner = selection(scores)
@@ -701,7 +603,7 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
         sys.stdout = stdout
     return winner
 
-def run_designer(basename=small_crn[:-4],
+def run_designer(basename,
                  reps=1,
                  design_params=default_design_params,
                  translation=default_translation,
@@ -721,7 +623,7 @@ def run_designer(basename=small_crn[:-4],
 
     Writes many basename + extension files, such as:
         system file (.sys)
-        sequences (.seq)
+        sequences (.seqs)
         scores (_scores.csv)
 
     Args:
@@ -740,9 +642,6 @@ def run_designer(basename=small_crn[:-4],
         winner: Integer defining the index of the winning candidate
         scoreslist: List of list containing scores for each candidate
     """
-    # If module inputs are strings, import them
-    if type(translation) is str:
-        translation = importlib.import_module('.' + translation, 'piperine')
     # Provide extra parameters to spuriousSSM such that no minimization is performed
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"
@@ -758,6 +657,7 @@ def run_designer(basename=small_crn[:-4],
         scoreslist = []
         for i in range(reps):
             testname = basename + str(i) + '.txt'
+            seqsname = basename + str(i) + '.seqs'
             try:
                 toeholds = generate_seqs(basename,
                                          gates,
@@ -765,12 +665,14 @@ def run_designer(basename=small_crn[:-4],
                                          design_params,
                                          energyfuncs=energyfuncs,
                                          strands_file=testname,
+                                         seq_file=seqsname,
                                          extra_pars=extra_pars)
 
                 scores, score_names = tdm.EvalCurrent(basename,
                                                       gates,
                                                       strands,
                                                       testname=testname,
+                                                      seq_file=seqsname,
                                                       compile_params=design_params,
                                                       quick=quick,
                                                       includes=includes,
@@ -791,7 +693,6 @@ def run_designer(basename=small_crn[:-4],
             f.write(','.join(score_names))
             f.write('\n')
             f.writelines( [','.join(map(str, l)) + '\n' for l in scoreslist])
-            f.write("Winner : {}".format(winner))
 
     return (gates, strands, winner, scoreslist)
 
@@ -822,7 +723,7 @@ def score_fixed(fixed_file,
         pil_file: Filename of the peppercompiler PIL file (basename + .pil)
         save_file: Filename of the peppercompiler save file (basename + .save)
         mfe_file: Filename of the peppercompiler MFE file (basename + .mfe)
-        seq_file: Filename of the peppercompiler output seq file (basename + .seq)
+        seq_file: Filename of the peppercompiler output seq file (basename + .seqs)
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
         translation: Module containing scheme variables and classes (Srinivas2017.translation)
         energyfuncs: Module defining all functions related to toehold generation (Srinivas2017.energetics())
@@ -854,7 +755,7 @@ def score_fixed(fixed_file,
     else:
         basename_temp = mfe_file[:-4]
     if seq_file is None:
-        seq_file = basename + '.seq'
+        seq_file = basename + '.seqs'
     else:
         basename_temp = seq_file[:-4]
     if score_file is None:
@@ -877,7 +778,7 @@ def score_fixed(fixed_file,
     call_design(basename, pil_file, mfe_file, verbose=False,
                 extra_pars=extra_pars, cleanup=False)
 
-    # Generate .seq file
+    # Generate .seqs file
     call_finish(basename, savename=save_file, designname=mfe_file, \
                 seqname=seq_file, run_kin=False, cleanup=False)
 
@@ -896,10 +797,7 @@ def score_fixed(fixed_file,
         f.writelines([','.join(map(str, l)) + '\n' for l in [scores]])
     return (scores, score_names)
 
-def main():
-    '''
-    Function called by the command line function 'piperine-design'
-    '''
+def get_design_parser():
     import argparse
     descr = "Command line utility for the Piperine sequence designer.\n\
 Parameters that may be set in the CRN file are:\n\
@@ -987,7 +885,14 @@ file my_very_own.crn and option arguments to override the default settings. \n\
     parser.add_argument("-q", '--quick',
                         action='store_true',
                         help='Make random numbers instead of computing heuristics to save time[default: False]')
+    return parser
 
+
+def main():
+    '''
+    Function called by the command line function 'piperine-design'
+    '''
+    parser = get_design_parser()
     args = parser.parse_args()
 
     ############## Interpret arguments.
@@ -1098,16 +1003,20 @@ file my_very_own.crn and option arguments to override the default settings. \n\
                      energyfuncs=energyfuncs,
                      extra_pars=extra_pars,
                      quick=args.quick)
-    print('Winning sequence set is index {}'.format(out[2]))
+    winner = out[2]
+    if winner is None:
+        return None
+    else:
+        print('Winning sequence set is index {}'.format(winner))
+        print('Find this sequence data in the file {}{}.seqs'.format(basename, winner))
+        print('The table of scores from this session is in the file {}_scores.csv'.format(basename))
+        print('Results of the candidate selection, with other optimality measures, are found in {}_score_report.txt'.format(basename))
 
-def score():
-    '''
-    Function called by the command line function 'piperine-score'
-    '''
+def get_scorefixed_parser():
     import argparse
     descr = "Command line utility for scoring a designed sequence set."
     usage = "\n\n\n\
-Call template with short option flags. Options are shown in brackets. Capitalized terms stand in for\
+Call template with short option flags. Options are shown in brackets. Capitalized terms stand in for \
 required argument or multiple arguments.\n\
 piperine-score CRNFILE FIXEDFILE [-e ENERGY] [-p DESIGNPARAMS ...] [-t TRANSLATION_SHEME] [-x EXTRAPARS] [-q] \n\n\
 Default execution parameters are stated in the option descriptions. The following are example executions with CRN \
@@ -1145,15 +1054,21 @@ file my_very_own.crn, fixed file my.fixed, and option arguments to override the 
                         nargs="*")
 
     parser.add_argument("-t", '--translation_scheme',
-                        help='Provide a string, the name of the Python package describing the translation scheme used to convert'+
+                        help='Provide a string, the name of the Python package describing the translation scheme used to convert '+
                             'the CRN to DNA strands and complexes. See piperine.Srinivas2017 for an example of such a package.'+
                             ' [default: Srinivas2017]',
                         type=str)
 
     parser.add_argument("-q", '--quick',
                         action='store_true',
-                        help='Make random numbers instead of computing heuristics to save time[default: False]')
+                        help='Make random numbers instead of computing heuristics to save time. [default: False]')
+    return parser
 
+def score():
+    '''
+    Function called by the command line function 'piperine-score'
+    '''
+    parser = get_scorefixed_parser()
     args = parser.parse_args()
 
     ############## Interpret arguments.
