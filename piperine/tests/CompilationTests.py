@@ -11,7 +11,7 @@ import filecmp
 from io import StringIO
 
 from .. import designer
-from .. import DSDClasses as trans_mod
+from ..Srinivas2017 import translation as trans_mod
 
 # Grab package data
 correct_sys_file = pkg_resources.resource_filename('piperine', 'tests/test_data/correct.sys')
@@ -27,12 +27,12 @@ class Capturing(list):
 
 class TestMakePepperCompilerInputs(unittest.TestCase):
     crn = 'A -> B + B\nB + B -> A\nD -> A\n'
-    
+
     th_params = {"thold_l":7, "thold_e":7.7, "e_dev":1, \
                  "m_spurious":0.5, "e_module":'energyfuncs_james'}
-    
+
     design_params = (7, 15, 2)
-    
+
     # Set true values
     true_crn = ([{'products': ['B'],
                 'reactants': ['A'],
@@ -56,7 +56,7 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
     fid = open(correct_sys_file)
     correct_sys = fid.readlines()
     fid.close()
-    
+
     def setUp(self):
         fid, self.crn_file = mkstemp(suffix='.crn')
         os.close(fid)
@@ -102,7 +102,7 @@ class TestMakePepperCompilerInputs(unittest.TestCase):
                 true_rxn = self.true_crn[i]
                 test_rxn = rxns[i]
                 self.assertEqual(test_rxn[key], test_rxn[key])
-    
+
     def test_sys_file(self):
         import logging
         rxns, spcs = designer.read_crn(self.crn_file)

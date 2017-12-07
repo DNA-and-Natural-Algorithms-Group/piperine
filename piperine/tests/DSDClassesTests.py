@@ -3,7 +3,8 @@ import sys
 from tempfile import mkstemp
 import os
 
-from .. import designer, DSDClasses
+from .. import designer
+from ..Srinivas2017 import translation
 
 def format_list(templates, word):
     if type(templates) is list:
@@ -48,82 +49,82 @@ class TestTranslation(unittest.TestCase):
                       '{0}-toe-fb-suffix{0}-toe-sa{0}-am{0}-cam',
                       '{0}-toe-fd{0}-dh{0}-cdh{0}-toe-fc{0}-ch{0}-cch',
                       '{0}-toe-fd{0}-dh{0}-cdh{0}-toe-fc']
-    
+
     F_all_identical_Af = ['{0}-Out',
                           '{0}-toe-sa{0}-am{0}-cam',
                           '{0}-dh{0}-cdh',
-                          '{0}-ch{0}-cch', 
+                          '{0}-ch{0}-cch',
                           '{0}-dh{0}-cdh']
-    
+
     F_all_identical_As = ['{0}-ch{0}-cch', '{0}-bm{0}-cbm',
-                          '{0}-toe-fb-suffix', '{0}-am{0}-cam', 
-                          '{0}-cat_helper', 
+                          '{0}-toe-fb-suffix', '{0}-am{0}-cam',
+                          '{0}-cat_helper',
                           '{0}-helper']
-    
+
     F_all_identical_Bf = F_all_identical_Af[:]
-    
+
     F_all_identical_Bs = F_all_identical_As[:]
-    
+
     F_all_identical_Cf = F_all_identical_Af[:]
-    
+
     F_all_identical_Cs = F_all_identical_As[:]
-    
+
     F_all_identical_Df = F_all_identical_Af[:]
-    
+
     F_all_identical_Ds = F_all_identical_As[:]
-    
+
     F_all_different_Af = [
                           '{0}-Out',
-                          '{0}-Backward', 
+                          '{0}-Backward',
                           '{0}-cat_helper',
                           '{0}-helper'
                           ]
-    
+
     F_all_different_As = [
                           '{0}-Out',
-                          '{0}-toe-fb-suffix', '{0}-am{0}-cam', 
-                          '{0}-cat_helper', 
-                          '{0}-helper'
-                          ]
-    
-    F_all_different_Bf = [
-                          '{0}-Out',
-                          '{0}-toe-sa{0}-am{0}-cam', 
+                          '{0}-toe-fb-suffix', '{0}-am{0}-cam',
                           '{0}-cat_helper',
                           '{0}-helper'
                           ]
-    
+
+    F_all_different_Bf = [
+                          '{0}-Out',
+                          '{0}-toe-sa{0}-am{0}-cam',
+                          '{0}-cat_helper',
+                          '{0}-helper'
+                          ]
+
     F_all_different_Bs = [
                           '{0}-ch{0}-cch', '{0}-bm{0}-cbm',
-                          '{0}-Backward', 
+                          '{0}-Backward',
                           '{0}-cat_helper',
                           '{0}-helper'
                          ]
-    
+
     F_all_different_Cf = [
                           '{0}-Out',
-                          '{0}-Backward', 
+                          '{0}-Backward',
                           '{0}-toe-fd{0}-dh{0}-cdh', '{0}-ch{0}-cch',
                           '{0}-toe-fd{0}-dh{0}-cdh'
                           ]
-    
+
     F_all_different_Cs = nicknames
-    
+
     F_all_different_Df = [
                           '{0}-Out',
-                          '{0}-Backward', 
+                          '{0}-Backward',
                           '{0}-dh{0}-cdh{0}-toe-fc{0}-ch{0}-cch',
                           '{0}-dh{0}-cdh{0}-toe-fc',
                           ]
-    
+
     F_all_different_Ds = nicknames
-    
+
     def test_F_all_identical(self):
-        strand = DSDClasses.SignalStrand('A')
+        strand = translation.SignalStrand('A')
         strand.set_identity_domains(0, "r0")
         in_strands = [strand, strand]
         out_strands = [strand, strand]
-        toe_no_interact_map = DSDClasses.F(in_strands + out_strands, 'r0')
+        toe_no_interact_map = translation.F(in_strands + out_strands, 'r0')
         self.assertEqual(format_list(self.F_all_identical_Af, 'r0'), toe_no_interact_map[strand.th(0)])
         self.assertEqual(format_list(self.F_all_identical_As, 'r0'), toe_no_interact_map[strand.th(1)])
         self.assertEqual(format_list(self.F_all_identical_Bf, 'r0'), toe_no_interact_map[strand.th(0)])
@@ -132,19 +133,19 @@ class TestTranslation(unittest.TestCase):
         self.assertEqual(format_list(self.F_all_identical_Cs, 'r0'), toe_no_interact_map[strand.th(1)])
         self.assertEqual(format_list(self.F_all_identical_Df, 'r0'), toe_no_interact_map[strand.th(0)])
         self.assertEqual(format_list(self.F_all_identical_Ds, 'r0'), toe_no_interact_map[strand.th(1)])
-    
+
     def test_F_all_different(self):
-        strandA = DSDClasses.SignalStrand('A')
+        strandA = translation.SignalStrand('A')
         strandA.set_identity_domains(0, "r0")
-        strandB = DSDClasses.SignalStrand('B')
+        strandB = translation.SignalStrand('B')
         strandB.set_identity_domains(1, "r0")
-        strandC = DSDClasses.SignalStrand('C')
+        strandC = translation.SignalStrand('C')
         strandC.set_identity_domains(2, "r0")
-        strandD = DSDClasses.SignalStrand('D')
+        strandD = translation.SignalStrand('D')
         strandD.set_identity_domains(3, "r0")
         in_strands = [strandA, strandB]
         out_strands = [strandC, strandD]
-        toe_no_interact_map = DSDClasses.F(in_strands + out_strands, 'r0')
+        toe_no_interact_map = translation.F(in_strands + out_strands, 'r0')
         self.assertEqual(format_list(self.F_all_different_Af, 'r0'), toe_no_interact_map[strandA.th(0)])
         self.assertEqual(format_list(self.F_all_different_As, 'r0'), toe_no_interact_map[strandA.th(1)])
         self.assertEqual(format_list(self.F_all_different_Bf, 'r0'), toe_no_interact_map[strandB.th(0)])
@@ -156,19 +157,19 @@ class TestTranslation(unittest.TestCase):
 
     def test_bimrxn_reaction_line(self):
         true_rxnline = "component r0 = bimrxn(<t>, <bm>, <c>): A + B -> C + D\n"
-        strandA = DSDClasses.SignalStrand('A')
+        strandA = translation.SignalStrand('A')
         strandA.set_identity_domains(0, "r0")
-        strandB = DSDClasses.SignalStrand('B')
+        strandB = translation.SignalStrand('B')
         strandB.set_identity_domains(1, "r0")
-        strandC = DSDClasses.SignalStrand('C')
+        strandC = translation.SignalStrand('C')
         strandC.set_identity_domains(2, "r0")
         strandC.add_instance(2, "r0")
-        strandD = DSDClasses.SignalStrand('D')
+        strandD = translation.SignalStrand('D')
         strandD.set_identity_domains(3, "r0")
         strandD.add_instance(3, "r0")
-        bim = DSDClasses.Bimrxn('r0', [strandA, strandB], [strandC, strandD], (7, 15, 2))
+        bim = translation.Bimrxn('r0', [strandA, strandB], [strandC, strandD], (7, 15, 2))
         self.assertEqual(true_rxnline, bim.get_reaction_line())
-       
+
     def runTest(self):
         pass
 

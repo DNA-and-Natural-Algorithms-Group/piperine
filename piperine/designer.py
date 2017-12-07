@@ -597,20 +597,20 @@ def selection(scores):
     temp = percents
     percents = list(zip(*temp))
 
-    print("\nRank array:")
-    print("\n                         ")
+    print("\nRank array:",end="")
+    print("\n                         ",end="")
     for title in scores[0]:
         # if 'Index' in title or 'Defect' in title or 'Toehold Avg' in title or 'Range of toehold' in title:
         if 'Index' in title or 'Defect' in title or 'Spurious' == title:
             continue
-        print("{:>6s}".format(title[0:6]))
-    print("\n")
+        print("{:>6s}".format(title[0:6]),end="")
+    print("\n",end="")
     i = 0
     for r in ranks:
-        print("design {:2d}: {:6d} = sum [".format(i, sum(r)))
+        print("design {:2d}: {:6d} = sum [".format(i, sum(r)),end="")
         for v in r:
-            print("{:6d}".format(v))
-        print("]\n")
+            print("{:6d}".format(v),end="")
+        print("]\n",end="")
         i = i+1
 
     print("\nFractional excess array:")
@@ -701,7 +701,7 @@ def selection_wrapper(scores, reportfile = 'score_report.txt'):
         sys.stdout = stdout
     return winner
 
-def run_designer(basename=small_crn[:-4],
+def run_designer(basename,
                  reps=1,
                  design_params=default_design_params,
                  translation=default_translation,
@@ -740,9 +740,6 @@ def run_designer(basename=small_crn[:-4],
         winner: Integer defining the index of the winning candidate
         scoreslist: List of list containing scores for each candidate
     """
-    # If module inputs are strings, import them
-    if type(translation) is str:
-        translation = importlib.import_module('.' + translation, 'piperine')
     # Provide extra parameters to spuriousSSM such that no minimization is performed
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"
@@ -896,10 +893,7 @@ def score_fixed(fixed_file,
         f.writelines([','.join(map(str, l)) + '\n' for l in [scores]])
     return (scores, score_names)
 
-def main():
-    '''
-    Function called by the command line function 'piperine-design'
-    '''
+def get_design_parser():
     import argparse
     descr = "Command line utility for the Piperine sequence designer.\n\
 Parameters that may be set in the CRN file are:\n\
@@ -987,7 +981,14 @@ file my_very_own.crn and option arguments to override the default settings. \n\
     parser.add_argument("-q", '--quick',
                         action='store_true',
                         help='Make random numbers instead of computing heuristics to save time[default: False]')
+    return parser
 
+
+def main():
+    '''
+    Function called by the command line function 'piperine-design'
+    '''
+    parser = get_design_parser()
     args = parser.parse_args()
 
     ############## Interpret arguments.
@@ -1100,14 +1101,11 @@ file my_very_own.crn and option arguments to override the default settings. \n\
                      quick=args.quick)
     print('Winning sequence set is index {}'.format(out[2]))
 
-def score():
-    '''
-    Function called by the command line function 'piperine-score'
-    '''
+def get_scorefixed_parser():
     import argparse
     descr = "Command line utility for scoring a designed sequence set."
     usage = "\n\n\n\
-Call template with short option flags. Options are shown in brackets. Capitalized terms stand in for\
+Call template with short option flags. Options are shown in brackets. Capitalized terms stand in for \
 required argument or multiple arguments.\n\
 piperine-score CRNFILE FIXEDFILE [-e ENERGY] [-p DESIGNPARAMS ...] [-t TRANSLATION_SHEME] [-x EXTRAPARS] [-q] \n\n\
 Default execution parameters are stated in the option descriptions. The following are example executions with CRN \
@@ -1145,15 +1143,21 @@ file my_very_own.crn, fixed file my.fixed, and option arguments to override the 
                         nargs="*")
 
     parser.add_argument("-t", '--translation_scheme',
-                        help='Provide a string, the name of the Python package describing the translation scheme used to convert'+
+                        help='Provide a string, the name of the Python package describing the translation scheme used to convert '+
                             'the CRN to DNA strands and complexes. See piperine.Srinivas2017 for an example of such a package.'+
                             ' [default: Srinivas2017]',
                         type=str)
 
     parser.add_argument("-q", '--quick',
                         action='store_true',
-                        help='Make random numbers instead of computing heuristics to save time[default: False]')
+                        help='Make random numbers instead of computing heuristics to save time. [default: False]')
+    return parser
 
+def score():
+    '''
+    Function called by the command line function 'piperine-score'
+    '''
+    parser = get_scorefixed_parser()
     args = parser.parse_args()
 
     ############## Interpret arguments.

@@ -14,7 +14,7 @@ class energyfuncs:
     consider mismatches.  'max' is probably the best choice, but is slowest -
     it takes the maximum interaction of the 'loop' and 'dangle' options.
     """
-    def __init__(self, targetdG=7, length=7, deviation=0.5, max_spurious=0.4):
+    def __init__(self, targetdG=7.7, length=7, deviation=0.5, max_spurious=0.4):
         import os
         try:
             dsb = resource_stream('stickydesign', 'stickydesign/params/dnastackingbig.csv')
