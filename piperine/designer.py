@@ -579,16 +579,26 @@ def generate_seqs(basename,
                     seqname=seq_file, strandsname=strands_file, run_kin=False)
     return toeholds
 
-def selection_wrapper(scores, reportfile = 'score_report.txt', optimization='ranksum'):
+def selection_wrapper(scores, reportfile = 'score_report.txt', optimizer='metarank'):
     '''
-    docstring
+    Calculate relative optimality based on various rank-based statistics.
+
+    Args:
+        scores: List of list of scores from each candidate sets.
+        reportfile: Filename for the output of the score report table ('score_report.txt')
+        optimizer: Nonparametric measure used to select the optimum candidate ('metarank')
+    Returns:
+        Winning sequence set index
     '''
     from . import selectseq
     stdout = sys.stdout
-    if optimization == 'ranksum':
+    if optimizer == 'ranksum':
         selection = lambda x : selectseq.ranksum(x)
-    elif optimization == 'metarank':
+    elif optimizer == 'metarank':
         selection = lambda x : selectseq.metarank(x)
+    else:
+        pass
+        "TD: Put error message here"
     try:
         sys.stdout = open(reportfile, 'w')
         winner = selection(scores)
@@ -608,6 +618,7 @@ def run_designer(basename,
                  design_params=default_design_params,
                  translation=default_translation,
                  energyfuncs=default_energyfuncs,
+                 optimizer='metarank',
                  extra_pars="",
                  quick=False,
                  includes=None
@@ -686,7 +697,8 @@ def run_designer(basename,
         score_names = ['Set Index'] + score_names
         scores = [score_names] + scoreslist
         if reps > 2:
-            winner = selection_wrapper(scores, reportfile=basename+'_score_report.txt')
+            winner = selection_wrapper(scores,
+                       reportfile=basename+'_score_report.txt', optimizer=optimizer)
         else:
             winner = None
         with open(basename+'_scores.csv', 'w') as f:
@@ -726,6 +738,7 @@ def score_fixed(fixed_file,
         seq_file: Filename of the peppercompiler output seq file (basename + .seqs)
         design_params: A tuple of parameters to the system file ( (7, 15, 2) )
         translation: Module containing scheme variables and classes (Srinivas2017.translation)
+        optimizer: Method used by the selection process to choose the optimal candidate. ('metarank')
         energyfuncs: Module defining all functions related to toehold generation (Srinivas2017.energetics())
         includes: List of directories that peppercompiler looks in to find .comp files (None)
         quick: Skip time-consuming steps of minimizing sequence symetry and scoring (False)
@@ -771,16 +784,19 @@ def score_fixed(fixed_file,
                                    system_file=sys_file,
                                    translation=translation)
     # Generate PIL
-    call_compiler(basename, args=design_params, fixed_file=fixed_file,
-                  outputname=pil_file, savename=save_file, includes=includes)
+    with Capturing() as output:
+        call_compiler(basename, args=design_params, fixed_file=fixed_file,
+                      outputname=pil_file, savename=save_file, includes=includes)
 
     # Generate MFE
-    call_design(basename, pil_file, mfe_file, verbose=False,
-                extra_pars=extra_pars, cleanup=False)
+    with Capturing() as output:
+        call_design(basename, pil_file, mfe_file, verbose=False,
+                    extra_pars=extra_pars, cleanup=False)
 
     # Generate .seqs file
-    call_finish(basename, savename=save_file, designname=mfe_file, \
-                seqname=seq_file, run_kin=False, cleanup=False)
+    with Capturing() as output:
+        call_finish(basename, savename=save_file, designname=mfe_file, \
+                    seqname=seq_file, run_kin=False, cleanup=False)
 
     scores, score_names = tdm.EvalCurrent(basename,
                                           gates,
@@ -872,6 +888,10 @@ file my_very_own.crn and option arguments to override the default settings. \n\
                         help='Number of candidate sequences to generate. [default: 1]',
                         type=int)
 
+    parser.add_argument("-O", '--optimizer',
+                        help='Method used by the selection process to choose the optimal candidate. [default: metarank]',
+                        type=str)
+
     parser.add_argument("-t", '--translation_scheme',
                         help='Provide a string, the name of the Python package describing the translation scheme used to convert'+
                             'the CRN to DNA strands and complexes. See piperine.Srinivas2017 for an example of such a package.'+
@@ -917,6 +937,14 @@ def main():
         translation_scheme = importlib.import_module("."+parameters['translation_scheme'], 'piperine')
     else:
         translation_scheme = default_translation_scheme
+
+    # metrarank is default
+    # Make an error response for providing a method that is not in the approved list
+    optimization_methods = ['metarank', 'ranksum']
+    if args.optimizer in optimization_methods:
+        optimizer = args.optimizer
+    else:
+        optimizer = 'metarank'
 
     # Sorry for this horrible line. "translation_scheme" is a package that holds the
     # translation and energetics modules. "translation" is a module that provides the code
@@ -1000,6 +1028,7 @@ def main():
                      reps=n,
                      design_params=design_params,
                      translation=translation,
+                     optimizer=optimizer,
                      energyfuncs=energyfuncs,
                      extra_pars=extra_pars,
                      quick=args.quick)
@@ -1058,7 +1087,6 @@ file my_very_own.crn, fixed file my.fixed, and option arguments to override the 
                             'the CRN to DNA strands and complexes. See piperine.Srinivas2017 for an example of such a package.'+
                             ' [default: Srinivas2017]',
                         type=str)
-
     parser.add_argument("-q", '--quick',
                         action='store_true',
                         help='Make random numbers instead of computing heuristics to save time. [default: False]')
@@ -1146,6 +1174,7 @@ def score():
                       crn_file=crnfile,
                       design_params=design_params,
                       translation=translation,
+                      optimizer=optimizer,
                       energyfuncs=energyfuncs,
                       quick=args.quick)
     print(dict(zip(out[1], out[0])))
