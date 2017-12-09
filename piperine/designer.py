@@ -614,7 +614,7 @@ def selection_wrapper(scores, reportfile = 'score_report.txt', optimizer='metara
     return winner
 
 def run_designer(basename,
-                 reps=1,
+                 reps=4,
                  design_params=default_design_params,
                  translation=default_translation,
                  energyfuncs=default_energyfuncs,
@@ -996,7 +996,7 @@ def main():
     elif 'n' in parameters:
         n = parameters['n']
     else:
-        n = 1
+        n = 4
 
     if args.designparams:
         design_params = args.designparams

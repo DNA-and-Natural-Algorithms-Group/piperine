@@ -331,7 +331,9 @@ def metarank(scores):
     winner = strmincases(temp)
     print("\nBest sum-of-metaranks: {:6d} by {:s}".format( min(temp), strmincases(temp) ))
     print()
-    return winner[0]
+    if type(winner) is str:
+        winner = int(winner[1:-1])
+    return winner
 
 if __name__ == "__main__":
 
