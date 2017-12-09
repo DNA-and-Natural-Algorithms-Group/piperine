@@ -1,28 +1,41 @@
 from __future__ import division, print_function
 import pkg_resources
 
-# comps = [pkg_resources.resource_stream('piperine', 'data/bimrxn.comp')]
-# Default params
+# Default design parameters
 default_params = (7, 15, 2)
-n_th = 2
+param_terms = ('t', 'bm', 'c')
+toehold_length_term = 't'
+
 # The .comp files to be imported in the .sys file
 comps = ['bimrxn']
+
 # Strings used to generate reaction lines in the .sys file.
+
 # The second item is the argument call
-rxn_strings = ['component', '(<t>, <bm>, <c>)']
+param_str = '(<t>, <bm>, <c>)'
+
 # The argument call at the system file header
 param_string = '(t, bm, c): '
 
+# List containing component name, list of complexes, and list of strands
 pepper_templates =  ['bimrxn',
                     ['{0}-Gate', '{0}-Gate_int', '{0}-Gate_waste',
                      '{0}-Trans', '{0}-Trans_int', '{0}-Trans_waste','{0}-Trans_cat_waste'],
                     ['{0}-Out', '{0}-Backward', '{0}-cat_helper', '{0}-helper']]
 
+# Gate and Strand objects store PIL names of important domains. These domains
+# are held in a dictionary with the following keys and values.
 pepper_keys = ['sequence',
                'toeholds',
                'bm domains',
                'history domains']
 
+# String templates for important PIL domain names. This is a list of list,
+# where the items of the outermost list correspond, in order, to the following
+# strands of the bimolecular reaction: first input, second input, first output,
+# second output. Each of these members are a list that hold templates for PIL
+# names of the following: full strand, list of toehold domains, branch
+# migration domains, and history domains.
 pepper_values = [['{0}-a',
                   ['{0}-toe-fa', '{0}-toe-sa'],
                   ['{0}-am{0}-cam'],
@@ -41,6 +54,24 @@ pepper_values = [['{0}-a',
                   ['{0}-dh{0}-cdh']]]
 
 
+# Inputs to the Toehold Occlusion heuristic function include sequences that
+# do not correspond to domains in the component file. These subsequences are
+# generated from the string templates stored in the variable specific_names.
+# The strings in specific_names are concatenations of PIL domain names that
+# match strand definitions in the component file. The input to the heuristic
+# score is produced by in-place-replacement of each PIL domain name with its
+# nucleotide sequence.  The function F, defined below, produces lists of
+# concatenated PIL names. Each list is associated with a toehold domain such
+# that the concatenated PIL names in a list do not include the list's
+# associated toehold domain. F does this by splitting the concatenated domain
+# names into two strings, dividing where the associated toehold domain name
+# occurs. The toehold domain name is thus removed.
+# The variable nicknames is a list of PIL names for strands, just as the
+# variable specific_names is a list of concatenated PIL domain names. In fact,
+# both variables define the same strands in the same order. Whenever F finds
+# that it does not need to split a concatenated PIL name, it replaces that
+# string with the string from the variable nicknames that describes the same
+# strand.
 nicknames = ['{0}-Out', '{0}-Backward', '{0}-cat_helper', '{0}-helper']
 specific_names = ['{0}-ch{0}-cch{0}-toe-sb{0}-bm{0}-cbm',
                   '{0}-toe-fb-suffix{0}-toe-sa{0}-am{0}-cam',
@@ -50,12 +81,26 @@ toeholds = [['{0}-toe-fa'], ['{0}-toe-sa'], ['{0}-toe-fb-suffix', '{0}-toe-fb'],
             ['{0}-toe-fc'], ['{0}-toe-sc'], ['{0}-toe-fd'], ['{0}-toe-sd']]
 
 def format_list(templates, word):
+    ''' Recursive function to perform a simple string formatting for lists of lists of strings
+
+        For nested lists containing only strings, this function maintains the
+        nesting structure of the input templates doing a single-item format of the
+        member strings using argument word.
+
+        Arguments
+            templates : Nested list of strings that all have {0} terms for replacement
+            word : Substitution string
+        Returns
+            nested lists of formatted strings
+    '''
     if type(templates) is list:
         return [format_list(temp, word) for temp in templates]
     else:
         return templates.format(word)
 
 def flatten(in_list):
+    ''' Turns a nested list into a single, un-nested list
+    '''
     if type(in_list) is list:
         out_list = []
         for x in in_list:
@@ -65,22 +110,65 @@ def flatten(in_list):
         return [in_list]
 
 def F(ordered_species, rxn_name):
+    ''' Prepares input to Toehold Occulsion heuristic function.
+
+        Toehold Occlusion calculation requires a dictionary associating a
+        toehold with a list of subsequences of top strands that do not contain
+        that toehold. However, this top strand list cannot be generated through
+        nucleotide sequence comparison because unintentional and intentional
+        toehold sequences in a top strand would be indistinguishable. Rather, F
+        does this by comparing PIL domain names.
+
+        This function uses variables defined outside of the function body to
+        construct the string templates for toehold and strand definitions.
+
+        Arguments
+            ordered_species: Strand objects corresponding to signal species
+                             associated with a bimolecular reaction.  in the
+                             following order:
+                                0: First input
+                                1: Second input
+                                2: First output
+                                3: Second output
+            rxn_name: String that is entered into the {0} tokens in the strings.
+        Returns
+            A dictionary with toehold PIL names as keys and a list of
+            concatenated PIL domains that correspond to top strand subesquences
+            that do not contain the associated toehold domain.
+    '''
+    # Format the PIL name templates with the reaction name
     th_names = format_list(toeholds, rxn_name)
     domains = format_list(specific_names, rxn_name)
     strands = format_list(nicknames, rxn_name)
-    species_names = [ x.species for x in ordered_species ]
-    species_indices = dict(list(zip(species_names, list(range(len(species_names))))))
+
+    # This loop associates the PIL names for toehold domains from SignalStrand
+    # objects to the PIL names for the identical toehold domains that appear in
+    # the reaction specified by the argument rxn_name.
     toehold_splits_map = {}
     for i, spec in enumerate(ordered_species):
         spec_first_th = spec.th(0)
+        # make new dictionary entry for new strand
         if spec_first_th not in toehold_splits_map:
             toehold_splits_map.update({spec.th(0):th_names[2*i],
                                        spec.th(1):th_names[2*i+1]})
+        # update existing dictionary entry
         else:
             toehold_splits_map[spec.th(0)].extend(th_names[2*i])
             toehold_splits_map[spec.th(1)].extend(th_names[2*i+1])
 
+    # The recursive function and the helper function perform the string splitting
     def split_recurse(split_list, re_domains, i):
+        ''' Recursive function that splits terms in re_domains at terms found in split_list.
+
+            Arguments
+                split_list: A list of PIL names as strings.
+                re_domains: A nested list of concatenated PIL names
+                i: Top strand index. When no splits are necessary, this index
+                   is used to retrieve the strand nickname.
+            Returns
+                List of concatenated PIL names that do not contain the PIL
+                names in split_list.
+        '''
         if len(split_list) == 0:
             return re_domains
         if type(split_list) is list:
@@ -93,6 +181,8 @@ def F(ordered_species, rxn_name):
             return splitted
 
     def split_helper(split_list):
+        ''' Start recursive splitting.
+        '''
         results = [ split_recurse(split_list[:], [domains[i]], i) for i in range(len(domains)) ]
         return flatten(results)
 
@@ -103,7 +193,13 @@ def F(ordered_species, rxn_name):
     return toehold_no_interact_map
 
 class SignalStrand(object):
+    ''' One instance of this class is constructed for each unique signal species
+        in the input CRN. The data attributes are assigend values before
+        sequence generation and the method attributes procure this data when
+        accumulating inputs to the heuristic scoring functions.
 
+        The SignalStrand class was created to
+    '''
     def __init__(self, species):
         self.species = species
         self.name = species
@@ -115,12 +211,33 @@ class SignalStrand(object):
         base_str = 'species {0} family {1}'
         return base_str.format(self.species, ' '.join(self.sequences[:]))
 
-    def set_identity_domains(self, degree, rxn_name, gate='r'):
+    def set_identity_domains(self, degree, rxn_name):
+        ''' When a strand is first encountered, assign PIL names to class
+            attributes representing branch migration and toehold domains.
+
+            Arguments
+                self: Class instance (automatically supplied).
+                degree: Index representing the signal species' position in the
+                        bimolecular reaction.
+                rxn_name: Reaction prefix as seen in the .sys file.
+            Returns
+                None
+        '''
         self.pepper_names = dict(list(zip(pepper_keys,
                                 format_list(pepper_values[degree],
                                             rxn_name))))
 
     def add_instance(self, degree, rxn_name):
+        ''' Records history domains, which are unique to each reaction product.
+
+            Arguments
+                self: Class instance (automatically supplied).
+                degree: Index representing the signal species' position in the
+                        bimolecular reaction.
+                rxn_name: Reaction prefix as seen in the .sys file.
+            Returns
+                None
+        '''
         pepper_names = dict(list(zip(pepper_keys,
                                 format_list(pepper_values[degree],
                                             rxn_name))))
@@ -131,20 +248,77 @@ class SignalStrand(object):
         self.rxns.append(rxn_name)
 
     def th(self, i):
+        ''' Returns PIL name for toehold domains.
+
+            Arguments
+                self: Class instance (automatically supplied).
+                i: Toehold index queried.
+            Returns
+                PIL name for requested toehold domain, as string.
+        '''
         return self.pepper_names['toeholds'][i]
 
     def get_ths(self):
+        ''' Returns list of all PIL names for toehold domains.
+
+            Arguments
+                self: Class instance (automatically supplied).
+            Returns
+                List of all PIL names for toehold domains.
+        '''
         return self.pepper_names['toeholds'][:]
 
     def get_bms(self):
+        ''' Returns list of all PIL names for branch migration domains.
+
+            Arguments
+                self: Class instance (automatically supplied).
+            Returns
+                List of all PIL names for branch migration domains.
+        '''
         return self.pepper_names['bm domains'] + self.pepper_names['history domains']
 
     def get_top_strands(self):
+        ''' Returns list of all PIL names for all unique strands representing
+            this abstract species.
+
+            Arguments
+                self: Class instance (automatically supplied).
+            Returns
+                List of all PIL names for all unique strands representing
+                this abstract species.
+        '''
         if len(self.sequences) == 0:
             return [self.pepper_names['sequence']]
         return self.sequences[:]
 
     def get_noninteracting_peppernames(self, th):
+        ''' Returns a list of concatenated PIL names as strings that do not
+            contain the passed string.
+
+            Rather than employ F, which is used by the get_noninteracting_peppernames
+            method of the Bimrxn class and relies on global variables, this function
+            assembles concatenated PIL names from the data stored in the pepper_names
+            class attribute. When finding the subsequences of top strands that do not
+            include a given toehold domain, there are three options:
+
+                1) The signal strand does not have the toehold domain.
+                2) The given toehold domain is the first toehold of the signal strand.
+                3) The given toehold domain is the second toehold of the signal strand.
+
+            This function returns a list of concatenated PIL names, one for each
+            history domain associated with a signal species.
+
+
+            Arguments
+                self: Class instance (automatically supplied).
+                th: String. Intended be PIL names for toehold domains taken from
+                    either .get_th or .th class methods of SignalStrand instances.
+            Returns
+                A list of strings, the concatenated PIL names for top strand
+                subsequences that do not contain the input toehold domain.
+        '''
+        # Retrieve relevent PIL names
         toeholds = self.pepper_names['toeholds']
         bms = self.pepper_names['bm domains']
         hds = flatten(self.pepper_names['history domains'])
@@ -254,7 +428,7 @@ class Bimrxn(object):
                                          self.out_strands[1].name)
         elif len(self.out_strands) == 1:
             eq = eq + self.out_strands[0].name
-        return '{} {} = {}{}: {}\n'.format(rxn_strings[0], rxn, comp, rxn_strings[1], eq)
+        return '{} {} = {}{}: {}\n'.format("component", rxn, comp, param_str, eq)
 
 def process_rxns(rxns, species, d_params):
     """ Read CRN info into lists of strands and gates

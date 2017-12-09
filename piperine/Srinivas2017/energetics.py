@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import sys
 from pkg_resources import Requirement, resource_stream
 import numpy as np
 import itertools
@@ -6,6 +7,23 @@ import logging
 
 nt = { 'a': 0, 'c': 1, 'g': 2, 't': 3 }
 tops = lambda s: 4*s[:,:-1]+s[:,1:]
+
+class ToeholdSpecificationError(ValueError):
+    '''
+    Error raised when stickydesign cannot satisfy user's toehold specifications.
+    '''
+    def __init__(self, message):
+        #self.expression = expression
+        self.message = message
+
+def exceptionhook(exception_type, exception, traceback, default_hook = sys.excepthook):
+    if 'Toehold' in exception_type.__name__ :
+        print("{}: {}".format('RuntimeError', exception))
+    else:
+        default_hook(exception_type, exception, traceback)
+
+sys.excepthook = exceptionhook
+
 class energyfuncs:
     """
     Energy functions based on SantaLucia's 2004 paper.
@@ -14,7 +32,7 @@ class energyfuncs:
     consider mismatches.  'max' is probably the best choice, but is slowest -
     it takes the maximum interaction of the 'loop' and 'dangle' options.
     """
-    def __init__(self, mismatchtype='max', targetdG=7):
+    def __init__(self, targetdG=7.7, length=7, deviation=0.5, max_spurious=0.4):
         import os
         try:
             dsb = resource_stream('stickydesign', 'stickydesign/params/dnastackingbig.csv')
@@ -32,6 +50,11 @@ class energyfuncs:
             except IOError:
                 raise IOError("Error loading dnadangle.csv")
         self.targetdG=targetdG
+        self.alphabet='h'
+        self.adjs=['c', 'g']
+        self.deviation=deviation
+        self.max_spurious=max_spurious
+        self.length=length
         self.nndG_full = -np.loadtxt(dsb ,delimiter=',')
         self.dgldG_full = -np.loadtxt(dgl ,delimiter=',')
         self.taildG = 1.3
@@ -49,16 +72,9 @@ class energyfuncs:
         # 30-01-15: As of now, the dangle base is set to C, so make a lookup ta
         # ble ordered by terminating toehold base
         self.dgldG_fixedC = self.dgldG_full[1, np.arange(4) + 4 * nt['c']]
-        if mismatchtype == 'max':
-            self.uniform = lambda x,y: np.maximum( self.uniform_loopmismatch(x,y), \
-                                                   self.uniform_danglemismatch(x,y) \
-                                                 )
-        elif mismatchtype == 'loop':
-            self.uniform = self.uniform_loopmismatch
-        elif mismatchtype == 'dangle':
-            self.uniform = self.uniform_danglemismatch
-        else:
-            raise InputError("Mismatchtype {0} is not supported.".format(mismatchtype))
+        self.uniform = lambda x,y: np.maximum( self.uniform_loopmismatch(x,y), \
+                                               self.uniform_danglemismatch(x,y) \
+                                             )
 
     def th_external_dG(self, seqs):
         # Convert nearest-neighbor stacks to dG-table lookup indices.
@@ -207,4 +223,82 @@ class energyfuncs:
         e_err = np.abs(e_vec_all.mean() - self.targetdG)
         e_rng = e_vec_all.max() - e_vec_all.min()
         return (e_err, e_rng)
+
+    def calculate_unrestricted_toehold_characteristics(self):
+        import stickydesign as sd
+        ends = sd.easyends('TD',
+                           self.length,
+                           alphabet=self.alphabet,
+                           adjs=self.adjs,
+                           energetics=self)
+        n_ends = len(ends)
+        e_array = sd.energy_array_uniform(ends, self)
+        e_array = e_array[n_ends:, :n_ends]
+        for i in range(n_ends):
+            e_array[i,i] = 0
+        e_spr = e_array.max()/self.targetdG
+        e_vec_ext = self.th_external_dG(ends)
+        e_vec_int = self.th_internal_dG(ends)
+        e_vec_all = np.concatenate( (e_vec_int, e_vec_ext))
+        e_avg = e_vec_all.mean()
+        e_dev = np.max(np.abs(e_vec_all - self.targetdG))
+        return e_avg, e_dev, e_spr, n_ends
+
+    def get_toeholds(self, n_ths=6, timeout=8):
+        from  time import time
+        import stickydesign as sd
+        """ Generate specified stickyends for the Soloveichik DSD approach
+
+        A given run of stickydesign may not generate toeholds that match the
+        Soloveichik approach. This function reports whether the run was successful
+        or not. Otherwise, the toeholds are matched to respect the backwards
+        strand back-to-back toeholds.
+
+        Args:
+            ef: Stickydesign easyends object
+            n_ths: Number of signal strand species to generate toeholds for
+        Returns:
+            ends_all: Stickydesign stickyends object
+            (e_avg, e_rng): Average and range (max minus min) of toehold energies
+        """
+        # Give StickyDesign a set of trivial, single-nucleotide toeholds to avoid poor
+        # designs. I'm not sure if this helps now, but it did once.
+        avoid_list = [i * int(self.length + 2) for i in ['a', 'c', 't']]
+
+        # Generate toeholds
+        fdev = self.deviation / self.targetdG
+        notoes = True
+        startime = time()
+        while notoes:
+            try:
+                ends = sd.easyends('TD',
+                                   self.length,
+                                   interaction=self.targetdG,
+                                   fdev=fdev,
+                                   alphabet=self.alphabet,
+                                   adjs=self.adjs,
+                                   maxspurious=self.max_spurious,
+                                   energetics=self,
+                                   oldends=avoid_list)
+                notoes = len(ends) < n_ths + len(avoid_list)
+                if (time() - startime) > timeout:
+                    e_avg, e_spr, e_dev, n_ends = self.calculate_unrestricted_toehold_characteristics()
+                    msg = "Cannot make toeholds to user specification! Try target energy:{:.2}, maxspurious:{:.2}, deviation:{:.2}, which makes {:d} toeholds."
+                    exception = ToeholdSpecificationError(msg.format(e_avg, e_spr, e_dev, n_ends))
+                    raise exception
+            except ValueError:
+                e_avg, e_spr, e_dev, n_ends = self.calculate_unrestricted_toehold_characteristics()
+                msg = "Cannot make toeholds to user specification! Try target energy:{:.2}, maxspurious:{:.2}, deviation:{:.2}, which makes {:d} toeholds."
+                exception = ToeholdSpecificationError(msg.format(e_avg, e_spr, e_dev, n_ends))
+                raise exception
+        th_cands = ends.tolist()
+        # remove "avoid" sequences
+        th_cands = th_cands[len(avoid_list):]
+        # Make as many end in c as possible
+        th_cands = th_cands[:n_ths]
+        th_all = [ th[1:-1] for th in th_cands]
+        ends_full = sd.endarray(th_cands, 'TD')
+        ends_all = sd.endarray(th_all, 'TD')
+        return ends_all.tolist()
+
 

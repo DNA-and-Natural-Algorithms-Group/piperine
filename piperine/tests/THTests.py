@@ -6,7 +6,8 @@ from tempfile import mkstemp
 from .test_data import fixed_file
 from time import time
 
-from .. import designer, tdm, energyfuncs_james, gen_th
+from .. import designer, tdm
+from ..Srinivas2017 import energetics
 
 # From a stackoverflow, 16571150
 from io import StringIO
@@ -21,16 +22,16 @@ class Capturing(list):
         sys.stdout = self._stdout
 
 class Test_gen_th(unittest.TestCase):
-    
+
     def setUp(self):
-       self.ef = energyfuncs_james.energyfuncs(targetdG=7.7)
-        
+       self.ef = energetics.energyfuncs(targetdG=7.7)
+
     def tearDown(self):
         pass
-    
+
     def runTest(self):
         pass
-    
+
     def test_get_toeholds_timeout(self):
         starttime = time()
         timeout = 1e-4
@@ -39,12 +40,12 @@ class Test_gen_th(unittest.TestCase):
             if out == -1:
                 timeflag = False
             self.assertGreater(timeout, starttime-time(), "Timeout does not work")
-    
+
     def test_get_toeholds(self):
         out = gen_th.new_toeholds(self.ef, thold_l=5)
-    
-    
-        
+
+
+
 
 def suite():
     tests = ['test_tdm']

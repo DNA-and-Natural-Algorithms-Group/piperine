@@ -6,6 +6,7 @@ from . import CompilationTests
 from . import RunDesignerTest
 from . import DSDClassesTests
 from . import TDM_NUPACK_tests
+from . import CommandlineTests
 
 def runem():
     suite = import_test.suite()
@@ -35,10 +36,15 @@ def run_nupack():
     suite = TDM_NUPACK_tests.suite()
     unittest.TextTestRunner(verbosity=2).run(suite)
 
+def run_commandline():
+    suite = CommandlineTests.suite()
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
 def run_all():
     alltests = unittest.TestSuite(
         [
-            x.suite() for x in 
+            x.suite() for x in
+                #[import_test, TDMTests, CompilationTests, RunDesignerTest, DSDClassesTests, TDM_NUPACK_tests, CommandlineTests]
                 [import_test, TDMTests, CompilationTests, RunDesignerTest, DSDClassesTests, TDM_NUPACK_tests]
         ])
     unittest.TextTestRunner(verbosity=2).run(alltests)
