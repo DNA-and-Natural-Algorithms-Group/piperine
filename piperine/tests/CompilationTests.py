@@ -8,7 +8,10 @@ import pkg_resources
 import filecmp
 
 # From a stackoverflow, 16571150
-from io import StringIO
+if sys.version_info >= (3,0):
+    from io import StringIO
+else:
+    from StringIO import StringIO
 
 from .. import designer
 from ..Srinivas2017 import translation as trans_mod

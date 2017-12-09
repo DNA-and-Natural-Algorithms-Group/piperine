@@ -10,7 +10,10 @@ from .. import designer, tdm
 from ..Srinivas2017 import translation, energetics
 
 # From a stackoverflow, 16571150
-from io import StringIO
+if sys.version_info >= (3,0):
+    from io import StringIO
+else:
+    from StringIO import StringIO
 
 class Capturing(list):
     def __enter__(self):
