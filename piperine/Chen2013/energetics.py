@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import sys
 from pkg_resources import Requirement, resource_stream
 import numpy as np
 import itertools
@@ -8,6 +9,23 @@ from . import translation
 
 nt = { 'a': 0, 'c': 1, 'g': 2, 't': 3 }
 tops = lambda s: 4*s[:,:-1]+s[:,1:]
+
+class ToeholdSpecificationError(ValueError):
+    '''
+    Error raised when stickydesign cannot satisfy user's toehold specifications.
+    '''
+    def __init__(self, message):
+        #self.expression = expression
+        self.message = message
+
+def exceptionhook(exception_type, exception, traceback, default_hook = sys.excepthook):
+    if 'Toehold' in exception_type.__name__ :
+        print("{}: {}".format('RuntimeError', exception))
+    else:
+        default_hook(exception_type, exception, traceback)
+
+sys.excepthook = exceptionhook
+
 class energyfuncs:
     """
     Energy functions based on SantaLucia's 2004 paper.
@@ -283,15 +301,13 @@ class energyfuncs:
                 if (time() - startime) > timeout:
                     e_avg, e_spr, e_dev, n_ends = self.calculate_unrestricted_toehold_characteristics()
                     msg = "Cannot make toeholds to user specification! Try target energy:{:.2}, maxspurious:{:.2}, deviation:{:.2}, which makes {:d} toeholds."
-                    print(msg.format(e_avg, e_spr, e_dev, n_ends))
-                    raise Exception()
-            except ValueError as e:
-                if (time() - startime) > timeout:
-                    e_avg, e_spr, e_dev, n_ends = self.calculate_unrestricted_toehold_characteristics()
-                    msg = "Cannot make toeholds to user specification! Try target energy:{:.2}, maxspurious:{:.2}, deviation:{:.2}, which makes {:d} toeholds."
-                    print(msg.format(e_avg, e_spr, e_dev, n_ends))
-                    raise e
-                noetoes = True
+                    exception = ToeholdSpecificationError(msg.format(e_avg, e_spr, e_dev, n_ends))
+                    raise exception
+            except ValueError:
+                e_avg, e_spr, e_dev, n_ends = self.calculate_unrestricted_toehold_characteristics()
+                msg = "Cannot make toeholds to user specification! Try target energy:{:.2}, maxspurious:{:.2}, deviation:{:.2}, which makes {:d} toeholds."
+                exception = ToeholdSpecificationError(msg.format(e_avg, e_spr, e_dev, n_ends))
+                raise exception
 
         th_cands = ends.tolist()
         # remove "avoid" sequences
