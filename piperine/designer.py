@@ -11,7 +11,10 @@ import numpy as np
 
 from . import Srinivas2017 as default_translation_scheme
 
-from io import StringIO
+if sys.version_info >= (3,0):
+    from io import StringIO
+else:
+    from StringIO import StringIO
 
 class Capturing(list):
     def __enter__(self):
@@ -47,7 +50,6 @@ def call_compiler(basename,
     Returns:
         Nothing
     """
-    print(basename)
     from peppercompiler.compiler import compiler
     if outputname is None:
         outputname = '{}.pil'.format(basename)
