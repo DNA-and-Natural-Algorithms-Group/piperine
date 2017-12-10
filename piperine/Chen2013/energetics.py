@@ -20,7 +20,7 @@ class ToeholdSpecificationError(ValueError):
 
 def exceptionhook(exception_type, exception, traceback, default_hook = sys.excepthook):
     if 'Toehold' in exception_type.__name__ :
-        print("{}: {}".format('RuntimeError', exception))
+        print("{}: {}".format('RuntimeError', exception.message))
     else:
         default_hook(exception_type, exception, traceback)
 
@@ -272,11 +272,10 @@ class energyfuncs:
         strand back-to-back toeholds.
 
         Args:
-            ef: Stickydesign easyends object
-            n_ths: Number of signal strand species to generate toeholds for
+            n_ths: Number of toeholds to generate. (6)
+            timeout: Time duration allowed for finding toeholds in seconds. (8)
         Returns:
-            ends_all: Stickydesign stickyends object
-            (e_avg, e_rng): Average and range (max minus min) of toehold energies
+            List of toehold strings
         """
         # Give StickyDesign a set of trivial, single-nucleotide toeholds to avoid poor
         # designs. I'm not sure if this helps now, but it did once.

@@ -4,7 +4,7 @@ import os
 import sys
 from tempfile import mkstemp, mkdtemp
 
-nupackpath = os.environ['NUPACKHOME']+'/bin/'
+nupackpath = os.path.join(os.environ['NUPACKHOME'], 'bin/')
 
 import numpy as np
 import re
@@ -12,6 +12,20 @@ import random
 
 from .designer import default_energyfuncs
 whiteSpaceSearch = re.compile('\s+')
+
+if sys.version_info >= (3,0):
+    from io import StringIO
+else:
+    from StringIO import StringIO
+
+class Capturing(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        sys.stdout = self._stdout
 
 class MyProgress(object):
     class ImproperInput(Exception):
@@ -488,7 +502,8 @@ def Spurious_Weighted_Score(basename,
     # Commented code generates MFE file
     spur_exc = 'spuriousSSM score=automatic template=%s wc=%s eq=%s %s> %s'
     command = spur_exc % (stname, wcname, eqname, ssm_params, spurious_output)
-    os.system(command)
+    with Capturing() as cptr:
+        os.system(command)
     #subprocess.check_call(spur_exc)
 
     w_lin = np.concatenate([np.zeros((beta, )), np.arange(12-beta)+1, 7*np.ones((2,))])
