@@ -62,8 +62,8 @@ From there, use __pip__ to install Piperine using the in-place flag __-e__.
 
 > `git clone git@github.com:DNA-and-Natural-Algorithms-Group/piperine.git`
 >
-> 'ls piperine # check the contents of the piperine directory'\
-> 'LICENSE piperine README.md setup.py'
+> `ls piperine # check the contents of the piperine directory`\
+> `LICENSE piperine README.md setup.py`
 >
 > `pip install -e piperine`
 
