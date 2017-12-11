@@ -579,7 +579,7 @@ def generate_seqs(basename,
     with Capturing() as cptr:
         call_finish(basename, savename=save_file, designname=mfe_file, \
                     seqname=seq_file, strandsname=strands_file, run_kin=False)
-    print('Sequences written to: {}'.format(mfe_file))
+    print('Sequences written to: {}'.format(seq_file))
     print('Strand identities written to: {}'.format(strands_file))
     return toeholds
 
@@ -671,9 +671,10 @@ def run_designer(basename,
     if reps >= 1:
         scoreslist = []
         for i in range(reps):
-            testname = basename + str(i) + '.txt'
+            testname = basename + str(i) + '_strands.txt'
             seqsname = basename + str(i) + '.seqs'
             try:
+                print("Designing sequences candidate index {}.".format(i))
                 toeholds = generate_seqs(basename,
                                          gates,
                                          strands,
@@ -826,7 +827,7 @@ are the sequences of candidate DNA implementations, a table of scores calculated
 and a comparison of the candidates based on their heuristic scores. Piperine generates and scores multiple candidates during \
 an execution (default is 4 candidates). The utility announces the candidate that Piperine considers to be the best.'
 
-    usage = "\n" + descr + "\n\n\n\
+    usage = "\n" + descr + "\n\n\
 The following is the call template with short option flags. Options are shown in brackets. Capitalized terms stand in for \
 arguments. Ellipsis indicate multiple arguments accepted.\n\n\
 piperine-design CRNFILE [-h] [-l LENGTH] [-e ENERGY] [-d DEVIATION] [-m MAXSPURIOUS] \
