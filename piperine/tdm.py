@@ -19,6 +19,7 @@ else:
     from StringIO import StringIO
 
 class Capturing(list):
+    '''Redirects output from stdout to an in-memory buffer.'''
     def __enter__(self):
         self._stdout = sys.stdout
         sys.stdout = self._stringio = StringIO()
@@ -28,6 +29,7 @@ class Capturing(list):
         sys.stdout = self._stdout
 
 class MyProgress(object):
+    '''Reports progress of scoring operations rougly every 10% increment.'''
     class ImproperInput(Exception):
         pass
 
@@ -52,23 +54,24 @@ class MyProgress(object):
             print('DONE')
 
 def read_design(filename):
-  from peppercompiler.nupack_out_grammar import document
-  """Extracts the designed sequences and the mfe structures"""
-  if not os.path.isfile(filename):
-    error("Cannot load design. No such file '%s'." % filename)
-  stats, total_n_star = document.parseFile(filename)
-  seqs = {}
-  structs = {}
-  # Catches everything (struct, seq and seq*) except bad inters (struct N struct)
-  #print stats
-  for stat in stats:
-    #print stat
-    name, seq, n_star, gc, mfe, ideal_struct, actual_struct = stat
-    seqs[name] = seq
-    structs[name] = ideal_struct
-  return [seqs, structs]
+    """Extracts the designed sequences and structures from an mfe file"""
+    from peppercompiler.nupack_out_grammar import document
+    if not os.path.isfile(filename):
+        error("Cannot load design. No such file '%s'." % filename)
+    stats, total_n_star = document.parseFile(filename)
+    seqs = {}
+    structs = {}
+    # Catches everything (struct, seq and seq*) except bad inters (struct N struct)
+    #print stats
+    for stat in stats:
+        #print stat
+        name, seq, n_star, gc, mfe, ideal_struct, actual_struct = stat
+        seqs[name] = seq
+        structs[name] = ideal_struct
+    return [seqs, structs]
 
 def Read_Finished(filename):
+    """Extracts sequences from a .seqs file"""
     f = open(filename,'r')
     lines = f.readlines()
     f.close()
@@ -91,6 +94,7 @@ def Read_Finished(filename):
     return (sequences, strands)
 
 def make_pepper_seq_dict(pepperlist, seq_dict, update=False):
+    """Generates a dictionary matching concatenated domain names to their DNA sequences."""
     Strandseq_dict = {}
     s_keys = list(seq_dict.keys())
     s_keys.sort(reverse=True)
@@ -107,6 +111,7 @@ def make_pepper_seq_dict(pepperlist, seq_dict, update=False):
     return Strandseq_dict
 
 def compare_sequence_notoe(s1, s2, toeholds):
+     '''Finds greatest subsequence match except in the case of a toehold.'''
      siz = min((len(s1), len(s2)));
      maxmatchsize = 0;
      ismaxmatch = "FALSE";
@@ -126,10 +131,11 @@ def compare_sequence_notoe(s1, s2, toeholds):
      return [ismaxmatch, maxmatchsize, mm_i, mm_j]
 
 def get_seq_dicts(basename, heuristics_inputs, mfe_file=None, seq_file=None):
+    '''Returns a dictionary of name:sequence pairings from .mfe and .seqs files.'''
     if mfe_file is None:
         mfe_file = basename + ".mfe"
     if seq_file is None:
-        seq_file = basename + ".seq"
+        seq_file = basename + ".seqs"
     pep_sequences, pep_strands = Read_Finished(seq_file)
     domains_list = list(pep_sequences.keys())
     mfe_dict, cmplx_dict = read_design(mfe_file)
@@ -154,6 +160,7 @@ def get_seq_dicts(basename, heuristics_inputs, mfe_file=None, seq_file=None):
     return seq_dict, cmplx_dict, domains_list
 
 def get_heuristics_inputs(gates, strands):
+    '''Generate arguments for heuristics functions.'''
     # Generate pepper-lists
     TopStrandlist = []
     complex_names = []
@@ -212,15 +219,17 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
 
 
     print('Start WSI computation')
-    if quick:
-        ssm_scores = np.random.rand(6)
-    else:
-        ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict,
-                                             compile_params=compile_params,
-                                             includes=includes, clean=clean)
+    with Capturing() as cptr:
+        if quick:
+            ssm_scores = np.random.rand(6)
+        else:
+            ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict,
+                                                 compile_params=compile_params,
+                                                 includes=includes, clean=clean)
     ssm_names = ['WSAS', 'WSIS', \
                  'WSAS-M', 'WSIS-M', \
                  'Verboten', 'Spurious']
+    print('DONE')
     print('')
 
     # Score cross-strand spurious interactions
@@ -359,6 +368,7 @@ def NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, NotToInteract,\
 
     BaseSpurious = np.zeros([numbase, 1]);
 
+    print('')
     print('Calculating Toehold occupation')
     countmax = sum(map(len, list(NotToInteract.values())))
     prog = MyProgress(countmax)
@@ -502,8 +512,7 @@ def Spurious_Weighted_Score(basename,
     # Commented code generates MFE file
     spur_exc = 'spuriousSSM score=automatic template=%s wc=%s eq=%s %s> %s'
     command = spur_exc % (stname, wcname, eqname, ssm_params, spurious_output)
-    with Capturing() as cptr:
-        os.system(command)
+    os.system(command)
     #subprocess.check_call(spur_exc)
 
     w_lin = np.concatenate([np.zeros((beta, )), np.arange(12-beta)+1, 7*np.ones((2,))])
