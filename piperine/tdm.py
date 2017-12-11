@@ -226,55 +226,56 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
             ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict,
                                                  compile_params=compile_params,
                                                  includes=includes, clean=clean)
+            print('DONE')
+            print('')
     ssm_names = ['WSAS', 'WSIS', \
                  'WSAS-M', 'WSIS-M', \
                  'Verboten', 'Spurious']
-    print('DONE')
-    print('')
+    # Spurious_Weighted_Score doesn't have a counter, so print DONE for symmetry here
 
     # Score cross-strand spurious interactions
-    print('Start Cross-Strand spurious interactions computation')
+    #print('Start Cross-Strand spurious interactions computation')
     if quick:
         css_scores = np.random.rand(4)
     else:
         css_scores  = NUPACK_Eval(seq_dict, TopStrandlist, BaseStrandlist, \
             NotToInteract, ComplexSize = 2, T = 25.0, material = 'dna',\
              clean=clean, quiet=True)
+        print('')
     css_names = ['TSI avg', 'TSI max', \
                  'TO avg', 'TO max']
-    print('')
 
-    print('Start bad nucleotide percent computation')
     if quick:
         ted_scores = [np.random.rand(), 'BAD', np.random.rand()]
     else:
+        print('Start bad nucleotide percent computation')
         ted_scores = NUPACK_Eval_bad_nucleotide(seq_dict, cmplx_dict, complex_names,\
             prefix='tube_ensemble', clean=clean)
+        print('')
     ted_names = ['BN% max', 'Max Defect Component',
                  'BN% avg']
-    print('')
 
     # Retrieve toeholds for BM score calculation
     th_strs = [ s.get_ths() for s in strands ]
     toeholds = [seq_dict[i] for ths in th_strs for i in ths]
 
     # Score weighted spurious interactions
-    print('Start BM score computation')
     if quick:
         bm_scores = np.random.rand(2)
     else:
+        print('Start BM score computation')
         bm_scores = BM_Eval(seq_dict, BMlist, toeholds)
+        print('')
     bm_names = ['WS-BM', 'Max-BM']
-    print('')
 
     # Score intra-strand spurious interactions and toehold availability
-    print('Start Single-Strand spurious score computation')
     if quick:
         ss_scores = np.random.rand(4)
     else:
+        print('Start Single-Strand spurious score computation')
         ss_scores = SS_Eval(seq_dict, TopStranddict, T = 25.0, material = 'dna', clean=clean)
+        print('')
     ss_names = ['SSU min', 'SSU avg', 'SSTU min', 'SSTU avg']
-    print('')
 
     # Convert the list of toeholds from each strand into nucleotide sequences
     toeholds = [ [seq_dict[i] for i in s.get_ths()] for s in strands ]
