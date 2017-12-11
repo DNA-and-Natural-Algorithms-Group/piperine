@@ -829,7 +829,7 @@ an execution (default is 4 candidates). The utility announces the candidate that
 
     usage = "\n" + descr + "\n\n\
 The following is the call template with short option flags. Options are shown in brackets. Capitalized terms stand in for \
-arguments. Ellipsis indicate multiple arguments accepted.\n\n\
+arguments. Ellipses indicate multiple arguments accepted.\n\n\
 piperine-design CRNFILE [-h] [-l LENGTH] [-e ENERGY] [-d DEVIATION] [-m MAXSPURIOUS] \
 [-p DESIGNPARAMS ...] [-n CANDIDATES] \
 [-t TRANSLATION] [-x EXTRAPARS] [-q] \n\n\
