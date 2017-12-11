@@ -60,16 +60,18 @@ For now, you can only install Piperine from the source files.
 Clone or download this repository, start a terminal session, and navigate to the repository folder.
 From there, use __pip__ to install Piperine using the in-place flag __-e__. 
 
-> `git clone git@github.com:DNA-and-Natural-Algorithms-Group/piperine.git`
->
-> `ls piperine # check the contents of the piperine directory`\
-> `LICENSE piperine README.md setup.py`
->
-> `pip install -e piperine`
+```
+git clone git@github.com:DNA-and-Natural-Algorithms-Group/piperine.git
+
+ls piperine # check the contents of the piperine directory
+LICENSE piperine README.md setup.py
+
+pip install -e piperine
+```
 
 To install updates, return to the git repository and execute
 
-> `git pull`
+`git pull`
 
 ## Brief tutorial
 Piperine reads in plaintext files that specify an abstract CRN, converts the CRN into a domain-level DNA specification, then designs sequences implementing the domain-level constraints.
@@ -80,13 +82,15 @@ Multiple sets of sequences are produced during each execution.
 The command line utility `piperine-design` requires one argument, a file specifying an abstract CRN.
 An example CRN might be the following, saved in a file called `my.crn`
 
-> ` -> B` \
-> `B -> A` \
-> `A + A -> A`
+```
+ -> B
+B -> A
+A + A -> A
+```
 
 This CRN can then be compiled into DNA sequences using the following call in a terminal session:
 
-> `piperine-design my.crn -n 3`
+`piperine-design my.crn -n 3`
 
 The `-n 3` argument tells Piperine to generate three candidate sets of sequences.
 This execution will generate a number of intermediate files suffixed by .sys, .pil, .fixed, and .mfe.
@@ -98,14 +102,14 @@ Users may also adjust toehold generation parameters through command line argumen
 These optional arguments define the target binding energy, allowable deviation from the target energy, and maximum relative energy of unintended toehold interactions.
 To override the default values, apply arguments as in :
 
->  `piperine-design my.crn --energy 7.5 --deviation 0.5 --maxspurious 0.5`
+`piperine-design my.crn --energy 7.5 --deviation 0.5 --maxspurious 0.5`
 
 This may be necessary when generating sequences for CRNs including more than 10 toeholds.
 If the default or user-specified toehold energetics parameters cannot be satisfied by the sequence designer, Piperine will suggest values that will generate a sufficient number of toeholds.
 
 More complete information on the `piperine-design` utility may be found in its documentation:
 
-> `piperine-design --help`
+`piperine-design --help`
 
 #### Translation schemes
 A translation scheme is a set of rules that define how a general CRN may be translated into a DNA implementation.
@@ -116,7 +120,7 @@ For more information on these schemes, review the publications listed in the ref
 By default Piperine will use the Srinivas2017 scheme when designing sequences.
 To use the Chen2013 scheme, use the `--translation_scheme` argument.
 
->`piperine-design my.crn --translation_scheme Chen2013`
+`piperine-design my.crn --translation_scheme Chen2013`
 
 ## References
 1. Chen, Y. J. et al. Programmable chemical controllers made from DNA. Nat. Nanotechnol. 8, 755–762 (2013).
