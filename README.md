@@ -1,7 +1,23 @@
 # Piperine
 Piperine is a software tool for the automated design of DNA sequences that mimic abstract chemical reaction networks (CRNs) in a test tube.
-It combines sequence design tools created by the DNA and Natural Algorithms Group with the set of heuristic sequence quality measures designed by Niranjan Srinivas.
+It combines sequence design tools created by the DNA and Natural Algorithms Group with the set of heuristic sequence quality measures.
 These heuristic functions detect sequence motifs that are detrimental to DNA strand displacement reactions; avoiding these motifs promotes fidelity of the _in vitro_ DNA reaction to the target CRN.
+
+Major Contributors :
+
+* James Parkin
+
+* Niranjan Srinivas
+
+* Erik Winfree
+
+* Harel Dor
+
+Thanks to : 
+
+* Chris Thachuk 
+
+* Constantine Evans 
 
 Basic use of Piperine involves providing CRNs specified in text files and receiving a set of candidate DNA implementations.
 From this list of implementations, Piperine will select one as the optimal candidate relative to the set.
@@ -15,7 +31,7 @@ Piperine has only been tested on Ubuntu and MacOSX Sierra.
 Windows is unsupported for now.
 
 ### Python version
-Piperine works with Python >= 2.7.
+Piperine works with Python >= 2.7
 
 ### Software dependencies
 Piperine depends on

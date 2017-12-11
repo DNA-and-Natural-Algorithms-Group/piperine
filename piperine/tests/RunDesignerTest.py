@@ -39,10 +39,10 @@ class Test_run_designer(unittest.TestCase):
         with open(self.crn, 'w') as f:
             f.write(self.crn_rxn)
         # Modules and module strings for import tests
-        self.ef = energetics.energyfuncs(targetdG=7.7)
+        self.ef = energetics.energyfuncs(targetdG=7.5,
+                                         deviation=1,
+                                         max_spurious=0.7)
         self.trans = translation
-        self.ef_str = 'energyfuncs_james'
-        self.trans_str = 'DSDClasses'
 
     def tearDown(self):
         for f in self.filenames:
@@ -51,7 +51,9 @@ class Test_run_designer(unittest.TestCase):
 
     def test_run_designer_smallcrn(self):
         with Capturing() as output:
-            out = designer.run_designer(designer.small_crn[:-4], quick=True)
+            out = designer.run_designer(designer.small_crn[:-4], quick=True,
+                                        energyfuncs=self.ef,
+                                        reps=1)
 
 def suite():
     tests = [#'test_run_designer_accepts_string_modules',
