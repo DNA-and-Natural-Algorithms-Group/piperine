@@ -894,7 +894,7 @@ Parameters may also be set in the CRN file using equality statements and the fol
 
     parser.add_argument("-p", '--designparams',
                         help='A string of integers that are parameters to the sys file compilation. [default: Finds in '+
-                             'translation scheme module]',
+                             'translation scheme package]',
                         type=int,
                         nargs="*")
 

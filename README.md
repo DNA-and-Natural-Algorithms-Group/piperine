@@ -1,6 +1,6 @@
 # Piperine
-Piperine is a software tool for the automated design of DNA sequences that mimic abstract chemical reaction networks (CRNs) in a test tube.
-It combines sequence design tools created by the DNA and Natural Algorithms Group with the set of heuristic sequence quality measures.
+Piperine is a software tool for the automated design of DNA molecules that mimic abstract chemical reaction networks (CRNs) in a test tube.
+It combines sequence design tools created by the DNA and Natural Algorithms Group with heuristic sequence quality measures.
 These heuristic functions detect sequence motifs that are detrimental to DNA strand displacement reactions; avoiding these motifs promotes fidelity of the _in vitro_ DNA reaction to the target CRN.
 
 Major Contributors :
@@ -51,15 +51,19 @@ Make sure these are installed before installing Piperine.
 ### Installing dependencies
 Numpy and Scipy can both be installed easily through pip or conda.
 NUPACK can be [downloaded here](http://www.nupack.org/).
-Stickydesign and peppercompiler can both be found [here](https://github.com/DNA-and-Natural-Algorithms-Group/stickydesign).
+Stickydesign and peppercompiler can both be found [on the DNA and Natural Algorithms Group Github page](https://github.com/DNA-and-Natural-Algorithms-Group).
 Be sure to install NUPACK version 3.0.x, Piperine is only compatible with this legacy version for now.
 Once NUPACK is installed, make a terminal variable NUPACKHOME that points to installation destination (might be `~/Downloads/nupack3.0.6`). Do this with the command `export NUPACKHOME=`_the path to nupack_.
 
 ### Installing Piperine
 For now, you can only install Piperine from the source files.
 Clone or download this repository, start a terminal session, and navigate to the repository folder.
+From there, use __pip__ to install Piperine using the in-place flag __-e__. 
 
 > `git clone git@github.com:DNA-and-Natural-Algorithms-Group/piperine.git`
+>
+> 'ls piperine # check the contents of the piperine directory'\
+> 'LICENSE piperine README.md setup.py'
 >
 > `pip install -e piperine`
 
