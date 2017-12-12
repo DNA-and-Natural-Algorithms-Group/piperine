@@ -40,8 +40,6 @@ class Testcase_commandline(unittest.TestCase):
         # Modules and module strings for import tests
         self.ef = energetics.energyfuncs(targetdG=7.7)
         self.trans = translation
-        self.ef_str = 'energyfuncs_james'
-        self.trans_str = 'DSDClasses'
 
     def tearDown(self):
         for f in self.filenames:
@@ -55,17 +53,14 @@ class Testcase_commandline(unittest.TestCase):
         with Capturing() as output:
             out = designer.run_designer(quick=True)
 
-    def test_run_designer_alerts_unfound_modules(self):
-        fakemod1 = "notAmodule"
-        fakemod2 = "notAmodule"
-        with self.assertRaises(ModuleNotFoundError):
-            out = designer.run_designer(basename=self.basename,
-                                     e_module=fakemod1,
-                                     trans_module=fakemod2,
-                                     quick=True)
+    def test_utility_access(self):
+        command = ['piperine-design -h', 'piperine-score -h', 'piperine-select -h']
+        for cmd in command:
+            proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
+            (out, err) = proc.communicate()
+            self.assert('usage' in out)
 
 def suite():
     tests = [#'test_run_designer_accepts_string_modules',
-             'test_run_designer_noargs',
-             'test_run_designer_alerts_unfound_modules']
+             'test_run_designer_noargs']
     return unittest.TestSuite(list(map(Test_commandline, tests)))

@@ -4,7 +4,11 @@ import os
 import sys
 from tempfile import mkstemp, mkdtemp
 
-nupackpath = os.path.join(os.environ['NUPACKHOME'], 'bin/')
+try:
+    nupackpath = os.path.join(os.environ['NUPACKHOME'], 'bin/')
+except KeyError:
+    print("Environment variable NUPACKHOME is not set! Please set the terminal environment variable NUPACKHOME to the location ")
+    exit()
 
 import numpy as np
 import re
