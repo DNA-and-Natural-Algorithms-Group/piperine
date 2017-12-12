@@ -6,6 +6,7 @@ import os
 import os.path
 import importlib
 import pkg_resources
+import time
 
 import numpy as np
 
@@ -959,20 +960,27 @@ def main():
     parameters = get_parameters_form_crn_file(crnfile, None)
 
     # Import translation scheme package
-    if args.translation_scheme:
+    available_schemes = ["Srinivas2017","Chen2013"]
+    if args.translation_scheme in available_schemes :
         translation_scheme = importlib.import_module("."+args.translation_scheme, 'piperine')
     elif 'translation_scheme' in parameters:
         translation_scheme = importlib.import_module("."+parameters['translation_scheme'], 'piperine')
-    else:
+    elif args.translation_scheme is None:
         translation_scheme = default_translation_scheme
+    else:
+        print("Invalid translation scheme. Choose betweeen {}".format(available_schemes))
+        exit()
 
     # metrarank is default
     # Make an error response for providing a method that is not in the approved list
     optimization_methods = ['metarank', 'ranksum']
     if args.optimizer in optimization_methods:
         optimizer = args.optimizer
+    elif args.optimizer is None:
+        optimizer = "metarank"
     else:
-        optimizer = 'metarank'
+        print("Invalid optimizer. Choose between {}.".format(optimization_methods))
+        exit()
 
     # Sorry for this horrible line. "translation_scheme" is a package that holds the
     # translation and energetics modules. "translation" is a module that provides the code
@@ -995,6 +1003,15 @@ def main():
         toehold_length = parameters[translation.toehold_length_term]
     else:
         toehold_length = design_param_dict[translation.toehold_length_term]
+
+    try:
+        assert(toehold_length == design_param_dict[translation.toehold_length_term])
+    except AssertionError:
+        message = "Toehold length contradiction in input arguments. Toehold length specified by --length or within CRN file:{}, "+\
+                  "toehold length specified by design parameters: {}. Proceeding with {}."
+        design_th_length = design_param_dict[translation.toehold_length_term]
+        print(message.format(toehold_length, design_th_length, toehold_length))
+        time.sleep(4)
 
     design_param_dict[translation.toehold_length_term] = toehold_length
 
@@ -1027,17 +1044,21 @@ def main():
         n = 4
 
     if args.designparams:
+        def_p = translation.default_params
         design_params = args.designparams
+        try:
+            assert(len(design_params) == len(def_p))
+        except:
+            n_required = len(def_p)
+            n_provided = len(design_params)
+            message = "Translation scheme {} has {} design parameters. {} were provided.\nDefault parameters: {}"
+            print(message.format(translation_scheme.__name__, n_required, n_provided, def_p))
+            exit()
     else:
         design_params = translation.default_params
         for term in translation.param_terms:
             if term in parameters:
                 design_param_dict[term] = parameters[term]
-
-    try:
-        assert(toehold_length == design_param_dict[translation.toehold_length_term])
-    except AssertionError:
-        raise AssertionError("Toehold length contradictions in input arguments")
 
     if args.extrapars:
         extra_pars = args.extrapars
