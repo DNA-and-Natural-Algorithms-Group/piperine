@@ -19,5 +19,5 @@ setup(name='piperine',
     author='James Parkin',
     url='http://www.dna.caltech.edu/DNA_Sequence_Design_Tools/',
     license='GNU GPLv3',
-    keywords='niranjan srinivas DNA dna piperine pepper winfree crn james parkin',
+    keywords='niranjan srinivas DNA dna piperine pepper erik winfree crn james parkin',
     zip_safe=False)
