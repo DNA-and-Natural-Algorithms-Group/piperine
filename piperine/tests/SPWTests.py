@@ -18,26 +18,26 @@ class TestSPW(unittest.TestCase):
         f = open(crn_filename, 'w')
         f.write(self.crn_file)
         f.close()
-        
+
         designer.generate_scheme(self.basename, fixedfile=self.fixedfile)
         designer.generate_seqs(self.basename)
-        
+
         self.seq_dict = tdm.Read_Finished('{0}.seq'.format(self.basename))
         self.domains_list = list(self.seq_dict.keys())
-    
+
     def tearDown(self):
         filelist = os.listdir(os.getcwd())
         for f in filelist:
             if self.basename in f:
                 os.remove(f)
-    
+
     def runTest(self):
         test_spw()
-    
+
     def test_spw(self):
         scores = tdm.Spurious_Weighted_Score(self.basename, self.domains_list,\
                                              self.seq_dict)
-        self.assertEqual(self.spw_true, scores, 'Nulltest')
+        self.assertEqual(self.spw_true, scores, 'SPW Comparison')
 
 def suite():
     tests = ['test_spw']

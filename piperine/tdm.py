@@ -221,17 +221,16 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     seq_dict, cmplx_dict, domains_list = get_seq_dicts(basename, heuristics_inputs,
                                                        mfe_file, seq_file)
 
-
-    print('Start WSI computation')
-    with Capturing() as cptr:
-        if quick:
-            ssm_scores = np.random.rand(6)
-        else:
+    if quick:
+        ssm_scores = np.random.rand(6)
+    else:
+        print('Start WSI computation')
+        with Capturing() as cptr:
             ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict,
                                                  compile_params=compile_params,
                                                  includes=includes, clean=clean)
-            print('DONE')
-            print('')
+        print('DONE')
+        print('')
     ssm_names = ['WSAS', 'WSIS', \
                  'WSAS-M', 'WSIS-M', \
                  'Verboten', 'Spurious']

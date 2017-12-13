@@ -7,6 +7,7 @@ import os.path
 import importlib
 import pkg_resources
 import time
+from tempfile import mkstemp, mkdtemp
 
 import numpy as np
 
@@ -198,25 +199,28 @@ def parse_parameter_line(line, translation=default_translation):
                   lambda x: np.int(x),
                   lambda x: x,
                   lambda x: x,
-                  lambda x: np.int(x)]
+                  lambda x: np.int(re.sub(r'\s*', '', x))]
 
     # Design parameters are always integers
-    if  translation is not None:
+    if translation is not None:
         for param_term in default_translation.param_terms:
             terms.append(param_term)
             converters.append(lambda x: np.int(x))
 
     # Remove whitespace
-    line = re.sub(r'\s', '', line)
-    rhs, lhs = line.split('=')
+    line = re.sub(r'^\s*|(?<=\s)\s+|\s*$', '', line)
+    line_no_ws = re.sub(r'\s', '', line)
+    lhs = line_no_ws[:line_no_ws.find('=')]
+    line_eq = re.sub(r'\s*=\s*', '=', line)
+    rhs = line_eq[line_eq.find('=')+1:]
 
     param_dict = {}
     for i, term in enumerate(terms):
-        if rhs == term:
-            param_dict.update({term:converters[i](lhs)})
+        if lhs == term:
+            param_dict.update({term:converters[i](rhs)})
     return param_dict
 
-def get_parameters_form_crn_file(crn_file, translation=default_translation):
+def get_parameters_from_crn_file(crn_file, translation=default_translation):
     '''
     Wraapper function for parse_parameter_line.
 
@@ -227,12 +231,11 @@ def get_parameters_form_crn_file(crn_file, translation=default_translation):
     Returns:
         param_dict : A dictionary listing the parameter definitions found in the CRN file
     '''
-    fid = open(crn_file, 'r')
-    lines = list()
-    for line in fid:
-        lines.append(line[:-1])
-
-    fid.close()
+    with open(crn_file, 'r') as fid:
+        lines = list()
+        for line in fid:
+            lines.append(line)
+        fid.close()
 
     # Read through the file and extract reaction specifications
     parameters = {}
@@ -500,7 +503,8 @@ def generate_seqs(basename,
                   seq_file=None,
                   fixed_file=None,
                   save_file=None,
-                  strands_file=None):
+                  strands_file=None,
+                  debug=False):
     """ Produce sequences for a scheme
 
     This function accepts a base file name, a list of gate objects, a list of
@@ -525,10 +529,12 @@ def generate_seqs(basename,
     Returns:
         toeholds:
     """
-
+    clean = not debug
     # Prepare filenames
     if system_file is None:
         system_file = basename + ".sys"
+    else:
+        basename = system_file.split('.')[0]
     if pil_file is None:
         pil_file = basename + ".pil"
     if save_file is None:
@@ -574,7 +580,7 @@ def generate_seqs(basename,
     # Generate sequences
     with Capturing() as cptr:
         call_design(basename, pil_file, mfe_file, verbose=False,
-                    extra_pars=extra_pars, cleanup=False)
+                    extra_pars=extra_pars, cleanup=clean)
 
     # "Finish" the sequence generation
     with Capturing() as cptr:
@@ -597,10 +603,9 @@ def selection_wrapper(scores, reportfile = 'score_report.txt', optimizer='sum-of
     '''
     from . import selectseq
     stdout = sys.stdout
-    selectseq.metarank(scores, optimizer)
     try:
         sys.stdout = open(reportfile, 'w')
-        winner = selection(scores)
+        winner = selectseq.metarank(scores, optimizer)
     except Exception as e:
         sys.stdout.close()
         sys.stdout = stdout
@@ -620,7 +625,8 @@ def run_designer(basename,
                  optimizer='sum-of-metaranks',
                  extra_pars="",
                  quick=False,
-                 includes=None
+                 includes=None,
+                 debug=False
                 ):
     """ Generate and score sequences
 
@@ -657,11 +663,28 @@ def run_designer(basename,
         extra_pars = "imax=-1 quiet=TRUE"
 
     from . import tdm
-    system_file = basename + ".sys"
-    pil_file = basename + ".pil"
+    crn_file = basename + ".crn"
+    if debug:
+        system_file = basename + ".sys"
+        pil_file = basename + ".pil"
+        mfe_file = basename + ".mfe"
+        fixed_file = basename + ".fixed"
+        save_file = basename + ".save"
+    else:
+        fid, prefix = mkstemp()
+        fid, system_file = mkstemp(suffix='.sys')
+        os.close(fid)
+        fid, fixed_file = mkstemp(suffix='.fixed')
+        os.close(fid)
+        fid, pil_file = mkstemp(suffix='.pil')
+        os.close(fid)
+        fid, save_file = mkstemp(suffix='.save')
+        os.close(fid)
+        fid, mfe_file = mkstemp(suffix='.mfe')
+        os.close(fid)
 
     (gates, strands) = \
-        generate_scheme(basename, design_params, translation)
+        generate_scheme(basename, design_params, translation, crn_file=crn_file, system_file=system_file)
 
     if reps >= 1:
         scoreslist = []
@@ -675,15 +698,22 @@ def run_designer(basename,
                                          strands,
                                          design_params,
                                          energyfuncs=energyfuncs,
+                                         system_file=system_file,
+                                         pil_file=pil_file,
+                                         mfe_file=mfe_file,
+                                         fixed_file=fixed_file,
+                                         save_file=save_file,
                                          strands_file=testname,
                                          seq_file=seqsname,
-                                         extra_pars=extra_pars)
+                                         extra_pars=extra_pars,
+                                         debug=debug)
 
                 scores, score_names = tdm.EvalCurrent(basename,
                                                       gates,
                                                       strands,
                                                       testname=testname,
                                                       seq_file=seqsname,
+                                                      mfe_file=mfe_file,
                                                       compile_params=design_params,
                                                       quick=quick,
                                                       includes=includes,
@@ -706,6 +736,11 @@ def run_designer(basename,
             f.write('\n')
             f.writelines( [','.join(map(str, l)) + '\n' for l in scoreslist])
 
+    if not debug:
+        for fname in [system_file, pil_file, mfe_file, fixed_file, save_file]:
+            if os.path.exists(fname):
+                os.remove(fname)
+
     return (gates, strands, winner, scoreslist)
 
 def score_fixed(fixed_file,
@@ -721,6 +756,7 @@ def score_fixed(fixed_file,
                  translation=default_translation,
                  energyfuncs=default_energyfuncs,
                  includes=None,
+                 debug=False,
                  quick=False):
     """ Score a sequence set
 
@@ -783,6 +819,7 @@ def score_fixed(fixed_file,
                                    crn_file=crn_file,
                                    system_file=sys_file,
                                    translation=translation)
+    clean = not debug
     # Generate PIL
     with Capturing() as output:
         call_compiler(basename, args=design_params, fixed_file=fixed_file,
@@ -791,12 +828,12 @@ def score_fixed(fixed_file,
     # Generate MFE
     with Capturing() as output:
         call_design(basename, pil_file, mfe_file, verbose=False,
-                    extra_pars=extra_pars, cleanup=False)
+                    extra_pars=extra_pars, cleanup=clean)
 
     # Generate .seqs file
     with Capturing() as output:
         call_finish(basename, savename=save_file, designname=mfe_file, \
-                    seqname=seq_file, run_kin=False, cleanup=False)
+                    seqname=seq_file, run_kin=False, cleanup=clean)
 
     scores, score_names = tdm.EvalCurrent(basename,
                                           gates,

@@ -49,18 +49,14 @@ class Testcase_commandline(unittest.TestCase):
     def runTest(self):
         self.test_run_designer_accepts_string_modules()
 
-    def test_run_designer_noargs(self):
-        with Capturing() as output:
-            out = designer.run_designer(quick=True)
-
     def test_utility_access(self):
         command = ['piperine-design -h', 'piperine-score -h', 'piperine-select -h']
         for cmd in command:
             proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
             (out, err) = proc.communicate()
-            self.assert('usage' in out)
+            self.assertTrue('usage' in out)
 
 def suite():
     tests = [#'test_run_designer_accepts_string_modules',
-             'test_run_designer_noargs']
+             'test_utility_access']
     return unittest.TestSuite(list(map(Test_commandline, tests)))

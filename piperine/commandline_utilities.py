@@ -12,7 +12,7 @@ import csv
 import numpy as np
 
 from . import Srinivas2017 as default_translation_scheme
-from .designer import run_designer
+from .designer import run_designer, get_parameters_from_crn_file
 
 if sys.version_info >= (3,0):
     from io import StringIO
@@ -54,7 +54,7 @@ piperine-design CRNFILE [-h] [-l LENGTH] [-e ENERGY] [-d DEVIATION] [-m MAXSPURI
 [-t TRANSLATION] [-x EXTRAPARS] [-q] \n\n\
 Default execution parameters are stated in the option descriptions. The following are example executions using the CRN \
 file my_very_own.crn and option arguments to override the default settings. Files generated will have the same file name \
-as the .crn file, but have different extensions (e.g. my_very_own.pil, my_very_own0.seqs, my_very_own_score_report.txt). \
+as the .crn file, but have different extensions (e.g. my_very_own0_strands.txt, my_very_own0.seqs, my_very_own_score_report.txt). \
     \n\n\
     Design four sets of sequences for the my_very_own.crn according to the default translation scheme, Srinivas2017:\n \n\
     piperine-design my_very_own.crn\n \
@@ -143,6 +143,10 @@ the CRN file.\n"
                         action='store_true',
                         help='Debugging mode that speeds up sequence generation and uses random numbers instead of '+
                              'computing heuristics. [default: False]')
+
+    parser.add_argument("-D", '--debug',
+                        action='store_true',
+                        help='Debugging mode that preserves intermediate compilation files. [default: False]')
     return parser
 
 
@@ -175,7 +179,7 @@ def design():
         crnfile = os.getcwd() + os.path.sep + args.crnfile
 
     # Read parameters from CRN file, only to see if translation scheme is defined
-    parameters = get_parameters_form_crn_file(crnfile, None)
+    parameters = get_parameters_from_crn_file(crnfile, None)
 
     # Import translation scheme package
     available_schemes = ["Srinivas2017","Chen2013"]
@@ -206,10 +210,6 @@ def design():
 
     # Make dictionary for design parameters. Start with default parameters
     design_param_dict = dict(zip(translation.param_terms, translation.default_params))
-
-    # Get compilation parameters and define energetics instance.
-    # This function uses the translation module to look for translation-specific parameters
-    parameters = get_parameters_form_crn_file(crnfile, translation)
 
     # Apply parameter option preference
     if args.length:
@@ -297,7 +297,8 @@ def design():
                      optimizer=optimizer,
                      energyfuncs=energyfuncs,
                      extra_pars=extra_pars,
-                     quick=args.quick)
+                     quick=args.quick,
+                     debug=args.debug)
     winner = out[2]
     if winner is None:
         return None
@@ -380,7 +381,7 @@ def score():
         crnfile = os.getcwd() + os.path.sep + args.crnfile
 
     # Read parameters from CRN file, only to see if translation scheme is defined
-    parameters = get_parameters_form_crn_file(crnfile, None)
+    parameters = get_parameters_from_crn_file(crnfile, None)
 
     # Import translation scheme package
     if args.translation_scheme:
@@ -400,16 +401,21 @@ def score():
 
     # Get compilation parameters and define energetics instance.
     # This function uses the translation module to look for translation-specific parameters
-    parameters = get_parameters_form_crn_file(crnfile, translation)
+    parameters = get_parameters_from_crn_file(crnfile, translation)
 
     # Apply parameter option preference
     if args.designparams:
         design_params = args.designparams
     else:
         design_params = translation.default_params
+        temp = []
         for term in translation.param_terms:
             if term in parameters:
                 design_param_dict[term] = parameters[term]
+                temp.append(parameters[term])
+            else:
+                temp.append(design_param_dict[term])
+        design_params = tuple(temp)
 
     if 'toehold_length' in parameters:
         toehold_length = parameters['toehold_length']
