@@ -13,8 +13,9 @@ except KeyError:
 import numpy as np
 import re
 import random
+from . import Srinivas2017 as default_translation_scheme
 
-from .designer import default_energyfuncs
+default_energyfuncs = default_translation_scheme.energetics.energyfuncs()
 whiteSpaceSearch = re.compile('\s+')
 
 if sys.version_info >= (3,0):
@@ -455,13 +456,15 @@ def Spurious_Weighted_Score(basename,
                             clean=True,
                             includes=None,
                             tmpdir=None):
-    # This function calculates Niranjan's weighted spurious interaction score, for i
-    # nteractions between k and km nucleotides long. It takes the following steps:
-    #   * Read in sequences from mfe file
-    #   * Create fixed file for all sequences except clamps
-    #   * Recompile circuit
-    #   * Run spuriousSSM negative design and generate scores
-    #   * Grab spuriousSSM scores and calculate NSIH
+    '''
+    This function calculates Niranjan's weighted spurious interaction score, for i
+    nteractions between k and km nucleotides long. It takes the following steps:
+      * Read in sequences from mfe file
+      * Create fixed file for all sequences except clamps
+      * Recompile circuit
+      * Run spuriousSSM negative design and generate scores
+      * Grab spuriousSSM scores and calculate NSIH
+    '''
 
     import sys
     import subprocess
