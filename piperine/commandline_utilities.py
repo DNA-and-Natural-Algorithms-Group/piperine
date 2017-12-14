@@ -32,8 +32,7 @@ class Capturing(list):
 default_energyfuncs = default_translation_scheme.energetics.energyfuncs()
 default_translation = default_translation_scheme.translation
 default_design_params = default_translation_scheme.translation.default_params
-small_crn = pkg_resources.resource_filename('piperine', "data/small.crn")
-data_dir = os.path.dirname(small_crn)
+data_dir = pkg_resources.resource_filename('piperine', "data/")
 
 opt_methods = ['worst-rank', 'worst-weighted-rank', 'sum-of-ranks', 'sum-of-weighted-ranks', 'fractional excess sum',
                'weighted fractional excess sum', 'percet badness sum', 'weighted percent badness sum', 'sum-of-metaranks']
