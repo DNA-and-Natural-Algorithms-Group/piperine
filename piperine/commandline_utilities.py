@@ -175,7 +175,7 @@ def design():
         crnfile = os.getcwd() + os.path.sep + args.crnfile
 
     # Read parameters from CRN file, only to see if translation scheme is defined
-    parameters = get_parameters_form_crn_file(crnfile, None)
+    parameters = get_parameters_from_crn_file(crnfile, None)
 
     # Import translation scheme package
     available_schemes = ["Srinivas2017","Chen2013"]
@@ -209,7 +209,7 @@ def design():
 
     # Get compilation parameters and define energetics instance.
     # This function uses the translation module to look for translation-specific parameters
-    parameters = get_parameters_form_crn_file(crnfile, translation)
+    parameters = get_parameters_from_crn_file(crnfile, translation)
 
     # Apply parameter option preference
     if args.length:
@@ -380,7 +380,7 @@ def score():
         crnfile = os.getcwd() + os.path.sep + args.crnfile
 
     # Read parameters from CRN file, only to see if translation scheme is defined
-    parameters = get_parameters_form_crn_file(crnfile, None)
+    parameters = get_parameters_from_crn_file(crnfile, None)
 
     # Import translation scheme package
     if args.translation_scheme:
@@ -400,7 +400,7 @@ def score():
 
     # Get compilation parameters and define energetics instance.
     # This function uses the translation module to look for translation-specific parameters
-    parameters = get_parameters_form_crn_file(crnfile, translation)
+    parameters = get_parameters_from_crn_file(crnfile, translation)
 
     # Apply parameter option preference
     if args.designparams:

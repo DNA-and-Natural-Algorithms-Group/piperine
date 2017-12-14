@@ -58,7 +58,7 @@ class Testcase_commandline(unittest.TestCase):
         for cmd in command:
             proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
             (out, err) = proc.communicate()
-            self.assert('usage' in out)
+            self.assertTrue('usage' in out)
 
 def suite():
     tests = [#'test_run_designer_accepts_string_modules',

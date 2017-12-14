@@ -216,7 +216,7 @@ def parse_parameter_line(line, translation=default_translation):
             param_dict.update({term:converters[i](lhs)})
     return param_dict
 
-def get_parameters_form_crn_file(crn_file, translation=default_translation):
+def get_parameters_from_crn_file(crn_file, translation=default_translation):
     '''
     Wraapper function for parse_parameter_line.
 
