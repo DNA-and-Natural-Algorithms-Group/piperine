@@ -8,7 +8,7 @@ try:
     nupackpath = os.path.join(os.environ['NUPACKHOME'], 'bin/')
 except KeyError:
     print("Environment variable NUPACKHOME is not set! Please set the terminal environment variable NUPACKHOME to the location ")
-    exit()
+    sys.exit(1)
 
 import numpy as np
 import re

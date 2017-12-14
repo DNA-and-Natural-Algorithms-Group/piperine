@@ -163,7 +163,7 @@ def design():
         assert(os.path.isfile(args.crnfile))
     except:
         print('Input file {} does not exist'.format(args.crnfile))
-        exit()
+        sys.exit(1)
 
     if args.crnfile[-4:] == '.crn':
         basename = args.crnfile[:-4]
@@ -191,7 +191,7 @@ def design():
         translation_scheme = default_translation_scheme
     else:
         print("Invalid translation scheme. Choose betweeen {}".format(available_schemes))
-        exit()
+        sys.exit(1)
 
     # Sorry for this horrible line. "translation_scheme" is a package that holds the
     # translation and energetics modules. "translation" is a module that provides the code
@@ -249,7 +249,7 @@ def design():
         optimizer = "sum-of-metaranks"
     else:
         print("Invalid optimizer. Choose between {}.".format(opt_methods))
-        exit()
+        sys.exit(1)
 
     if args.energy:
         targetdG = args.energy
