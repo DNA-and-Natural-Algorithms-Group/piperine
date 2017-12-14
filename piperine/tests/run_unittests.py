@@ -1,19 +1,14 @@
 import unittest
 
-from . import import_test
+from . import CRNImportTests
 from . import TDMTests
 from . import CompilationTests
-from . import RunDesignerTest
-from . import DSDClassesTests
+from . import Srinivas2017Tests
 from . import TDM_NUPACK_tests
 from . import CommandlineTests
 
-def runem():
-    suite = import_test.suite()
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
-def run_import_test():
-    suite = import_test.suite()
+def run_CRN_import_test():
+    suite = CRNImportTests.suite()
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 def run_tdm():
@@ -22,10 +17,6 @@ def run_tdm():
 
 def run_compilation():
     suite = CompilationTests.suite()
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
-def run_designer():
-    suite = RunDesignerTest.suite()
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 def run_translation():
@@ -45,6 +36,6 @@ def run_all():
         [
             x.suite() for x in
                 #[import_test, TDMTests, CompilationTests, RunDesignerTest, DSDClassesTests, TDM_NUPACK_tests, CommandlineTests]
-                [import_test, TDMTests, CompilationTests, RunDesignerTest, DSDClassesTests, TDM_NUPACK_tests]
+                [CommandlineTests, CRNImportTests, TDMTests, CompilationTests, Srinivas2017Tests, TDM_NUPACK_tests]
         ])
     unittest.TextTestRunner(verbosity=2).run(alltests)

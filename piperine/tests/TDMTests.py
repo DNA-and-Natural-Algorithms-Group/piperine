@@ -53,7 +53,7 @@ class TestTDM(unittest.TestCase):
                                                         design_params = (7, 15, 2))
         self.h_inputs = tdm.get_heuristics_inputs(self.gates, self.strands)
         self.seq_dict, self.cmplx_dict, self.domains_list = \
-            tdm.get_seq_dicts(self.basename, self.h_inputs)
+            tdm.get_seq_dicts(self.basename, self.h_inputs, mfe_file=self.mfe_file, seq_file=self.seq_file)
 
         # True top strand list
         self.true_tsl =  ['r1-c',
@@ -376,8 +376,8 @@ class TestTDM(unittest.TestCase):
 
     def test_tdm(self):
         # Score test sequences
-        self.scores, names = designer.score_fixed(self.fixed_file,
-                 basename=self.basename,
+        # This test is not used and the true values of the BN scores has not been updated
+        self.scores, names = designer.score_fixed([self.fixed_file],
                  crn_file=self.crn_file,
                  sys_file=self.sys_file,
                  pil_file=self.pil_file,
