@@ -7,10 +7,12 @@ import os.path
 import importlib
 import pkg_resources
 import time
+from tempfile import mkstemp, mkdtemp
 
 import numpy as np
 
 from . import Srinivas2017 as default_translation_scheme
+from . import tdm
 
 if sys.version_info >= (3,0):
     from io import StringIO
@@ -29,8 +31,7 @@ class Capturing(list):
 default_energyfuncs = default_translation_scheme.energetics.energyfuncs()
 default_translation = default_translation_scheme.translation
 default_design_params = default_translation_scheme.translation.default_params
-small_crn = pkg_resources.resource_filename('piperine', "data/small.crn")
-data_dir = os.path.dirname(small_crn)
+data_dir = pkg_resources.resource_filename('piperine', "data")
 
 def call_compiler(basename,
                   args=default_design_params,
@@ -52,6 +53,7 @@ def call_compiler(basename,
         Nothing
     """
     from peppercompiler.compiler import compiler
+    assert(os.path.exists(basename+'.sys'))
     if outputname is None:
         outputname = '{}.pil'.format(basename)
     if savename is None:
@@ -198,22 +200,25 @@ def parse_parameter_line(line, translation=default_translation):
                   lambda x: np.int(x),
                   lambda x: x,
                   lambda x: x,
-                  lambda x: np.int(x)]
+                  lambda x: np.int(re.sub(r'\s*', '', x))]
 
     # Design parameters are always integers
-    if  translation is not None:
+    if translation is not None:
         for param_term in default_translation.param_terms:
             terms.append(param_term)
             converters.append(lambda x: np.int(x))
 
     # Remove whitespace
-    line = re.sub(r'\s', '', line)
-    rhs, lhs = line.split('=')
+    line = re.sub(r'^\s*|(?<=\s)\s+|\s*$', '', line)
+    line_no_ws = re.sub(r'\s', '', line)
+    lhs = line_no_ws[:line_no_ws.find('=')]
+    line_eq = re.sub(r'\s*=\s*', '=', line)
+    rhs = line_eq[line_eq.find('=')+1:]
 
     param_dict = {}
     for i, term in enumerate(terms):
-        if rhs == term:
-            param_dict.update({term:converters[i](lhs)})
+        if lhs == term:
+            param_dict.update({term:converters[i](rhs)})
     return param_dict
 
 def get_parameters_from_crn_file(crn_file, translation=default_translation):
@@ -227,12 +232,11 @@ def get_parameters_from_crn_file(crn_file, translation=default_translation):
     Returns:
         param_dict : A dictionary listing the parameter definitions found in the CRN file
     '''
-    fid = open(crn_file, 'r')
-    lines = list()
-    for line in fid:
-        lines.append(line[:-1])
-
-    fid.close()
+    with open(crn_file, 'r') as fid:
+        lines = list()
+        for line in fid:
+            lines.append(line)
+        fid.close()
 
     # Read through the file and extract reaction specifications
     parameters = {}
@@ -500,7 +504,8 @@ def generate_seqs(basename,
                   seq_file=None,
                   fixed_file=None,
                   save_file=None,
-                  strands_file=None):
+                  strands_file=None,
+                  debug=False):
     """ Produce sequences for a scheme
 
     This function accepts a base file name, a list of gate objects, a list of
@@ -525,10 +530,12 @@ def generate_seqs(basename,
     Returns:
         toeholds:
     """
-
+    clean = not debug
     # Prepare filenames
     if system_file is None:
         system_file = basename + ".sys"
+    else:
+        basename = system_file.split('.')[0]
     if pil_file is None:
         pil_file = basename + ".pil"
     if save_file is None:
@@ -566,7 +573,7 @@ def generate_seqs(basename,
     write_toehold_file(fixed_file, strands, toeholds)
     try:
         with Capturing() as cptr:
-            call_compiler(basename, args=design_params, fixed_file=fixed_file,
+            call_compiler(system_file[:-4], args=design_params, fixed_file=fixed_file,
                           outputname=pil_file, savename=save_file)
     except KeyError as e:
         raise(e)
@@ -574,7 +581,7 @@ def generate_seqs(basename,
     # Generate sequences
     with Capturing() as cptr:
         call_design(basename, pil_file, mfe_file, verbose=False,
-                    extra_pars=extra_pars, cleanup=False)
+                    extra_pars=extra_pars, cleanup=clean)
 
     # "Finish" the sequence generation
     with Capturing() as cptr:
@@ -597,10 +604,9 @@ def selection_wrapper(scores, reportfile = 'score_report.txt', optimizer='sum-of
     '''
     from . import selectseq
     stdout = sys.stdout
-    selectseq.metarank(scores, optimizer)
     try:
         sys.stdout = open(reportfile, 'w')
-        winner = selection(scores)
+        winner = selectseq.metarank(scores, optimizer)
     except Exception as e:
         sys.stdout.close()
         sys.stdout = stdout
@@ -620,7 +626,8 @@ def run_designer(basename,
                  optimizer='sum-of-metaranks',
                  extra_pars="",
                  quick=False,
-                 includes=None
+                 includes=None,
+                 debug=False
                 ):
     """ Generate and score sequences
 
@@ -656,12 +663,23 @@ def run_designer(basename,
     if quick:
         extra_pars = "imax=-1 quiet=TRUE"
 
-    from . import tdm
-    system_file = basename + ".sys"
-    pil_file = basename + ".pil"
+    crn_file = basename + ".crn"
+    if debug:
+        prefix = basename
+        system_file = basename + ".sys"
+        pil_file = basename + ".pil"
+        mfe_file = basename + ".mfe"
+        fixed_file = basename + ".fixed"
+        save_file = basename + ".save"
+    else:
+        tdir = mkdtemp(prefix="piperine_design")
+        fid, prefix = mkstemp(dir=tdir)
+        os.close(fid)
+        file_extensions = ['.sys', '.fixed', '.pil', '.save', '.mfe']
+        system_file, fixed_file, pil_file, save_file, mfe_file = [prefix + ext for ext in file_extensions]
 
     (gates, strands) = \
-        generate_scheme(basename, design_params, translation)
+        generate_scheme(basename, design_params, translation, crn_file=crn_file, system_file=system_file)
 
     if reps >= 1:
         scoreslist = []
@@ -670,20 +688,27 @@ def run_designer(basename,
             seqsname = basename + str(i) + '.seqs'
             try:
                 print("Designing sequences candidate index {}.".format(i))
-                toeholds = generate_seqs(basename,
+                toeholds = generate_seqs(prefix,
                                          gates,
                                          strands,
                                          design_params,
                                          energyfuncs=energyfuncs,
+                                         system_file=system_file,
+                                         pil_file=pil_file,
+                                         mfe_file=mfe_file,
+                                         fixed_file=fixed_file,
+                                         save_file=save_file,
                                          strands_file=testname,
                                          seq_file=seqsname,
-                                         extra_pars=extra_pars)
+                                         extra_pars=extra_pars,
+                                         debug=debug)
 
-                scores, score_names = tdm.EvalCurrent(basename,
+                scores, score_names = tdm.EvalCurrent(prefix,
                                                       gates,
                                                       strands,
                                                       testname=testname,
                                                       seq_file=seqsname,
+                                                      mfe_file=mfe_file,
                                                       compile_params=design_params,
                                                       quick=quick,
                                                       includes=includes,
@@ -706,22 +731,30 @@ def run_designer(basename,
             f.write('\n')
             f.writelines( [','.join(map(str, l)) + '\n' for l in scoreslist])
 
+    if not debug:
+        tmp_files = os.listdir(tdir)
+        tmp_files = [os.path.join(tdir, tmp_file ) for tmp_file in tmp_files]
+        for fname in tmp_files:
+            if os.path.exists(fname):
+                os.remove(fname)
+        os.rmdir(tdir)
+
     return (gates, strands, winner, scoreslist)
 
-def score_fixed(fixed_file,
-                 basename=os.path.dirname(__file__)+'/small',
-                 crn_file=None,
-                 sys_file=None,
-                 pil_file=None,
-                 save_file=None,
-                 mfe_file=None,
-                 seq_file=None,
-                 score_file=None,
-                 design_params=default_design_params,
-                 translation=default_translation,
-                 energyfuncs=default_energyfuncs,
-                 includes=None,
-                 quick=False):
+def score_fixed(fixed_files,
+                crn_file,
+                sys_file=None,
+                pil_file=None,
+                save_file=None,
+                mfe_file=None,
+                seq_file=None,
+                score_file=None,
+                design_params=default_design_params,
+                translation=default_translation,
+                energyfuncs=default_energyfuncs,
+                includes=None,
+                debug=False,
+                quick=False):
     """ Score a sequence set
 
     This function takes in a fixed file, crn file, and reaction scheme specification
@@ -729,7 +762,6 @@ def score_fixed(fixed_file,
 
     Args:
         fixed_file: Filename pointing to the seqeunce set
-        basename: Default name for files accessed and written
         crn_file: Filename of text file specifying the CRN (basename + .crn)
         sys_file: Filename of the peppercompiler system file (basename + .sys)
         pil_file: Filename of the peppercompiler PIL file (basename + .pil)
@@ -746,7 +778,8 @@ def score_fixed(fixed_file,
         scores: A list containing the scores generated by EvalCurrent
         score_names: A list of strings describing the scores
     """
-    from . import tdm
+    crn_file_rev = crn_file[-1::-1]
+    basename = crn_file[:len(crn_file) - 1 - crn_file_rev.find('.')]
     if crn_file is None:
         crn_file = basename + '.crn'
     else:
@@ -772,44 +805,55 @@ def score_fixed(fixed_file,
     else:
         basename_temp = seq_file[:-4]
     if score_file is None:
-        score_file = fixed_file[:-6] + '.score'
-    if basename is None:
-        basename = bn
+        score_file = basename + '_fixed_scores.csv'
     extra_pars = ""
 
     # Generate .sys file
     gates, strands = generate_scheme(basename,
-                                   design_params,
-                                   crn_file=crn_file,
-                                   system_file=sys_file,
-                                   translation=translation)
-    # Generate PIL
-    with Capturing() as output:
-        call_compiler(basename, args=design_params, fixed_file=fixed_file,
-                      outputname=pil_file, savename=save_file, includes=includes)
+                                     design_params,
+                                     crn_file=crn_file,
+                                     system_file=sys_file,
+                                     translation=translation)
+    clean = not debug
+    scoreslist = []
+    for i, fixed_file in enumerate(fixed_files):
+        # Generate PIL
+        with Capturing() as output:
+            call_compiler(basename, args=design_params, fixed_file=fixed_file,
+                          outputname=pil_file, savename=save_file, includes=includes)
 
-    # Generate MFE
-    with Capturing() as output:
-        call_design(basename, pil_file, mfe_file, verbose=False,
-                    extra_pars=extra_pars, cleanup=False)
+        # Generate MFE
+        with Capturing() as output:
+            call_design(basename, pil_file, mfe_file, verbose=False,
+                        extra_pars=extra_pars, cleanup=clean)
 
-    # Generate .seqs file
-    with Capturing() as output:
-        call_finish(basename, savename=save_file, designname=mfe_file, \
-                    seqname=seq_file, run_kin=False, cleanup=False)
+        # Generate .seqs file
+        with Capturing() as output:
+            call_finish(basename, savename=save_file, designname=mfe_file, \
+                        seqname=seq_file, run_kin=False, cleanup=clean)
 
-    scores, score_names = tdm.EvalCurrent(basename,
-                                          gates,
-                                          strands,
-                                          compile_params=design_params,
-                                          quick=quick,
-                                          includes=includes,
-                                          seq_file=seq_file,
-                                          mfe_file=mfe_file,
-                                          energyfuncs=energyfuncs)
+        scores, score_names = tdm.EvalCurrent(basename,
+                                              gates,
+                                              strands,
+                                              compile_params=design_params,
+                                              quick=quick,
+                                              includes=includes,
+                                              seq_file=seq_file,
+                                              mfe_file=mfe_file,
+                                              energyfuncs=energyfuncs)
+        scores = [i] + scores
+        scoreslist.append(scores)
+    score_names = ['Set Index'] + score_names
+    scores = [score_names] + scoreslist
     with open(score_file, 'w') as f:
         f.write(','.join(score_names))
         f.write('\n')
-        f.writelines([','.join(map(str, l)) + '\n' for l in [scores]])
+        f.writelines( [','.join(map(str, l)) + '\n' for l in scoreslist])
+
+    if not debug:
+        for fname in [sys_file, pil_file, mfe_file, fixed_file, save_file]:
+            if os.path.exists(fname):
+                os.remove(fname)
+
     return (scores, score_names)
 

@@ -13,8 +13,9 @@ except KeyError:
 import numpy as np
 import re
 import random
+from . import Srinivas2017 as default_translation_scheme
 
-from .designer import default_energyfuncs
+default_energyfuncs = default_translation_scheme.energetics.energyfuncs()
 whiteSpaceSearch = re.compile('\s+')
 
 if sys.version_info >= (3,0):
@@ -221,17 +222,16 @@ def EvalCurrent(basename, gates, strands, compile_params=(7, 15, 2),
     seq_dict, cmplx_dict, domains_list = get_seq_dicts(basename, heuristics_inputs,
                                                        mfe_file, seq_file)
 
-
-    print('Start WSI computation')
-    with Capturing() as cptr:
-        if quick:
-            ssm_scores = np.random.rand(6)
-        else:
+    if quick:
+        ssm_scores = np.random.rand(6)
+    else:
+        print('Start WSI computation')
+        with Capturing() as cptr:
             ssm_scores = Spurious_Weighted_Score(basename, domains_list, seq_dict,
                                                  compile_params=compile_params,
                                                  includes=includes, clean=clean)
-            print('DONE')
-            print('')
+        print('DONE')
+        print('')
     ssm_names = ['WSAS', 'WSIS', \
                  'WSAS-M', 'WSIS-M', \
                  'Verboten', 'Spurious']
@@ -456,13 +456,15 @@ def Spurious_Weighted_Score(basename,
                             clean=True,
                             includes=None,
                             tmpdir=None):
-    # This function calculates Niranjan's weighted spurious interaction score, for i
-    # nteractions between k and km nucleotides long. It takes the following steps:
-    #   * Read in sequences from mfe file
-    #   * Create fixed file for all sequences except clamps
-    #   * Recompile circuit
-    #   * Run spuriousSSM negative design and generate scores
-    #   * Grab spuriousSSM scores and calculate NSIH
+    '''
+    This function calculates Niranjan's weighted spurious interaction score, for i
+    nteractions between k and km nucleotides long. It takes the following steps:
+      * Read in sequences from mfe file
+      * Create fixed file for all sequences except clamps
+      * Recompile circuit
+      * Run spuriousSSM negative design and generate scores
+      * Grab spuriousSSM scores and calculate NSIH
+    '''
 
     import sys
     import subprocess

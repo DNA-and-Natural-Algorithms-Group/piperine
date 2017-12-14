@@ -4,6 +4,7 @@ from __future__ import division, print_function
 import sys
 import os
 import os.path
+import re
 import importlib
 import pkg_resources
 import time
@@ -12,7 +13,7 @@ import csv
 import numpy as np
 
 from . import Srinivas2017 as default_translation_scheme
-from .designer import run_designer
+from .designer import run_designer, get_parameters_from_crn_file, score_fixed
 
 if sys.version_info >= (3,0):
     from io import StringIO
@@ -31,8 +32,7 @@ class Capturing(list):
 default_energyfuncs = default_translation_scheme.energetics.energyfuncs()
 default_translation = default_translation_scheme.translation
 default_design_params = default_translation_scheme.translation.default_params
-small_crn = pkg_resources.resource_filename('piperine', "data/small.crn")
-data_dir = os.path.dirname(small_crn)
+data_dir = pkg_resources.resource_filename('piperine', "data/")
 
 opt_methods = ['worst-rank', 'worst-weighted-rank', 'sum-of-ranks', 'sum-of-weighted-ranks', 'fractional excess sum',
                'weighted fractional excess sum', 'percet badness sum', 'weighted percent badness sum', 'sum-of-metaranks']
@@ -54,7 +54,7 @@ piperine-design CRNFILE [-h] [-l LENGTH] [-e ENERGY] [-d DEVIATION] [-m MAXSPURI
 [-t TRANSLATION] [-x EXTRAPARS] [-q] \n\n\
 Default execution parameters are stated in the option descriptions. The following are example executions using the CRN \
 file my_very_own.crn and option arguments to override the default settings. Files generated will have the same file name \
-as the .crn file, but have different extensions (e.g. my_very_own.pil, my_very_own0.seqs, my_very_own_score_report.txt). \
+as the .crn file, but have different extensions (e.g. my_very_own0_strands.txt, my_very_own0.seqs, my_very_own_score_report.txt). \
     \n\n\
     Design four sets of sequences for the my_very_own.crn according to the default translation scheme, Srinivas2017:\n \n\
     piperine-design my_very_own.crn\n \
@@ -143,6 +143,10 @@ the CRN file.\n"
                         action='store_true',
                         help='Debugging mode that speeds up sequence generation and uses random numbers instead of '+
                              'computing heuristics. [default: False]')
+
+    parser.add_argument("-D", '--debug',
+                        action='store_true',
+                        help='Debugging mode that preserves intermediate compilation files. [default: False]')
     return parser
 
 
@@ -189,31 +193,29 @@ def design():
         print("Invalid translation scheme. Choose betweeen {}".format(available_schemes))
         exit()
 
-    # metrarank is default
-    # Make an error response for providing a method that is not in the approved list
-    if args.optimizer in opt_methods:
-        optimizer = args.optimizer
-    elif args.optimizer is None:
-        optimizer = "sum-of-metaranks"
-    else:
-        print("Invalid optimizer. Choose between {}.".format(opt_methods))
-        exit()
-
     # Sorry for this horrible line. "translation_scheme" is a package that holds the
     # translation and energetics modules. "translation" is a module that provides the code
     # that generates PIL descriptions of the DNA implementation.
     translation = translation_scheme.translation
 
+    # Read parameters again to retrieve design parameters
+    crn_file_parameters = get_parameters_from_crn_file(crnfile, translation)
+
     # Make dictionary for design parameters. Start with default parameters
     design_param_dict = dict(zip(translation.param_terms, translation.default_params))
 
-    # Get compilation parameters and define energetics instance.
-    # This function uses the translation module to look for translation-specific parameters
-    parameters = get_parameters_from_crn_file(crnfile, translation)
-
     # Apply parameter option preference
+    for term in translation.param_terms:
+        if term in crn_file_parameters:
+            design_param_dict[term] = crn_file_parameters[term]
+
+    if args.designparams:
+        design_param_dict = dict(zip(translation.param_terms, args.designparams))
+
     if args.length:
         toehold_length = args.length
+    elif args.designparams:
+        toehold_length = design_param_dict[translation.toehold_length_term]
     elif 'toehold_length' in parameters:
         toehold_length = parameters['toehold_length']
     elif translation.toehold_length_term in parameters:
@@ -224,13 +226,30 @@ def design():
     try:
         assert(toehold_length == design_param_dict[translation.toehold_length_term])
     except AssertionError:
-        message = "Toehold length contradiction in input arguments. Toehold length specified by --length or within CRN file:{}, "+\
-                  "toehold length specified by design parameters: {}. Proceeding with {}."
-        design_th_length = design_param_dict[translation.toehold_length_term]
-        print(message.format(toehold_length, design_th_length, toehold_length))
-        time.sleep(4)
+        if args.length and args.designparams:
+            message = "Toehold length contradiction in input arguments. Toehold length specified by --length or within CRN file:{}, "+\
+                      "toehold length specified by design parameters: {}. Proceeding with {}."
+            design_th_length = design_param_dict[translation.toehold_length_term]
+            toehold_length = design_th_length
+            print(message.format(toehold_length, design_th_length, toehold_length))
+            time.sleep(4)
+        else:
+            design_param_dict[translation.toehold_length_term] = toehold_length
 
-    design_param_dict[translation.toehold_length_term] = toehold_length
+    design_params = []
+    for term in translation.param_terms:
+        design_params.append(design_param_dict[term])
+    design_params = tuple(design_params)
+
+    # metrarank is default
+    # Make an error response for providing a method that is not in the approved list
+    if args.optimizer in opt_methods:
+        optimizer = args.optimizer
+    elif args.optimizer is None:
+        optimizer = "sum-of-metaranks"
+    else:
+        print("Invalid optimizer. Choose between {}.".format(opt_methods))
+        exit()
 
     if args.energy:
         targetdG = args.energy
@@ -260,23 +279,6 @@ def design():
     else:
         n = 4
 
-    if args.designparams:
-        def_p = translation.default_params
-        design_params = args.designparams
-        try:
-            assert(len(design_params) == len(def_p))
-        except:
-            n_required = len(def_p)
-            n_provided = len(design_params)
-            message = "Translation scheme {} has {} design parameters. {} were provided.\nDefault parameters: {}"
-            print(message.format(translation_scheme.__name__, n_required, n_provided, def_p))
-            exit()
-    else:
-        design_params = translation.default_params
-        for term in translation.param_terms:
-            if term in parameters:
-                design_param_dict[term] = parameters[term]
-
     if args.extrapars:
         extra_pars = args.extrapars
     elif 'spurious_design_parameters' in parameters:
@@ -297,7 +299,8 @@ def design():
                      optimizer=optimizer,
                      energyfuncs=energyfuncs,
                      extra_pars=extra_pars,
-                     quick=args.quick)
+                     quick=args.quick,
+                     debug=args.debug)
     winner = out[2]
     if winner is None:
         return None
@@ -309,9 +312,9 @@ def design():
 
 def get_score_parser():
     import argparse
-    descr = "Command line utility for scoring a designed sequence set."
+    descr = "piperine-score is Piperine's command line utility for scoring a sequence set implementing a CRN."
     usage = "\n\n\n\
-Call template with short option flags. Options are shown in brackets. Capitalized terms stand in for \
+The following is the call template with short option flags. Options are shown in brackets. Capitalized terms stand in for \
 required argument or multiple arguments.\n\
 piperine-score CRNFILE FIXEDFILE [-e ENERGY] [-p DESIGNPARAMS ...] [-t TRANSLATION_SHEME] [-x EXTRAPARS] [-q] \n\n\
 Default execution parameters are stated in the option descriptions. The following are example executions with CRN \
@@ -333,10 +336,11 @@ file my_very_own.crn, fixed file my.fixed, and option arguments to override the 
                         help='Text file describing CRN. May also define parameters.',
                         type=str)
 
-    parser.add_argument("fixedfile",
+    parser.add_argument("fixedfiles",
                         help='Text file containing sequence constraints. Files read or generated by ' +
                               'this call will have the form: basename.extension ; '+
-                          'E.g. basename.fixed may generate basename.pil .',
+                          'E.g. basename.fixed may generate basename_score.csv .',
+                        nargs='+',
                         type=str)
 
     parser.add_argument("-e", "--energy",
@@ -354,9 +358,18 @@ file my_very_own.crn, fixed file my.fixed, and option arguments to override the 
                             'the CRN to DNA strands and complexes. See piperine.Srinivas2017 for an example of such a package.'+
                             ' [default: Srinivas2017]',
                         type=str)
+
     parser.add_argument("-q", '--quick',
                         action='store_true',
                         help='Make random numbers instead of computing heuristics to save time. [default: False]')
+
+    parser.add_argument("-D", '--debug',
+                        action='store_true',
+                        help='Debugging mode that preserves intermediate compilation files. [default: False]')
+
+    parser.add_argument("-f", '--filedestination',
+                        help='Write the score table to this file rather [default: Write to stdout and do not create a file.]',
+                        type=str)
     return parser
 
 def score():
@@ -370,14 +383,12 @@ def score():
     # Precedence is : command line arguments > crn file arguments > default
     assert(args.crnfile[-4:] == '.crn')
     crnfile = args.crnfile
-    fixedfile = args.fixedfile
-    basename = fixedfile[:-6]
 
-    # Find absolute path to basename
-    basedir = os.path.dirname(basename)
-    if basedir == '':
-        basename = os.getcwd() + os.path.sep + basename
-        crnfile = os.getcwd() + os.path.sep + args.crnfile
+    print(args.fixedfiles)
+    if type(args.fixedfiles) is not list:
+        fixedfiles = [args.fixedfiles]
+    else:
+        fixedfiles = args.fixedfiles
 
     # Read parameters from CRN file, only to see if translation scheme is defined
     parameters = get_parameters_from_crn_file(crnfile, None)
@@ -400,25 +411,29 @@ def score():
 
     # Get compilation parameters and define energetics instance.
     # This function uses the translation module to look for translation-specific parameters
-    parameters = get_parameters_from_crn_file(crnfile, translation)
+    crn_file_parameters = get_parameters_from_crn_file(crnfile, translation)
 
     # Apply parameter option preference
-    if args.designparams:
-        design_params = args.designparams
-    else:
-        design_params = translation.default_params
-        for term in translation.param_terms:
-            if term in parameters:
-                design_param_dict[term] = parameters[term]
+    for term in translation.param_terms:
+        if term in crn_file_parameters:
+            design_param_dict[term] = crn_file_parameters[term]
 
-    if 'toehold_length' in parameters:
+    if args.designparams:
+        design_param_dict = dict(zip(translation.param_terms, args.designparams))
+
+    if args.designparams:
+        toehold_length = design_param_dict[translation.toehold_length_term]
+    elif 'toehold_length' in parameters:
         toehold_length = parameters['toehold_length']
     elif translation.toehold_length_term in parameters:
         toehold_length = parameters[translation.toehold_length_term]
     else:
         toehold_length = design_param_dict[translation.toehold_length_term]
 
-    design_param_dict[translation.toehold_length_term] = toehold_length
+    design_params = []
+    for term in translation.param_terms:
+        design_params.append(design_param_dict[term])
+    design_params = tuple(design_params)
 
     if args.energy:
         targetdG = args.energy
@@ -427,28 +442,21 @@ def score():
     else:
         targetdG = 7.7
 
-    try:
-        assert(toehold_length == design_param_dict[translation.toehold_length_term])
-    except AssertionError:
-        raise AssertionError("Toehold length contradictions in input arguments")
-
     energyfuncs = translation_scheme.energetics.energyfuncs(targetdG=targetdG,
                                          length=toehold_length)
 
-
-    out = score_fixed(fixedfile,
-                      basename,
-                      crn_file=crnfile,
+    out = score_fixed(fixedfiles,
+                      crnfile,
+                      score_file=args.filedestination,
                       design_params=design_params,
                       translation=translation,
-                      optimizer=optimizer,
                       energyfuncs=energyfuncs,
-                      quick=args.quick)
-    print(dict(zip(out[1], out[0])))
+                      quick=args.quick,
+                      debug=args.debug)
 
 def get_select_parser():
     import argparse
-    descr = "Command line utility for selecting an optimal sequence set from score tables."
+    descr = "piperine-score is Piperine's command line utility for selecting an optimal sequence set from score tables."
     usage = "\n\n\n\
 Call template with short option flags. Options are shown in brackets. Capitalized terms stand in for \
 required argument or multiple arguments.\n\
@@ -513,6 +521,7 @@ def select():
                     columns_named=True
             csvfile.close()
 
+    print(scores)
     if writeflag:
         with Capturing() as output:
             winner = metarank(scores)

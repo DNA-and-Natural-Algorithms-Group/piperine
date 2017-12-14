@@ -11,6 +11,22 @@ from .. import designer, tdm
 
 clean = True
 
+if sys.version_info >= (3,0):
+    from io import StringIO
+else:
+    from StringIO import StringIO
+
+class Capturing(list):
+    '''Redirects output from stdout to an in-memory buffer.'''
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        sys.stdout = self._stdout
+
+
 class TestTDMNUPACK(unittest.TestCase):
     basename = resource_filename('piperine', 'tests/test_data/sequences9mut.mfe')[:-4]
 
@@ -116,13 +132,14 @@ class TestTDMNUPACK(unittest.TestCase):
         true_inter_score = sum(w_lin[2:12] * spur_inter_hits)
         true_verboten = 685.00000
         true_spc_weighted = 9310.66837
-        out = tdm.Spurious_Weighted_Score(
-                self.basename,
-                self.sequence_dicts[2],
-                self.sequence_dicts[0],
-                clean=clean,
-                tmpdir=tmpdir,
-                bored=1)
+        with Capturing() as output:
+            out = tdm.Spurious_Weighted_Score(
+                    self.basename,
+                    self.sequence_dicts[2],
+                    self.sequence_dicts[0],
+                    clean=clean,
+                    tmpdir=tmpdir,
+                    bored=1)
         true_scores = [true_intra_score, true_inter_score, true_mis_intra_score, true_mis_inter_score,
                        true_verboten, true_spc_weighted]
         score_names =["spc_intra_score", "spc_inter_score",
