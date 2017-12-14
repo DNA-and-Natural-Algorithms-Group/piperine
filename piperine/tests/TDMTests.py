@@ -53,7 +53,7 @@ class TestTDM(unittest.TestCase):
                                                         design_params = (7, 15, 2))
         self.h_inputs = tdm.get_heuristics_inputs(self.gates, self.strands)
         self.seq_dict, self.cmplx_dict, self.domains_list = \
-            tdm.get_seq_dicts(self.basename, self.h_inputs)
+            tdm.get_seq_dicts(self.basename, self.h_inputs, mfe_file=self.mfe_file, seq_file=self.seq_file)
 
         # True top strand list
         self.true_tsl =  ['r1-c',
