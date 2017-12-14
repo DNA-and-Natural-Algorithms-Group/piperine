@@ -125,3 +125,4 @@ To use the Chen2013 scheme, use the `--translation_scheme` argument.
 
 ## References
 1. Chen, Y. J. et al. Programmable chemical controllers made from DNA. Nat. Nanotechnol. 8, 755–762 (2013).
+1. Srinivas, N., Parkin, J., Seelig, G., Winfree, E. & Soloveichik, D. Enzyme-free nucleic acid dynamical systems. Science (80-. ). 358, (2017).
