@@ -41,6 +41,6 @@ def run_all():
         [
             x.suite() for x in
                 #[import_test, TDMTests, CompilationTests, RunDesignerTest, DSDClassesTests, TDM_NUPACK_tests, CommandlineTests]
-                [CRNImportTests, TDMTests, CompilationTests, RunDesignerTests, Srinivas2017Tests, TDM_NUPACK_tests]
+                [CommandlineTests, CRNImportTests, TDMTests, CompilationTests, RunDesignerTests, Srinivas2017Tests, TDM_NUPACK_tests]
         ])
     unittest.TextTestRunner(verbosity=2).run(alltests)

@@ -5,6 +5,7 @@ import sys
 from tempfile import mkstemp, mkdtemp
 from .test_data import fixed_file
 from time import time
+import csv
 
 from peppercompiler import compiler
 from peppercompiler.design import PIL_parser
@@ -41,6 +42,10 @@ class TestCommandline(unittest.TestCase):
         endings = ['.crn', '.fixed', '.pil', '.mfe', '_strands.txt', '{}.seqs']
         self.filenames = [ self.basename + suf for suf in endings ]
         self.crn, self.fixed, self.pil, self.mfe, self.strands, self.seqs = self.filenames
+        fid, self.fixedscore = mkstemp(suffix='_fixed_score.csv', dir=self.tdir)
+        os.close(fid)
+        fid, self.reportfile = mkstemp(dir=self.tdir)
+        os.close(fid)
         # Write CRN to basename.crn
         with open(self.crn, 'w') as f:
             f.write(self.crn_rxn)
@@ -100,16 +105,33 @@ class TestCommandline(unittest.TestCase):
 
     def test_score_options(self):
         cmd_base = "piperine-score {} ".format(self.crn)
-        cmd_fixed_exts = []
         temp_str = ""
         for i in range(3):
             temp_str = temp_str + self.seqs.format(i) + " "
-            cmd_fixed_exts.append(temp_str[:])
-
-        for cmd_fixed in cmd_fixed_exts:
-            proc = subprocess.Popen([cmd_base + cmd_fixed + " -D -q"], stdout=subprocess.PIPE, shell=True)
+            proc = subprocess.Popen([cmd_base + temp_str + " -D -q -f {}".format(self.fixedscore)], stdout=subprocess.PIPE, shell=True)
             (out, err) = proc.communicate()
+            self.assertTrue(os.path.exists(self.fixedscore))
+            with open(self.fixedscore) as csvfile:
+                reader = csv.reader(csvfile)
+                nrows = 0
+                for row in reader:
+                    nrows += 1
+                self.assertTrue(nrows, i+1)
+
+    def test_select_options(self):
+        fnames = os.listdir(self.tdir)
+        csvs = [os.path.join(self.tdir, x) for x in fnames if '.csv' in x]
+        cmd_base = "piperine-select "
+        for csv_file in csvs:
+            self.assertTrue(os.path.exists(csv_file))
+            cmd_base = cmd_base + csv_file + " "
+        cmd_base = cmd_base + " -f {} ".format(self.reportfile)
+        proc = subprocess.Popen([cmd_base], stdout=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+        self.assertTrue(os.path.exists(self.fixedscore))
+        self.assertTrue(os.path.exists(self.reportfile))
 
 def suite():
-    tests = ['test_utility_access', 'test_design_options', 'test_score_options']
+    tests = ['test_utility_access', 'test_design_options', 'test_score_options', 'test_select_options']
+    # tests = ['test_select_options']
     return unittest.TestSuite(list(map(TestCommandline, tests)))

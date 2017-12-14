@@ -376,8 +376,8 @@ class TestTDM(unittest.TestCase):
 
     def test_tdm(self):
         # Score test sequences
-        self.scores, names = designer.score_fixed(self.fixed_file,
-                 basename=self.basename,
+        # This test is not used and the true values of the BN scores has not been updated
+        self.scores, names = designer.score_fixed([self.fixed_file],
                  crn_file=self.crn_file,
                  sys_file=self.sys_file,
                  pil_file=self.pil_file,
