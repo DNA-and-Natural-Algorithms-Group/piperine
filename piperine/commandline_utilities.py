@@ -34,8 +34,8 @@ default_translation = default_translation_scheme.translation
 default_design_params = default_translation_scheme.translation.default_params
 data_dir = pkg_resources.resource_filename('piperine', "data/")
 
-opt_methods = ['worst-rank', 'worst-weighted-rank', 'sum-of-ranks', 'sum-of-weighted-ranks', 'fractional excess sum',
-               'weighted fractional excess sum', 'percet badness sum', 'weighted percent badness sum', 'sum-of-metaranks']
+opt_methods = ['worst-rank', 'worst-weighted-rank', 'sum-of-ranks', 'sum-of-weighted-ranks', 'fractional-excess-sum',
+           'weighted-fractional-excess-sum', 'percent-badness-sum', 'weighted-percent-badness-sum', 'sum-of-metaranks']
 
 def get_design_parser():
     import argparse
@@ -524,12 +524,12 @@ def select():
     print(scores)
     if writeflag:
         with Capturing() as output:
-            winner = metarank(scores)
+            winner = metarank(scores, method)
         with open(args.filedestination, 'w') as f:
             for line in output:
                 f.write(line+'\n')
     else:
-        winner = metarank(scores)
+        winner = metarank(scores, method)
 
     message = "Winning index is {} using method {}."
     print(message.format(winner, method))

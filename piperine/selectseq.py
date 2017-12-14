@@ -27,8 +27,8 @@ def strmaxcases(array):
     return str(cases(array,max(array)))
 
 def metarank(scores, method = 'sum-of-metaranks'):
-    methods = ['worst-rank', 'worst-weighted-rank', 'sum-of-ranks', 'sum-of-weighted-ranks', 'fractional excess sum',
-               'weighted fractional excess sum', 'percet badness sum', 'weighted percent badness sum', 'sum-of-metaranks']
+    methods = ['worst-rank', 'worst-weighted-rank', 'sum-of-ranks', 'sum-of-weighted-ranks', 'fractional-excess-sum',
+               'weighted-fractional-excess-sum', 'percent-badness-sum', 'weighted-percent-badness-sum', 'sum-of-metaranks']
     assert(method in methods)
     print_fn = lambda x : print(x, end='')
     columns = list(zip(*scores))
@@ -173,16 +173,16 @@ def metarank(scores, method = 'sum-of-metaranks'):
     winner_dict['sum-of-weighted-ranks'] = mincases(temp)[0]
     print("Best sum-of-weighted-ranks:          {:8.2f} by {:10s} and the worst: {:8.2f} by {:s}".format( min(temp), strmincases(temp), max(temp), strmaxcases(temp) ))
     temp = [sum(f) for f in fractions]
-    winner_dict['fractional excess sum'] = mincases(temp)[0]
+    winner_dict['fractional-excess-sum'] = mincases(temp)[0]
     print("Best fractional excess sum:          {:8.2f} by {:10s} and the worst: {:8.2f} by {:s}".format( min(temp), strmincases(temp), max(temp), strmaxcases(temp) ))
     temp = [sum(np.array(f)*weights/100.0) for f in fractions]
-    winner_dict['weighted fractional excess sum'] = mincases(temp)[0]
+    winner_dict['weighted-fractional-excess-sum'] = mincases(temp)[0]
     print("Best weighted fractional excess sum: {:8.2f} by {:10s} and the worst: {:8.2f} by {:s}".format( min(temp), strmincases(temp), max(temp), strmaxcases(temp) ))
     temp = [100*sum(p) for p in percents]
-    winner_dict['percent badness sum'] = mincases(temp)[0]
+    winner_dict['percent-badness-sum'] = mincases(temp)[0]
     print("Best percent badness sum:            {:8.2f} by {:10s} and the worst: {:8.2f} by {:s}".format( min(temp), strmincases(temp), max(temp), strmaxcases(temp) ))
     temp = [sum(np.array(p)*weights) for p in percents]
-    winner_dict['weighted percent badness sum'] = mincases(temp)[0]
+    winner_dict['weighted-percent-badness-sum'] = mincases(temp)[0]
     print("Best weighted percent badness sum:   {:8.2f} by {:10s} and the worst: {:8.2f} by {:s}".format( min(temp), strmincases(temp), max(temp), strmaxcases(temp) ))
 
     # now make a new matrix showing, for each design:
