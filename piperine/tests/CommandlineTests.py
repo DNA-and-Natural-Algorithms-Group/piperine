@@ -39,7 +39,7 @@ class TestCommandline(unittest.TestCase):
         self.tdir = mkdtemp(prefix='piperine_test')
         fid, self.basename = mkstemp(dir=self.tdir)
         os.close(fid)
-        endings = ['.crn', '.fixed', '.pil', '.mfe', '_strands.txt', '{}.seqs']
+        endings = ['.crn', '.fixed', '.pil', '.mfe', '{}_strands.txt', '{}.seqs']
         self.filenames = [ self.basename + suf for suf in endings ]
         self.crn, self.fixed, self.pil, self.mfe, self.strands, self.seqs = self.filenames
         fid, self.fixedscore = mkstemp(suffix='_fixed_score.csv', dir=self.tdir)
@@ -70,6 +70,18 @@ class TestCommandline(unittest.TestCase):
             proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
             (out, err) = proc.communicate()
             self.assertTrue('usage' in str(out), "Command failed: {}".format(cmd))
+
+    def test_design(self):
+        cmd_base = "piperine-design {} -n 2".format(self.crn)
+        proc = subprocess.Popen([cmd_base], stdout=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+        seq_files = [self.seqs.format(i) for i in [0,1]]
+        strand_files = [self.strands.format(i) for i in [0,1]]
+        score_table = self.basename + '_scores.csv'
+        score_report = self.basename + '_score_report.txt'
+        test_files = seq_files + strand_files + [score_table, score_report]
+        for test_file in test_files:
+            self.assertTrue(os.path.exists(test_file), "Test existence of {}.".format(test_file))
 
     def test_design_options(self):
         cmd_base = "piperine-design {} -D -q ".format(self.crn)
@@ -132,6 +144,6 @@ class TestCommandline(unittest.TestCase):
         self.assertTrue(os.path.exists(self.reportfile))
 
 def suite():
-    tests = ['test_utility_access', 'test_design_options', 'test_score_options', 'test_select_options']
+    tests = ['test_utility_access', 'test_design', 'test_design_options', 'test_score_options', 'test_select_options']
     # tests = ['test_select_options']
     return unittest.TestSuite(list(map(TestCommandline, tests)))

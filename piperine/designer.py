@@ -53,6 +53,7 @@ def call_compiler(basename,
         Nothing
     """
     from peppercompiler.compiler import compiler
+    assert(os.path.exists(basename+'.sys'))
     if outputname is None:
         outputname = '{}.pil'.format(basename)
     if savename is None:
@@ -572,7 +573,7 @@ def generate_seqs(basename,
     write_toehold_file(fixed_file, strands, toeholds)
     try:
         with Capturing() as cptr:
-            call_compiler(basename, args=design_params, fixed_file=fixed_file,
+            call_compiler(system_file[:-4], args=design_params, fixed_file=fixed_file,
                           outputname=pil_file, savename=save_file)
     except KeyError as e:
         raise(e)
@@ -664,23 +665,18 @@ def run_designer(basename,
 
     crn_file = basename + ".crn"
     if debug:
+        prefix = basename
         system_file = basename + ".sys"
         pil_file = basename + ".pil"
         mfe_file = basename + ".mfe"
         fixed_file = basename + ".fixed"
         save_file = basename + ".save"
     else:
-        fid, prefix = mkstemp()
-        fid, system_file = mkstemp(suffix='.sys')
+        tdir = mkdtemp(prefix="piperine_design")
+        fid, prefix = mkstemp(dir=tdir)
         os.close(fid)
-        fid, fixed_file = mkstemp(suffix='.fixed')
-        os.close(fid)
-        fid, pil_file = mkstemp(suffix='.pil')
-        os.close(fid)
-        fid, save_file = mkstemp(suffix='.save')
-        os.close(fid)
-        fid, mfe_file = mkstemp(suffix='.mfe')
-        os.close(fid)
+        file_extensions = ['.sys', '.fixed', '.pil', '.save', '.mfe']
+        system_file, fixed_file, pil_file, save_file, mfe_file = [prefix + ext for ext in file_extensions]
 
     (gates, strands) = \
         generate_scheme(basename, design_params, translation, crn_file=crn_file, system_file=system_file)
@@ -692,7 +688,7 @@ def run_designer(basename,
             seqsname = basename + str(i) + '.seqs'
             try:
                 print("Designing sequences candidate index {}.".format(i))
-                toeholds = generate_seqs(basename,
+                toeholds = generate_seqs(prefix,
                                          gates,
                                          strands,
                                          design_params,
@@ -707,7 +703,7 @@ def run_designer(basename,
                                          extra_pars=extra_pars,
                                          debug=debug)
 
-                scores, score_names = tdm.EvalCurrent(basename,
+                scores, score_names = tdm.EvalCurrent(prefix,
                                                       gates,
                                                       strands,
                                                       testname=testname,
@@ -736,9 +732,12 @@ def run_designer(basename,
             f.writelines( [','.join(map(str, l)) + '\n' for l in scoreslist])
 
     if not debug:
-        for fname in [system_file, pil_file, mfe_file, fixed_file, save_file]:
+        tmp_files = os.listdir(tdir)
+        tmp_files = [os.path.join(tdir, tmp_file ) for tmp_file in tmp_files]
+        for fname in tmp_files:
             if os.path.exists(fname):
                 os.remove(fname)
+        os.rmdir(tdir)
 
     return (gates, strands, winner, scoreslist)
 
