@@ -476,10 +476,10 @@ def Spurious_Weighted_Score(basename,
 
     # Command parameters
     if tmpdir is None:
-        fid, prefix = mkstemp()
+        fid, prefix = mkstemp(prefix='spw_calc')
     else:
         tdir = mkdtemp(dir=tmpdir)
-        fid, prefix = mkstemp(dir=tdir)
+        fid, prefix = mkstemp(dir=tdir, prefix='spw_calc')
     ssm_params = "bored=%s tmax=%s spurious_range=%s" % (bored, tmax, spurious_range)
 
     fid, fixed_file = mkstemp(suffix='.fixed', dir=tmpdir)
@@ -582,10 +582,10 @@ def NUPACK_Cmpx_Conc(seqs, params=[3, 25, 'dna', 1, 'ted_calc'], clean=True, tmp
     # Setup input files to nupack commands
     intsc = 0;
     if tmpdir is None:
-        fid, prefix = mkstemp()
+        fid, prefix = mkstemp(prefix="cmpx_conc_")
     else:
         tdir = mkdtemp(dir=tmpdir)
-        fid, prefix = mkstemp(dir=tdir)
+        fid, prefix = mkstemp(prefix="cmpx_conc_", dir=tdir)
     os.close(fid)
     ofile = prefix + '.out'
     cfile = prefix + '.con'
@@ -670,10 +670,10 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc'], clean
     # Setup input files to nupack commands
     intsc = 0;
     if tmpdir is None:
-        fid, prefix = mkstemp()
+        fid, prefix = mkstemp(prefix='cmpx_defect_')
     else:
         tdir = mkdtemp(dir=tmpdir)
-        fid, prefix = mkstemp(dir=tdir)
+        fid, prefix = mkstemp(dir=tdir, prefix='cmpx_defect_')
     os.close(fid)
     ofile = prefix + '.out'
     ifile = prefix + '.in'
@@ -681,15 +681,14 @@ def NUPACK_Cmpx_Defect(seqs, struct, params=[3, 25, 'dna', 1, 'ted_calc'], clean
 
     # Complexes input file
     n_seqs = len(seqs)
-    f = open(ifile,'w')
-    f.write(str(n_seqs) + '\n')
-    for seq in seqs:
-      f.write(seq + '\n')
+    with open(ifile,'w') as f:
+        f.write(str(n_seqs) + '\n')
+        for seq in seqs:
+          f.write(seq + '\n')
 
-    # f.write('1 2 3\n')
-    f.write(cmpx_string)
-    f.write(struct)
-    f.close()
+        f.write(cmpx_string)
+        f.write(struct)
+        f.close()
 
     # Run NUPACK's defect function
     cmd = nupackpath + 'defect -T %.1f '+\
@@ -726,10 +725,10 @@ def NUPACKIntScore(str1, str2, seq_dict,
 
     intsc = 0;
     if tmpdir is None:
-        fid, fname = mkstemp()
+        fid, fname = mkstemp(prefix='nupackint_')
     else:
         tdir = mkdtemp(dir=tmpdir)
-        fid, fname = mkstemp(dir=tdir)
+        fid, fname = mkstemp(dir=tdir, prefix='nupackint_')
     os.close(fid)
     ofile = fname + '.out'
     cfile = fname + '.con'
@@ -801,10 +800,10 @@ def NUPACKSSScore(str1, seq_dict, T=25.0, material='dna', toe_region=[None], cle
 
     # Prepare filenames
     if tmpdir is None:
-        fid, fname = mkstemp()
+        fid, fname = mkstemp(prefix='nupackssscore_')
     else:
         tdir = mkdtemp(dir=tmpdir)
-        fid, fname = mkstemp(dir=tdir)
+        fid, fname = mkstemp(dir=tdir, prefix='nupackssscore_')
     os.close(fid)
     ofile = fname + '.out'
     ofile2 = fname + '.con.out'

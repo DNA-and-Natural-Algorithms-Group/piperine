@@ -13,11 +13,11 @@ Major Contributors :
 
 * Harel Dor
 
-Thanks to : 
+Thanks to :
 
-* Chris Thachuk 
+* Chris Thachuk
 
-* Constantine Evans 
+* Constantine Evans
 
 Basic use of Piperine involves providing CRNs specified in text files and receiving a set of candidate DNA implementations.
 From this list of implementations, Piperine will select one as the optimal candidate relative to the set.
@@ -52,29 +52,25 @@ Make sure these are installed before installing Piperine.
 Numpy and Scipy can both be installed easily through pip or conda.
 NUPACK can be [downloaded here](http://www.nupack.org/).
 Stickydesign and peppercompiler can both be found [on the DNA and Natural Algorithms Group Github page](https://github.com/DNA-and-Natural-Algorithms-Group).
-These two packages should be installed by first cloning the repository and then using `pip install -e <package>`.
+These two packages should be installed using the following commands:
+
+```
+pip install git+https://github.com/DNA-and-Natural-Algorithms-Group/peppercompiler.git
+pip install git+https://github.com/DNA-and-Natural-Algorithms-Group/stickydesign.git
+```
+
 This is described below for installing Piperine.
 Be sure to install NUPACK version 3.0.x, Piperine is only compatible with this legacy version for now.
 Once NUPACK is installed, make a terminal variable NUPACKHOME that points to installation destination (might be `~/Downloads/nupack3.0.6`). Do this with the command `export NUPACKHOME=`_the path to nupack_.
 
 ### Installing Piperine
-For now, you can only install Piperine from the source files.
-Clone or download this repository, start a terminal session, and navigate to the repository folder.
-From there, use __pip__ to install Piperine using the in-place flag __-e__. 
+For now, you can only install Piperine from the Github repository.
 
 ```
-user@laptop:~/git$ git clone git@github.com:DNA-and-Natural-Algorithms-Group/piperine.git
-Cloning into 'piperine'...
-
-user@laptop:~/git$ ls piperine # check the contents of the piperine directory
-LICENSE piperine README.md setup.py
-
-user@laptop:~/git$ pip install -e piperine
+pip install git+https://github.com/DNA-and-Natural-Algorithms-Group/piperine.git
 ```
 
-To install updates, return to the git repository and execute
-
-`git pull`
+It will be necessary to manually install updates. 
 
 ## Brief tutorial
 Piperine reads in plaintext files that specify an abstract CRN, converts the CRN into a domain-level DNA specification, then designs sequences implementing the domain-level constraints.
