@@ -394,7 +394,7 @@ class Bimrxn(object):
         react_names = react_names.format(self.rxn_name,self.in_strands[0].name,self.in_strands[1].name)
         produce_gate = 'name+{0}-trans_base+{0}-d+{0}-c+{0}-helper+{0}-cat_helper'.format(self.rxn_name)
         produce_names = 'Produce_{1}{0}-c{0}-d+{0}-produce_base+{0}-d+{0}-c+helper_{2}{0}-d+cat_helper_{0}-c{0}-d'
-        produce_names = produce_names.format(self.rxn_name, self.in_strands[0].name, self.out_strands[0].name)
+        produce_names = produce_names.format(self.rxn_name, self.in_strands[1].name, self.out_strands[0].name)
         for strand in self.out_strands:
             strand_versions = strand.get_top_strands()
             for i, ver in enumerate(strand_versions):
