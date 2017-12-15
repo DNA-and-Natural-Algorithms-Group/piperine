@@ -10,6 +10,7 @@ import numpy as np
 from .. import designer, tdm
 
 clean = True
+tmpdir = mkdtemp(prefix="piperine_test_nupack")
 
 if sys.version_info >= (3,0):
     from io import StringIO
@@ -41,7 +42,7 @@ class TestTDMNUPACK(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_NUPACKIntScore(self, tmpdir=None):
+    def test_NUPACKIntScore(self, tmpdir=tmpdir):
         seq_names  = ['hairpin1', 'hairpin2']
         seq_values = ["TTTTTTTTTTCCCAAAAAAAAAA",
                       "AAAAAAAAAAGGGTTTTTTTTTT"]
@@ -60,7 +61,7 @@ class TestTDMNUPACK(unittest.TestCase):
         self.assertTrue(np.isclose(out, true_score, rtol=1e-6),
                          msg="true:{}\ntest:{}\n".format(true_score, out))
 
-    def test_NUPACK_Cmpx_Conc(self, tmpdir=None):
+    def test_NUPACK_Cmpx_Conc(self, tmpdir=tmpdir):
         seq_names  = ['base', 'top1', 'top2']
         seq_values = ["TTTTTTTTTTCCCAAAAAAAAAA",
                       "AAAAAAAAAA","TTTTTTTTTT"]
@@ -76,7 +77,7 @@ class TestTDMNUPACK(unittest.TestCase):
                          msg="true:{}\ntest:{}\n".format(true_score, out))
 
 
-    def test_NUPACK_Cmpx_Conc_c4(self, tmpdir=None):
+    def test_NUPACK_Cmpx_Conc_c4(self, tmpdir=tmpdir):
         seq_dict = {"r0-a_struct" : "TTCAGCCACAGAGTGACGCC",
                     "r0-b_struct" : "GGCGTCACTCGACCACGGCA",
                     "r0-c_struct" : "TGCCGTGGTCCGCAAAGGCG",
@@ -90,7 +91,7 @@ class TestTDMNUPACK(unittest.TestCase):
         self.assertEqual(out, true_score,
                          msg="true:{}\ntest:{}\n".format(true_score, out))
 
-    def test_NUPACK_Cmpx_Defect(self, tmpdir=None):
+    def test_NUPACK_Cmpx_Defect(self, tmpdir=tmpdir):
         # using gate r0-Gate from sequence set 9mut
         seqs = self.sequence_dicts[0]['r0-Gate'].split("+")
         struct = self.sequence_dicts[1]['r0-Gate']
@@ -104,14 +105,13 @@ class TestTDMNUPACK(unittest.TestCase):
         self.assertEqual(out, true_score,
                          msg="true:{}\ntest:{}\n".format(true_score, out))
 
-    def test_NUPACK_Cmpx_Defect_c4(self, tmpdir=None):
-        seq_dict = {"r0-a_struct" : "TTCAGCCACAGAGTGACGCC",
-                    "r0-b_struct" : "GGCGTCACTCGACCACGGCA",
-                    "r0-c_struct" : "TGCCGTGGTCCGCAAAGGCG",
-                    "r0-d_struct" : "CGCCTTTGCGATAGCGGTTA"}
+    def test_NUPACK_Cmpx_Defect_c4(self, tmpdir=tmpdir):
+        seq_keys = ["r0-a_struct", "r0-b_struct", "r0-c_struct", "r0-d_struct" ]
+        seq_values = ["TTCAGCCACAGAGTGACGCC", "GGCGTCACTCGACCACGGCA", "TGCCGTGGTCCGCAAAGGCG", "CGCCTTTGCGATAGCGGTTA"]
+        seq_dict = dict(zip(seq_keys, seq_values))
         cmpx_ideal = "..........((((((((((+))))))))))((((((((((+))))))))))((((((((((+)))))))))).........."
         true_score = 4.265e+00
-        out = tdm.NUPACK_Cmpx_Defect(seq_dict.values(),
+        out = tdm.NUPACK_Cmpx_Defect(seq_values,
                                      cmpx_ideal,
                                      params=[4, 25, 'dna', True, 'ted_calc'],
                                      clean=clean,
@@ -119,7 +119,7 @@ class TestTDMNUPACK(unittest.TestCase):
         self.assertEqual(out, true_score,
                          msg="true:{}\ntest:{}\n".format(true_score, out))
 
-    def test_Spurious_Weighted_Score(self, tmpdir=None):
+    def test_Spurious_Weighted_Score(self, tmpdir=tmpdir):
         beta = 5
         w_lin = np.concatenate([np.zeros((beta, )), np.arange(12-beta)+1, 7*np.ones((2,))])
         n_strands = 30
@@ -148,7 +148,7 @@ class TestTDMNUPACK(unittest.TestCase):
         for i in range(6):
             self.assertTrue(np.isclose(out[i], true_scores[i]), msg="Score {}".format(score_names[i]))
 
-    def test_NUPACK_Eval_bad_nucleotide(self, tmpdir=None):
+    def test_NUPACK_Eval_bad_nucleotide(self, tmpdir=tmpdir):
         import re
         mfe_seqs = self.sequence_dicts[0]
         ideal_structs = self.sequence_dicts[1]
@@ -194,7 +194,7 @@ class TestTDMNUPACK(unittest.TestCase):
             )
         self.assertEqual(trues[1], out[1], msg="True:{} Test:{}".format(trues[1], out[1]))
 
-    def test_NUPACK_Eval_bad_nucleotide_c4(self, tmpdir=None):
+    def test_NUPACK_Eval_bad_nucleotide_c4(self, tmpdir=tmpdir):
         seq_dict = {"r0-a_struct" : "TTCAGCCACAGAGTGACGCC",
                     "r0-b_struct" : "GGCGTCACTCGACCACGGCA",
                     "r0-c_struct" : "TGCCGTGGTCCGCAAAGGCG",
@@ -235,8 +235,8 @@ class TestTDMNUPACK(unittest.TestCase):
             )
         self.assertEqual(trues[1], out[1], msg="True:{} Test:{}".format(trues[1], out[1]))
 
-    def test_NUPACKSSScore(self, tmpdir=None):
-        strand = self.h_inputs[0][5]
+    def test_NUPACKSSScore(self, tmpdir=tmpdir):
+        strand = 'r1-d'
         t_regi = self.h_inputs[3][strand]
         true_sstu = 0.9028 #0.9059
         true_sstu_sum = 9.5695 # 9.5847
