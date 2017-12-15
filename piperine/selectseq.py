@@ -226,7 +226,7 @@ def metarank(scores, method = 'sum-of-metaranks'):
 
     temp = [sum(r) for r in metaranks]
     winner_dict['sum-of-metaranks'] = mincases(temp)[0]
-    #print("\nBest sum-of-metaranks: {:6d} by {:s}".format( min(temp), strmincases(temp) ))
+    print("\nBest sum-of-metaranks: {:6d} by {:s}".format( min(temp), strmincases(temp) ))
     print()
     return winner_dict[method]
 
