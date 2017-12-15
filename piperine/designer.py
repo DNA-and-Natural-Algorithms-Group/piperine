@@ -491,6 +491,37 @@ def generate_scheme(basename,
     write_sys_file(basename, gates, system_file, translation)
     return (gates, strands)
 
+
+def strand_writer(gates, strands, seq_dict):
+    # Print strand identities
+    print('Signal strands')
+    for strand in strands:
+        msg = "Strand {}{} : {}"
+        for i, position in enumerate(strand.get_top_strands()):
+            print(msg.format(strand.name, i, seq_dict[position]))
+
+    print('Complexes')
+    for gate in gates:
+        cmpxs = gate.get_naive_complexes()
+        for cmpx in cmpxs:
+            print("Complex: {}".format(cmpx))
+            msg = "Strand {} : {}"
+            cmpx_components = cmpxs[cmpx]
+            for key in cmpx_components:
+                seq_key = cmpx_components[key]
+                print(msg.format(key, seq_dict[seq_key]))
+
+    print('Fuel strands')
+    for gate in gates:
+        cmpxs = gate.get_naive_complexes()
+        for cmpx in cmpxs:
+            print("Complex: {}".format(cmpx))
+            msg = "Strand {} : {}"
+            cmpx_components = cmpxs[cmpx]
+            for key in cmpx_components:
+                seq_key = cmpx_components[key]
+                print(msg.format(key, seq_dict[seq_key]))
+
 def generate_seqs(basename,
                   gates,
                   strands,
@@ -587,6 +618,16 @@ def generate_seqs(basename,
     with Capturing() as cptr:
         call_finish(basename, savename=save_file, designname=mfe_file, \
                     seqname=seq_file, strandsname=strands_file, run_kin=False)
+    try:
+        stdout = sys.stdout
+        _, seq_dict = tdm.Read_Finished(seq_file)
+        with open(strands_file, 'w') as f:
+            sys.stdout = f
+            strand_writer(gates, strands, seq_dict)
+            sys.stdout = stdout
+    except:
+        sys.stdout = stdout
+        raise
     print('Sequences written to: {}'.format(seq_file))
     print('Strand identities written to: {}'.format(strands_file))
     return toeholds

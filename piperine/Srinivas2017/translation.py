@@ -388,6 +388,27 @@ class Bimrxn(object):
         else:
             return self.top_strands[:]
 
+    def get_naive_complexes(self):
+        react_gate = 'name+{0}-gate_base+{0}-out+{0}-backward'.format(self.rxn_name)
+        react_names = 'React_{1}{2}{0}-c+{0}-react_base+flux_{2}{0}-c+back_{1}{2}'
+        react_names = react_names.format(self.rxn_name,self.in_strands[0].name,self.in_strands[1].name)
+        produce_gate = 'name+{0}-trans_base+{0}-d+{0}-c+{0}-helper+{0}-cat_helper'.format(self.rxn_name)
+        produce_names = 'Produce_{1}{0}-c{0}-d+{0}-produce_base+{0}-d+{0}-c+helper_{2}{0}-d+cat_helper_{0}-c{0}-d'
+        produce_names = produce_names.format(self.rxn_name, self.in_strands[0].name, self.out_strands[0].name)
+        for strand in self.out_strands:
+            strand_versions = strand.get_top_strands()
+            for i, ver in enumerate(strand_versions):
+                strand_name = "{}{}".format(strand.name, i)
+                produce_names = produce_names.replace(ver, strand_name)
+                react_names = react_names.replace(ver, strand_name)
+
+        react_terms = [x.split('+') for x in [react_names, react_gate]]
+        react_dict = dict(zip(react_terms[0][1:], react_terms[1][1:]))
+
+        produce_terms = [x.split('+') for x in [produce_names, produce_gate]]
+        produce_dict = dict(zip(produce_terms[0][1:], produce_terms[1][1:]))
+        return dict(zip([x[0][0] for x in [react_terms, produce_terms]], [react_dict, produce_dict]))
+
     def get_complexes(self):
         return self.complexes[:]
 
