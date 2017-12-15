@@ -52,6 +52,8 @@ Make sure these are installed before installing Piperine.
 Numpy and Scipy can both be installed easily through pip or conda.
 NUPACK can be [downloaded here](http://www.nupack.org/).
 Stickydesign and peppercompiler can both be found [on the DNA and Natural Algorithms Group Github page](https://github.com/DNA-and-Natural-Algorithms-Group).
+These two packages should be installed by first cloning the repository and then using `pip install -e <package>`.
+This is described below for installing Piperine.
 Be sure to install NUPACK version 3.0.x, Piperine is only compatible with this legacy version for now.
 Once NUPACK is installed, make a terminal variable NUPACKHOME that points to installation destination (might be `~/Downloads/nupack3.0.6`). Do this with the command `export NUPACKHOME=`_the path to nupack_.
 
