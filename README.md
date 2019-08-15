@@ -2,6 +2,7 @@
 Piperine is a software tool for the automated design of DNA molecules that mimic abstract chemical reaction networks (CRNs) in a test tube.
 It combines sequence design tools created by the DNA and Natural Algorithms Group with heuristic sequence quality measures.
 These heuristic functions detect sequence motifs that are detrimental to DNA strand displacement reactions; avoiding these motifs promotes fidelity of the _in vitro_ DNA reaction to the target CRN.
+Piperine was developed for and employed in the research reported in reference 2, below.
 
 Major Contributors :
 
@@ -27,11 +28,15 @@ Advance use may involve writing custom packages that define additional approache
 ## Installation
 
 ### OS requirements
-Piperine has only been tested on Ubuntu and MacOSX Sierra.
+Piperine has only been tested on Ubuntu and MacOS Sierra through Mojave.
 Windows is unsupported for now.
 
 ### Python version
-Piperine works with Python >= 2.7
+Piperine works with python >= 2.7
+
+For python 2.7, you will need to install numpy 1.16 before attempting to install the other packages listed here, as numpy 1.17 is not compatible with python 2.7.  You will also need to request version 0.7.0 of stickydesign rather than the latest version, by adding "request==0.7.0" to the pip command below.
+
+Python 3.7 is recommended.
 
 ### Software dependencies
 Piperine depends on
@@ -40,7 +45,7 @@ Piperine depends on
 
 * Scipy
 
-* NUPACK (version 3.0.x)
+* NUPACK version 3.0.4 or 3.0.6 (later version changed command-line function I/O conventions, and are not compatible for now)
 
 * stickydesign
 
@@ -96,7 +101,8 @@ This CRN can then be compiled into DNA sequences using the following call in a t
 `piperine-design my.crn -n 3`
 
 The `-n 3` argument tells Piperine to generate three candidate sets of sequences.
-This execution will generate a number of intermediate files suffixed by .sys, .pil, .fixed, and .mfe.
+Note that this execution is likely to tell you that the sticky-end criteria need to be relaxed, as per the example below.
+If successful, this execution will generate a number of intermediate files suffixed by .sys, .pil, .fixed, and .mfe.
 Most users will only be interested in the candidate comparison report suffixed by score_report.txt and the files suffixed by .seqs which contain the sequence identities of the strands.
 At the end of the process, the winning candidate will be announced.
 Sequence sets are indexed starting at 0 and saved to filenames `my`__i__`.crn`, for index __i__.
@@ -105,7 +111,7 @@ Users may also adjust toehold generation parameters through command line argumen
 These optional arguments define the target binding energy, allowable deviation from the target energy, and maximum relative energy of unintended toehold interactions.
 To override the default values, apply arguments as in :
 
-`piperine-design my.crn --energy 7.5 --deviation 0.5 --maxspurious 0.5`
+`piperine-design my.crn -n 3 --energy 7.5 --deviation 0.5 --maxspurious 0.5`
 
 This may be necessary when generating sequences for CRNs including more than 10 toeholds.
 If the default or user-specified toehold energetics parameters cannot be satisfied by the sequence designer, Piperine will suggest values that will generate a sufficient number of toeholds.
@@ -126,5 +132,5 @@ To use the Chen2013 scheme, use the `--translation_scheme` argument.
 `piperine-design my.crn --translation_scheme Chen2013`
 
 ## References
-1. Chen, Y. J. et al. Programmable chemical controllers made from DNA. Nat. Nanotechnol. 8, 755–762 (2013).
-1. Srinivas, N., Parkin, J., Seelig, G., Winfree, E. & Soloveichik, D. Enzyme-free nucleic acid dynamical systems. Science (80-. ). 358, (2017).
+1. Chen, Y. J. et al. Programmable chemical controllers made from DNA. Nature Nanotechnology 8, 755–762 (2013).
+1. Srinivas, N., Parkin, J., Seelig, G., Winfree, E. & Soloveichik, D. Enzyme-free nucleic acid dynamical systems. Science 358, eaal2052 (2017).
