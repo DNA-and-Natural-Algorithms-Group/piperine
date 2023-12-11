@@ -194,19 +194,19 @@ def parse_parameter_line(line, translation=default_translation):
              "translation_scheme",
              "n"]
 
-    converters = [lambda x: np.float(x),
-                  lambda x: np.float(x),
-                  lambda x: np.float(x),
-                  lambda x: np.int(x),
+    converters = [lambda x: float(x),
+                  lambda x: float(x),
+                  lambda x: float(x),
+                  lambda x: int(x),
                   lambda x: x,
                   lambda x: x,
-                  lambda x: np.int(re.sub(r'\s*', '', x))]
+                  lambda x: int(re.sub(r'\s*', '', x))]
 
     # Design parameters are always integers
     if translation is not None:
         for param_term in default_translation.param_terms:
             terms.append(param_term)
-            converters.append(lambda x: np.int(x))
+            converters.append(lambda x: int(x))
 
     # Remove whitespace
     line = re.sub(r'^\s*|(?<=\s)\s+|\s*$', '', line)
