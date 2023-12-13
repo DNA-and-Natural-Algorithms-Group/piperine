@@ -537,30 +537,30 @@ def Spurious_Weighted_Score(basename,
     lines = spc_text[spc_text.rfind('spurious1'):].split('\n')
     i, j = [ int(x) for x in re.findall(num, lines[0])[1:]]
     w = w_lin[i-1:j]
-    vec = np.array([ np.float(x) for x in re.findall(num, lines[2])])
+    vec = np.array([ float(x) for x in re.findall(num, lines[2])])
     score_vec = vec * w
     mis_intra_score = score_vec.sum()  #/ num_strands
 
-    vec = np.array([ np.float(x) for x in re.findall(num, lines[4])])
+    vec = np.array([ float(x) for x in re.findall(num, lines[4])])
     score_vec = vec * w
     mis_inter_score = score_vec.sum()  #/ num_strands
 
     lines = spc_text[spc_text.rfind('spurious('):].split('\n')
     i, j = [ int(x) for x in re.findall(num, lines[0])]
     w = w_lin[i-1:j]
-    vec = np.array([ np.float(x) for x in re.findall(num, lines[2])])
+    vec = np.array([ float(x) for x in re.findall(num, lines[2])])
     score_vec = vec * w
     spc_intra_score = score_vec.sum()  #/ num_strands
 
-    vec = np.array([ np.float(x) for x in re.findall(num, lines[4])])
+    vec = np.array([ float(x) for x in re.findall(num, lines[4])])
     score_vec = vec * w
     spc_inter_score = score_vec.sum()  #/ num_strands
 
     vec_str = spc_text[spc_text.rfind('** score_verboten'):]
-    verboten_score = np.float(re.findall(num, vec_str)[0])  #/ num_strands
+    verboten_score = float(re.findall(num, vec_str)[0])  #/ num_strands
 
     vec_str = spc_text[spc_text.rfind('-weighted score = '):].split('\n')[0]
-    wsi_score = np.float(re.findall(num, vec_str)[-1])  #/ num_strands
+    wsi_score = float(re.findall(num, vec_str)[-1])  #/ num_strands
 
     if clean:
         for f in [fixed_file, compiled_file, save_file, out_file,

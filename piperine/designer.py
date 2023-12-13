@@ -74,8 +74,7 @@ def call_design(basename,
                 old_output=False,
                 tempname=None,
                 extra_pars="",
-                findmfe=False,
-                spuriousbinary="spuriousSSM"):
+                findmfe=False):
     """ Generates an MFE file from a .pil file. This is a wrapper for a peppercompiler function.
 
     Args:
@@ -102,7 +101,7 @@ def call_design(basename,
         outfilename = '{}.mfe'.format(basename)
     design(basename, infilename, outfilename, cleanup, verbose, reuse,
            just_files, struct_orient, old_output, tempname, extra_pars,
-           findmfe, spuriousbinary)
+           findmfe)
     if not os.path.isfile(outfilename):
         raise RuntimeError('Expected MFE not created, expect SSM failure')
 
@@ -194,19 +193,19 @@ def parse_parameter_line(line, translation=default_translation):
              "translation_scheme",
              "n"]
 
-    converters = [lambda x: np.float(x),
-                  lambda x: np.float(x),
-                  lambda x: np.float(x),
-                  lambda x: np.int(x),
+    converters = [lambda x: float(x),
+                  lambda x: float(x),
+                  lambda x: float(x),
+                  lambda x: int(x),
                   lambda x: x,
                   lambda x: x,
-                  lambda x: np.int(re.sub(r'\s*', '', x))]
+                  lambda x: int(re.sub(r'\s*', '', x))]
 
     # Design parameters are always integers
     if translation is not None:
         for param_term in default_translation.param_terms:
             terms.append(param_term)
-            converters.append(lambda x: np.int(x))
+            converters.append(lambda x: int(x))
 
     # Remove whitespace
     line = re.sub(r'^\s*|(?<=\s)\s+|\s*$', '', line)
@@ -414,7 +413,7 @@ def write_sys_file(basename,
         basename = os.path.basename(basename)
 
     with open(sys_file, 'w') as f:
-        f.write("declare system " + basename + translation.param_string + " -> \n")
+        f.write("declare system " + str.replace(basename, ' ', '_') + translation.param_string + " -> \n")
         f.write("\n")
         # Comps is defined in Classes file
         for comp in translation.comps:

@@ -189,6 +189,17 @@ class energyfuncs:
         m[:,z:z+l+1] = (s1l == s2rl) * self.nndG[s1l]
         i = 0
         im = len(m)
+        
+        if fast:
+            try:
+                from stickydesign import _stickyext
+            except ImportError:
+                print("Error importing _stickyext. Falling back to slow mode.")
+                fast = False
+            except RuntimeError:
+                print("_stickyext was badly compiled. Falling back to slow mode.")
+                fast = False
+        
         # This needs to be changed to something faster
         if not fast:
             for xi in range(0,m.shape[0]):
@@ -206,7 +217,6 @@ class energyfuncs:
                 if not i%1000:
                     print("%d/%d" % (i,im))
         else:
-            from stickydesign import _stickyext
             x = m
             _stickyext.fastsub(x,r)
 
